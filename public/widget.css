@@ -1,0 +1,354 @@
+/**
+ * SmartChat Pro Widget Styles
+ * Version: 1.0.0
+ */
+
+/* ===== Container & Positioning ===== */
+#smartchat-widget {
+  position: fixed;
+  z-index: 999999;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.smartchat-bottom-right {
+  bottom: 20px;
+  right: 20px;
+}
+
+.smartchat-bottom-left {
+  bottom: 20px;
+  left: 20px;
+}
+
+.smartchat-top-right {
+  top: 20px;
+  right: 20px;
+}
+
+.smartchat-top-left {
+  top: 20px;
+  left: 20px;
+}
+
+/* ===== Chat Bubble Button ===== */
+.smartchat-bubble {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  color: white;
+}
+
+.smartchat-bubble:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.smartchat-bubble.smartchat-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0);
+}
+
+/* ===== Chat Window ===== */
+.smartchat-window {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 400px;
+  height: 600px;
+  max-height: calc(100vh - 120px);
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  transform-origin: bottom right;
+}
+
+.smartchat-bottom-left .smartchat-window {
+  left: 20px;
+  right: auto;
+  transform-origin: bottom left;
+}
+
+.smartchat-top-right .smartchat-window {
+  top: 90px;
+  bottom: auto;
+  transform-origin: top right;
+}
+
+.smartchat-top-left .smartchat-window {
+  top: 90px;
+  bottom: auto;
+  left: 20px;
+  right: auto;
+  transform-origin: top left;
+}
+
+.smartchat-window.smartchat-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.8) translateY(20px);
+}
+
+/* ===== Header ===== */
+.smartchat-header {
+  padding: 20px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.smartchat-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.smartchat-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  transition: background 0.2s ease;
+}
+
+.smartchat-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ===== Messages Area ===== */
+.smartchat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #f9fafb;
+}
+
+/* Custom scrollbar */
+.smartchat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.smartchat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.smartchat-messages::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.smartchat-messages::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* ===== Welcome Message ===== */
+.smartchat-welcome {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.smartchat-welcome p {
+  margin: 0;
+  color: #4b5563;
+  font-size: 14px;
+}
+
+/* ===== Message Bubbles ===== */
+.smartchat-message {
+  display: flex;
+  animation: messageSlideIn 0.3s ease;
+}
+
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.smartchat-message-user {
+  justify-content: flex-end;
+}
+
+.smartchat-message-assistant {
+  justify-content: flex-start;
+}
+
+.smartchat-message-bubble {
+  max-width: 75%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+
+.smartchat-message-user .smartchat-message-bubble {
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.smartchat-message-assistant .smartchat-message-bubble {
+  background: white;
+  color: #1f2937;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== Typing Indicator ===== */
+.smartchat-typing {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 12px 16px;
+}
+
+.smartchat-typing span {
+  width: 8px;
+  height: 8px;
+  background: #9ca3af;
+  border-radius: 50%;
+  animation: typingBounce 1.4s infinite;
+}
+
+.smartchat-typing span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.smartchat-typing span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingBounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-8px);
+  }
+}
+
+/* ===== Input Container ===== */
+.smartchat-input-container {
+  display: flex;
+  gap: 8px;
+  padding: 16px;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.smartchat-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease;
+  font-family: inherit;
+}
+
+.smartchat-input:focus {
+  border-color: #0EA5E9;
+}
+
+.smartchat-input::placeholder {
+  color: #9ca3af;
+}
+
+.smartchat-send {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.smartchat-send:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.smartchat-send:active {
+  transform: scale(0.95);
+}
+
+.smartchat-send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== Mobile Responsive ===== */
+@media (max-width: 480px) {
+  .smartchat-window {
+    width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    top: 0;
+    border-radius: 0;
+  }
+
+  .smartchat-bottom-left .smartchat-window,
+  .smartchat-top-right .smartchat-window,
+  .smartchat-top-left .smartchat-window {
+    width: 100vw;
+    height: 100vh;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    top: 0;
+  }
+
+  .smartchat-message-bubble {
+    max-width: 85%;
+  }
+
+  .smartchat-bubble {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+/* ===== Utility Classes ===== */
+.smartchat-hidden {
+  display: none !important;
+}

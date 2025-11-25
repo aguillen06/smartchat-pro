@@ -132,20 +132,106 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+## Using the Chat Widget
+
+### Embed on Your Website
+
+To add the SmartChat Pro widget to any website, include this script tag before the closing `</body>` tag:
+
+```html
+<!-- SmartChat Pro Widget -->
+<script
+  src="https://your-domain.com/widget.js"
+  data-widget-key="your_widget_key_here"
+  data-primary-color="#0EA5E9"
+  data-position="bottom-right"
+></script>
+```
+
+### Widget Configuration Options
+
+| Attribute | Required | Default | Description |
+|-----------|----------|---------|-------------|
+| `data-widget-key` | Yes | - | Your unique widget identifier |
+| `data-primary-color` | No | `#0EA5E9` | Hex color code for branding |
+| `data-position` | No | `bottom-right` | Widget position: `bottom-right`, `bottom-left`, `top-right`, `top-left` |
+| `data-api-url` | No | Same origin | Custom API endpoint URL |
+
+### Test the Widget
+
+Visit `/test-widget` in your browser to see a live demo of the chat widget:
+
+```bash
+npm run dev
+# Then open http://localhost:3000/test-widget
+```
+
+### Widget Features
+
+- **Pure Vanilla JavaScript** - No dependencies, works on any website
+- **Mobile Responsive** - Adapts to all screen sizes
+- **Session Persistence** - Conversations persist across page reloads
+- **Typing Indicators** - Visual feedback during AI responses
+- **Knowledge Base Integration** - Automatically searches relevant documentation
+- **Rate Limiting** - Prevents abuse (100 messages per conversation per hour)
+- **Error Handling** - Graceful fallbacks for network issues
+
+## API Endpoints
+
+### POST /api/chat
+
+Handle incoming chat messages and generate AI responses.
+
+**Request Body:**
+```json
+{
+  "widgetKey": "string (required)",
+  "message": "string (required)",
+  "visitorId": "string (required)",
+  "conversationId": "string (optional)"
+}
+```
+
+**Response:**
+```json
+{
+  "conversationId": "uuid",
+  "message": "AI response text",
+  "timestamp": "ISO 8601 timestamp"
+}
+```
+
+**Error Responses:**
+- `400` - Missing or invalid required fields
+- `403` - Widget is inactive
+- `404` - Widget or conversation not found
+- `429` - Rate limit exceeded
+- `500` - Server error or AI generation failure
+
+**Rate Limiting:**
+- Maximum 100 messages per conversation per hour
+- Tracked per conversation ID
+
 ## Project Structure
 
 ```
 smartchat-pro/
 ├── app/                    # Next.js App Router pages and API routes
+│   ├── api/chat/          # Chat API endpoint
+│   └── test-widget/       # Widget demo page
 ├── components/            # React components
 ├── lib/                   # Utility functions and API clients
 │   ├── supabase.ts       # Supabase client configuration & helpers
-│   └── anthropic.ts      # Anthropic AI client and helpers
+│   ├── anthropic.ts      # Anthropic AI client and helpers
+│   └── knowledge-search.ts # Knowledge base search
 ├── types/                 # TypeScript type definitions
-│   └── index.ts          # Core data models
+│   ├── index.ts          # Core data models
+│   └── api.ts            # API request/response types
 ├── scripts/               # Utility scripts
 │   └── run-migrations.ts # Database migration runner
-├── public/                # Static assets
+├── public/                # Static assets & embeddable widget
+│   ├── widget.js         # Chat widget JavaScript
+│   └── widget.css        # Chat widget styles
 ├── supabase/
 │   ├── migrations/       # Database migration files
 │   └── seeds/            # Seed data for development
