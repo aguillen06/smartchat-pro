@@ -79,17 +79,49 @@ Fill in the following environment variables in your `.env` file:
 
 ### 4. Set up the database
 
-Run Supabase migrations to create the database schema:
+You have three options to run the database migrations:
+
+**Option 1: Using Supabase CLI (Recommended)**
 
 ```bash
 # Install Supabase CLI if you haven't already
 npm install -g supabase
 
-# Link your project
+# Link your project (find project-ref in your Supabase dashboard URL)
 supabase link --project-ref <your-project-ref>
 
 # Run migrations
 supabase db push
+```
+
+**Option 2: Using Supabase Dashboard (Easiest)**
+
+1. Go to your [Supabase Dashboard](https://app.supabase.com)
+2. Select your project
+3. Navigate to **SQL Editor** in the left sidebar
+4. Open `supabase/migrations/20241123000000_initial_schema.sql` from your project
+5. Copy and paste the entire contents into the SQL Editor
+6. Click **Run** to execute the migration
+
+**Option 3: Using psql**
+
+```bash
+# Get your connection string from Supabase Dashboard → Project Settings → Database
+psql "postgresql://postgres:[YOUR-PASSWORD]@[YOUR-HOST]:5432/postgres" \
+  -f supabase/migrations/20241123000000_initial_schema.sql
+```
+
+**Optional: Load seed data for testing**
+
+After running migrations, you can optionally load sample data:
+
+```bash
+# Using Supabase Dashboard SQL Editor:
+# Copy and paste contents of supabase/seeds/dev_seed.sql
+
+# Or using psql:
+psql "postgresql://postgres:[YOUR-PASSWORD]@[YOUR-HOST]:5432/postgres" \
+  -f supabase/seeds/dev_seed.sql
 ```
 
 ### 5. Run the development server
@@ -107,13 +139,16 @@ smartchat-pro/
 ├── app/                    # Next.js App Router pages and API routes
 ├── components/            # React components
 ├── lib/                   # Utility functions and API clients
-│   ├── supabase.ts       # Supabase client configuration
+│   ├── supabase.ts       # Supabase client configuration & helpers
 │   └── anthropic.ts      # Anthropic AI client and helpers
 ├── types/                 # TypeScript type definitions
 │   └── index.ts          # Core data models
+├── scripts/               # Utility scripts
+│   └── run-migrations.ts # Database migration runner
 ├── public/                # Static assets
 ├── supabase/
-│   └── migrations/       # Database migration files
+│   ├── migrations/       # Database migration files
+│   └── seeds/            # Seed data for development
 ├── .env                   # Environment variables (not committed)
 ├── .env.example          # Example environment variables
 └── package.json          # Dependencies and scripts
@@ -125,6 +160,8 @@ smartchat-pro/
 - `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
+- `npm run migrate` - View migration files and instructions
+- `npm run migrate:seed` - View migration and seed files
 
 ## Development Workflow
 
@@ -149,13 +186,34 @@ smartchat-pro/
 
 ## Database Schema
 
-See `types/index.ts` for the complete data model including:
-- Customers (businesses using the platform)
-- Widgets (chat instances)
-- Conversations (chat sessions)
-- Messages (individual chat messages)
-- Knowledge Docs (AI knowledge base)
-- Leads (captured contact information)
+The database schema is defined in `supabase/migrations/20241123000000_initial_schema.sql` and includes:
+
+**Core Tables:**
+- `customers` - Business customers using the platform (with subscription tiers)
+- `widgets` - Chatbot instances that can be embedded on websites
+- `knowledge_docs` - Documents providing context for AI responses
+- `conversations` - Chat sessions between visitors and the AI
+- `messages` - Individual messages within conversations
+- `leads` - Contact information captured from conversations
+
+**Key Features:**
+- Foreign key constraints with cascading deletes
+- Indexes on frequently queried columns for performance
+- `updated_at` triggers for customers and widgets
+- Check constraints for data validation (role, plan_type, etc.)
+- UUID primary keys for all tables
+
+**Helper Functions:**
+The `lib/supabase.ts` file includes ready-to-use helper functions:
+- `getCustomerByEmail()` - Fetch customer by email
+- `getWidgetByKey()` - Get widget configuration by widget key
+- `createConversation()` - Start a new conversation
+- `getConversationWithMessages()` - Fetch full conversation history
+- `addMessage()` - Add a message to a conversation
+- `getKnowledgeDocs()` - Get knowledge base for a widget
+- `createLead()` - Capture lead information
+
+See `types/index.ts` for complete TypeScript type definitions.
 
 ## Contributing
 
