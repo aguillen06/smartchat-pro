@@ -17,10 +17,10 @@ export const anthropic = new Anthropic({
 
 /**
  * Configuration for chat responses
- * Using Claude 3 Opus for maximum compatibility
+ * Using Claude 3 Haiku for speed, cost-efficiency, and better instruction following
  */
-const DEFAULT_MODEL = 'claude-3-opus-20240229';
-const DEFAULT_MAX_TOKENS = 1024;
+const DEFAULT_MODEL = 'claude-3-haiku-20240307';
+const DEFAULT_MAX_TOKENS = 250; // Enough room to complete thoughts while staying concise
 
 /**
  * Generate a chat response using Claude
@@ -44,9 +44,16 @@ export async function generateChatResponse(
     }
 
     // Default system prompt for customer service
-    const defaultSystemPrompt = `You are a helpful customer service assistant.
-Be friendly, professional, and concise in your responses.
-If you don't know the answer to a question, be honest about it and offer to help in other ways.`;
+    const defaultSystemPrompt = `You are a helpful customer service chatbot. Keep your responses conversational and concise.
+
+Response Guidelines:
+- Keep answers to 2-3 sentences max for simple questions
+- Only use bullet points when listing 3 or more items
+- Be conversational, not formal - write like you're texting a friend
+- End responses with a simple call-to-action when appropriate (e.g., "Want to learn more?", "Should I explain any of these?", "Need help with anything else?")
+- If you don't know something, be honest and offer to help in other ways
+
+Remember: Brief, friendly, and helpful.`;
 
     const response = await anthropic.messages.create({
       model: DEFAULT_MODEL,
@@ -98,9 +105,16 @@ export async function generateChatResponseWithHistory(
   systemPrompt?: string
 ): Promise<string> {
   try {
-    const defaultSystemPrompt = `You are a helpful customer service assistant.
-Be friendly, professional, and concise in your responses.
-If you don't know the answer to a question, be honest about it and offer to help in other ways.`;
+    const defaultSystemPrompt = `You are a helpful customer service chatbot. Keep your responses conversational and concise.
+
+Response Guidelines:
+- Keep answers to 2-3 sentences max for simple questions
+- Only use bullet points when listing 3 or more items
+- Be conversational, not formal - write like you're texting a friend
+- End responses with a simple call-to-action when appropriate (e.g., "Want to learn more?", "Should I explain any of these?", "Need help with anything else?")
+- If you don't know something, be honest and offer to help in other ways
+
+Remember: Brief, friendly, and helpful.`;
 
     const response = await anthropic.messages.create({
       model: DEFAULT_MODEL,
