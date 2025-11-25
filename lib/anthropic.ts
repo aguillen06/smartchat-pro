@@ -17,8 +17,9 @@ export const anthropic = new Anthropic({
 
 /**
  * Configuration for chat responses
+ * Using Claude 3 Opus for maximum compatibility
  */
-const DEFAULT_MODEL = 'claude-3-5-sonnet-20241022';
+const DEFAULT_MODEL = 'claude-3-opus-20240229';
 const DEFAULT_MAX_TOKENS = 1024;
 
 /**
