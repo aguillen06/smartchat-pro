@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, getSupabaseAdmin } from '@/lib/supabase';
 import { generateChatResponseWithHistory } from '@/lib/anthropic';
 import { searchKnowledge, formatKnowledgeContext } from '@/lib/knowledge-search';
 import type {
@@ -188,36 +188,74 @@ export async function POST(request: NextRequest) {
     // Reverse to chronological order (oldest first)
     const conversationHistory: ConversationMessage[] = (historyMessages || []).reverse();
 
+    // 5a. Check if we should prompt for lead capture
+    const messageCount = conversationHistory.length;
+    const { data: conversation } = await supabase
+      .from('conversations')
+      .select('lead_captured')
+      .eq('id', currentConversationId)
+      .single();
+
+    const shouldPromptForLead = messageCount >= 6 && !conversation?.lead_captured;
+
     // 6. Search knowledge base for relevant context
     const knowledgeResults = await searchKnowledge(widget.id, message, 3);
     const knowledgeContext = formatKnowledgeContext(knowledgeResults);
 
     // 7. Build system prompt with widget instructions and knowledge
     let systemPrompt = widget.ai_instructions ||
-      `You are SmartChat Pro, a friendly AI assistant for Symtri AI.
+      `You are a helpful AI assistant for Symtri AI, an AI automation company helping small businesses.
 
-RESPONSE LENGTH RULES (CRITICAL):
-- Simple questions (hours, contact, yes/no): 1-2 sentences max
-- Medium questions (what is X, pricing): 2-3 sentences max
-- Complex questions (list services, comparisons): 3-4 sentences with brief bullets OK
+⚠️ LENGTH RULES:
+- Maximum 2-3 sentences per response
+- Keep it under 50 words
+- Sound conversational and natural
 
-STYLE RULES:
-- Sound like a helpful text message, not an email or essay
-- Never start with "Absolutely" or "Great question"
-- End with a short CTA when appropriate: "Want details?" or "Should I explain more?"
-- If listing items, use very brief bullets (3-5 words each)
+🎯 WHEN TO ASK FOR EMAIL (be selective):
+ASK for email when discussing:
+- Products, services, or solutions
+- Demos or trials
+- Pricing or quotes
+- Contact or scheduling
+- Case studies or examples
 
-EXAMPLES:
-Q: What are your hours?
-A: We're available Mon-Fri, 9am-5pm Central. I'm here 24/7 if you have questions! Want to schedule a call?
+DO NOT ask for email when:
+- Answering casual questions (weather, jokes, general chat)
+- Providing simple factual info (hours, location)
+- User is just browsing or exploring
 
-Q: What is Symtri AI?
-A: Symtri AI helps small businesses automate with AI - things like chatbots, voice systems, and document processing. We're based in South Texas and focus on fast, affordable solutions. Want to know about a specific product?
+📝 RESPONSE STYLE:
+- Be helpful and friendly FIRST
+- Provide useful info
+- THEN offer to send more details via email (if relevant)
+- Don't force email capture on every message
 
-Remember: Match response length to question complexity. Be brief but complete.`;
+✅ GOOD EXAMPLES:
+
+Q: What does Symtri AI do?
+A: We're an AI automation company helping small businesses with chatbots, voice systems, lead management, and document processing. Want to see how we can help your business? I can email you some examples!
+
+Q: What's the weather?
+A: I focus on AI automation solutions, not weather! But I'm here if you have questions about our products.
+
+Q: How much does SmartChat Pro cost?
+A: Pricing starts at $99/month for basics. I can send you a detailed breakdown - what's your email?
+
+Q: Do you have demos?
+A: Yes! I can send you demo links right now. What's your email address?
+
+Q: Tell me a joke
+A: Why did the AI go to therapy? It had too many layers! 😄 Anything I can help you with about Symtri AI?
+
+Remember: Be helpful first, capture email when it makes sense.`;
 
     if (knowledgeContext) {
-      systemPrompt += '\n\n' + knowledgeContext + '\n\nUse this information to help answer questions accurately.';
+      systemPrompt += '\n\n' + knowledgeContext + '\n\nUse this to answer naturally. Ask for email only if discussing products/services.';
+    }
+
+    // Add lead capture prompt if appropriate
+    if (shouldPromptForLead) {
+      systemPrompt += `\n\nNOTE: The user has been chatting for a bit. If they seem interested in our services, naturally offer to send more details: "Want me to send you more info about [topic]? What's your email?"`;
     }
 
     // 8. Generate AI response using Anthropic
@@ -271,6 +309,112 @@ Remember: Match response length to question complexity. Be brief but complete.`;
       .from('conversations')
       .update({ last_message_at: new Date().toISOString() })
       .eq('id', currentConversationId);
+
+    // 10a. Detect and capture lead information from user message
+    console.log('\n🔍 [Lead Capture] ========== STARTING LEAD DETECTION ==========');
+    console.log('🔍 [Lead Capture] Conversation ID:', currentConversationId);
+    console.log('🔍 [Lead Capture] Conversation lead_captured flag:', conversation?.lead_captured);
+    console.log('🔍 [Lead Capture] User message:', message);
+
+    // Email regex - matches emails with 2+ character TLDs (including .co, .io, etc.)
+    const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/;
+    // Phone regex (various formats)
+    const phoneRegex = /(\+?1[-.\s]?)?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})/;
+
+    // Test regex matches first (before checking lead_captured flag)
+    const emailMatch = message.match(emailRegex);
+    const phoneMatch = message.match(phoneRegex);
+
+    console.log('🔍 [Lead Capture] Regex test results:');
+    console.log('   - Email match:', emailMatch ? emailMatch[0] : 'NONE');
+    console.log('   - Phone match:', phoneMatch ? phoneMatch[0] : 'NONE');
+
+    if (!conversation?.lead_captured) {
+      console.log('✅ [Lead Capture] Conversation does NOT have lead yet - proceeding...');
+
+      console.log('🔍 [Lead Capture] Final check - Email or Phone detected?', !!(emailMatch || phoneMatch));
+
+      if (emailMatch || phoneMatch) {
+        console.log('📧 [Lead Capture] Contact info detected! Saving to database...');
+        console.log('📧 [Lead Capture] Widget ID:', widget.id);
+        console.log('📧 [Lead Capture] Conversation ID:', currentConversationId);
+
+        try {
+          const leadData = {
+            conversation_id: currentConversationId,
+            widget_id: widget.id,
+            name: null,  // Will be extracted later
+            email: emailMatch ? emailMatch[0] : null,
+            phone: phoneMatch ? phoneMatch[0] : null,
+            message: null,  // Optional
+            // source: 'chat_prompt',  // TODO: Add after migration
+          };
+
+          console.log('📧 [Lead Capture] Attempting to insert:', leadData);
+
+          // Use admin client to bypass RLS for lead capture
+          const supabaseAdmin = getSupabaseAdmin();
+
+          // Check if this email exists in previous leads
+          const { data: existingLeads, error: checkError } = await supabaseAdmin
+            .from('leads')
+            .select('id, email, created_at')
+            .eq('widget_id', widget.id)
+            .eq('email', emailMatch ? emailMatch[0] : null)
+            .limit(5);
+
+          if (existingLeads && existingLeads.length > 0) {
+            console.log('🔄 [Lead Capture] REPEAT CONTACT detected!');
+            console.log('🔄 [Lead Capture] This email has contacted us', existingLeads.length, 'time(s) before');
+            console.log('🔄 [Lead Capture] Previous contacts:', existingLeads.map(l => l.created_at));
+            console.log('🔥 [Lead Capture] This is a HOT LEAD - they keep coming back!');
+          }
+
+          const { data: insertedLead, error: leadError } = await supabaseAdmin
+            .from('leads')
+            .insert(leadData)
+            .select();
+
+          if (leadError) {
+            console.error('❌ [Lead Capture] Error saving lead:', leadError);
+            console.error('❌ [Lead Capture] Error details:', JSON.stringify(leadError, null, 2));
+          } else {
+            console.log('✅ [Lead Capture] Lead saved successfully!');
+            console.log('✅ [Lead Capture] Inserted lead data:', insertedLead);
+            if (existingLeads && existingLeads.length > 0) {
+              console.log('📊 [Lead Capture] Total contacts from this email:', existingLeads.length + 1);
+            }
+
+            // Update conversation to mark lead as captured
+            console.log('📝 [Lead Capture] Updating conversation lead_captured flag...');
+            const { data: updatedConv, error: updateError } = await supabaseAdmin
+              .from('conversations')
+              .update({ lead_captured: true })
+              .eq('id', currentConversationId)
+              .select();
+
+            if (updateError) {
+              console.error('❌ [Lead Capture] Error updating conversation:', updateError);
+            } else {
+              console.log('✅ [Lead Capture] Conversation updated:', updatedConv);
+            }
+          }
+        } catch (leadCaptureError) {
+          console.error('❌ [Lead Capture] Exception in lead capture process:', leadCaptureError);
+          console.error('❌ [Lead Capture] Stack trace:', leadCaptureError instanceof Error ? leadCaptureError.stack : 'No stack trace');
+          // Don't fail the request
+        }
+      } else {
+        console.log('⏭️ [Lead Capture] No email or phone detected in message');
+      }
+    } else {
+      console.log('⛔ [Lead Capture] SKIPPING - Lead already captured for this conversation');
+      console.log('⛔ [Lead Capture] Conversation ID:', currentConversationId);
+      console.log('⛔ [Lead Capture] lead_captured flag:', conversation?.lead_captured);
+      console.log('💡 [Lead Capture] TIP: Start a NEW conversation to test lead capture again');
+    }
+
+    console.log('🔍 [Lead Capture] ========== END LEAD DETECTION ==========\n');
 
     // 11. Return response
     const response: ChatResponse = {

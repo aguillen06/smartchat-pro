@@ -89,6 +89,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Create knowledge doc
+    console.log('Creating knowledge doc with data:', {
+      widget_id: widget.id,
+      title: title.trim(),
+      content: content.trim().substring(0, 100) + '...'
+    });
+
     const { data, error } = await supabase
       .from('knowledge_docs')
       .insert({
@@ -101,8 +107,9 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Error creating knowledge doc:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
       return NextResponse.json(
-        { error: 'Failed to create knowledge doc' },
+        { error: 'Failed to create knowledge doc', details: error },
         { status: 500 }
       );
     }

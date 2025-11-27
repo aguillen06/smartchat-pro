@@ -10,8 +10,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
     const supabase = getSupabaseAdmin();
+    const { id } = await params;
     const body = await request.json();
     const { title, content } = body;
 
@@ -22,12 +22,13 @@ export async function PUT(
       );
     }
 
+    console.log('Updating knowledge doc:', id);
+
     const { data, error } = await supabase
       .from('knowledge_docs')
       .update({
         title: title.trim(),
         content: content.trim(),
-        updated_at: new Date().toISOString(),
       })
       .eq('id', id)
       .select()
@@ -35,16 +36,10 @@ export async function PUT(
 
     if (error) {
       console.error('Error updating knowledge doc:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
       return NextResponse.json(
-        { error: 'Failed to update knowledge doc' },
+        { error: 'Failed to update knowledge doc', details: error },
         { status: 500 }
-      );
-    }
-
-    if (!data) {
-      return NextResponse.json(
-        { error: 'Knowledge doc not found' },
-        { status: 404 }
       );
     }
 
@@ -67,8 +62,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
     const supabase = getSupabaseAdmin();
+    const { id } = await params;
+
+    console.log('Deleting knowledge doc:', id);
 
     const { error } = await supabase
       .from('knowledge_docs')
@@ -77,8 +74,9 @@ export async function DELETE(
 
     if (error) {
       console.error('Error deleting knowledge doc:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
       return NextResponse.json(
-        { error: 'Failed to delete knowledge doc' },
+        { error: 'Failed to delete knowledge doc', details: error },
         { status: 500 }
       );
     }

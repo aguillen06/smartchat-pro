@@ -86,9 +86,10 @@ function formatTime(dateString: string) {
 export default async function ConversationDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const conversation = await loadConversation(params.id);
+  const { id } = await params;
+  const conversation = await loadConversation(id);
 
   if (!conversation) {
     notFound();
