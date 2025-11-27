@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 const navigation = [
   { name: 'Overview', href: '/dashboard', icon: '📊' },
@@ -17,6 +18,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { user, signOut } = useAuth();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -78,8 +80,14 @@ export default function DashboardLayout({
           </h1>
           <div className="flex items-center gap-4">
             <div className="text-sm text-gray-600">
-              Welcome back!
+              {user?.email}
             </div>
+            <button
+              onClick={signOut}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Logout
+            </button>
           </div>
         </header>
 

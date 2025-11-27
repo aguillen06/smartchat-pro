@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase } from './supabase-server';
 import type { KnowledgeSearchResult } from '@/types/api';
 
 /**
