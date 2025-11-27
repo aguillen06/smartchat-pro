@@ -1,7 +1,6 @@
 import Link from 'next/link';
-import { getSupabaseAdmin } from '@/lib/supabase';
-
-const WIDGET_KEY = 'demo_widget_key_123';
+import { getServerUser, getServerSupabase } from '@/lib/auth-server';
+import { redirect } from 'next/navigation';
 
 interface Conversation {
   id: string;
@@ -13,19 +12,26 @@ interface Conversation {
 
 async function loadConversations() {
   try {
-    const supabase = getSupabaseAdmin();
+    // Get authenticated user
+    const user = await getServerUser();
+    if (!user) {
+      redirect('/login');
+    }
 
-    // Get widget ID
-    const { data: widget, error: widgetError } = await supabase
+    // Get user-scoped Supabase client (respects RLS)
+    const supabase = await getServerSupabase();
+
+    // Get user's widgets
+    const { data: widgets } = await supabase
       .from('widgets')
       .select('id')
-      .eq('widget_key', WIDGET_KEY)
-      .single();
+      .eq('owner_id', user.id);
 
-    if (widgetError || !widget) {
-      console.error('Widget not found:', widgetError);
+    if (!widgets || widgets.length === 0) {
       return [];
     }
+
+    const widgetIds = widgets.map(w => w.id);
 
     // Get all conversations with message counts
     const { data: conversations, error: conversationsError } = await supabase
@@ -37,7 +43,7 @@ async function loadConversations() {
         last_message_at,
         messages (count)
       `)
-      .eq('widget_id', widget.id)
+      .in('widget_id', widgetIds)
       .order('started_at', { ascending: false });
 
     if (conversationsError) {

@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { getSupabaseAdmin } from '@/lib/supabase';
+import { getServerUser, getServerSupabase } from '@/lib/auth-server';
+import { redirect } from 'next/navigation';
 
 interface DashboardStats {
   totalConversations: number;
@@ -16,74 +17,79 @@ interface RecentConversation {
   messageCount: number;
 }
 
-const WIDGET_KEY = 'demo_widget_key_123';
-
 async function loadDashboardData() {
   try {
-    const supabase = getSupabaseAdmin();
+    // Get authenticated user
+    const user = await getServerUser();
+    if (!user) {
+      redirect('/login');
+    }
 
-    console.log('🔍 [Dashboard] Looking up widget with key:', WIDGET_KEY);
+    console.log('🔍 [Dashboard] Loading data for user:', user.id, user.email);
 
-    // Get widget ID
-    const { data: widget, error: widgetError } = await supabase
-    .from('widgets')
-    .select('id')
-    .eq('widget_key', WIDGET_KEY)
-    .single();
+    // Get user-scoped Supabase client (respects RLS)
+    const supabase = await getServerSupabase();
 
-  if (widgetError) {
-    console.error('❌ [Dashboard] Widget lookup error:', widgetError);
-    return null;
-  }
+    // Get user's widgets
+    const { data: widgets, error: widgetsError } = await supabase
+      .from('widgets')
+      .select('id, widget_key, welcome_message, primary_color')
+      .eq('owner_id', user.id);
 
-  if (!widget) {
-    console.error('❌ [Dashboard] Widget not found');
-    return null;
-  }
+    if (widgetsError) {
+      console.error('❌ [Dashboard] Error fetching widgets:', widgetsError);
+      return null;
+    }
 
-  const widgetId = widget.id;
-  console.log('✅ [Dashboard] Widget found, ID:', widgetId);
+    if (!widgets || widgets.length === 0) {
+      console.log('⚠️ [Dashboard] No widgets found for user');
+      return {
+        stats: {
+          totalConversations: 0,
+          totalMessages: 0,
+          totalLeads: 0,
+          conversationsToday: 0,
+        },
+        recentConversations: [],
+        widgets: [],
+      };
+    }
 
-      // Get total conversations
-      console.log('📊 [Dashboard] Fetching conversation count...');
-      const { count: conversationCount, error: convCountError } = await supabase
-        .from('conversations')
-        .select('*', { count: 'exact', head: true })
-        .eq('widget_id', widgetId);
+    const widgetIds = widgets.map(w => w.id);
+    console.log('✅ [Dashboard] Found', widgets.length, 'widget(s)');
 
-      console.log('📊 [Dashboard] Conversation count:', conversationCount, 'Error:', convCountError);
+    // Get total conversations across all user's widgets
+    const { count: conversationCount } = await supabase
+      .from('conversations')
+      .select('*', { count: 'exact', head: true })
+      .in('widget_id', widgetIds);
 
-      // Get total messages
-      console.log('📊 [Dashboard] Fetching message count...');
-      const { count: messageCount, error: msgCountError } = await supabase
-        .from('messages')
-        .select('*', { count: 'exact', head: true })
-        .in('conversation_id',
-          (await supabase.from('conversations').select('id').eq('widget_id', widgetId)).data?.map(c => c.id) || []
-        );
+    // Get total messages
+    const { data: conversationIds } = await supabase
+      .from('conversations')
+      .select('id')
+      .in('widget_id', widgetIds);
 
-      console.log('📊 [Dashboard] Message count:', messageCount, 'Error:', msgCountError);
+    const convIds = conversationIds?.map(c => c.id) || [];
+    const { count: messageCount } = await supabase
+      .from('messages')
+      .select('*', { count: 'exact', head: true })
+      .in('conversation_id', convIds);
 
-      // Get total leads
-      console.log('📊 [Dashboard] Fetching lead count...');
-      const { count: leadCount, error: leadCountError } = await supabase
-        .from('leads')
-        .select('*', { count: 'exact', head: true })
-        .eq('widget_id', widgetId);
+    // Get total leads
+    const { count: leadCount } = await supabase
+      .from('leads')
+      .select('*', { count: 'exact', head: true })
+      .in('widget_id', widgetIds);
 
-      console.log('📊 [Dashboard] Lead count:', leadCount, 'Error:', leadCountError);
-
-      // Get conversations today
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      console.log('📊 [Dashboard] Fetching today\'s conversations (since', today.toISOString(), ')...');
-      const { count: todayCount, error: todayCountError } = await supabase
-        .from('conversations')
-        .select('*', { count: 'exact', head: true })
-        .eq('widget_id', widgetId)
-        .gte('started_at', today.toISOString());
-
-      console.log('📊 [Dashboard] Today\'s count:', todayCount, 'Error:', todayCountError);
+    // Get conversations today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const { count: todayCount } = await supabase
+      .from('conversations')
+      .select('*', { count: 'exact', head: true })
+      .in('widget_id', widgetIds)
+      .gte('started_at', today.toISOString());
 
     const statsData = {
       totalConversations: conversationCount || 0,
@@ -92,11 +98,8 @@ async function loadDashboardData() {
       conversationsToday: todayCount || 0,
     };
 
-    console.log('✅ [Dashboard] Stats data:', statsData);
-
     // Get recent conversations with message counts
-    console.log('📋 [Dashboard] Fetching recent conversations...');
-    const { data: conversations, error: conversationsError } = await supabase
+    const { data: conversations } = await supabase
       .from('conversations')
       .select(`
         id,
@@ -105,11 +108,9 @@ async function loadDashboardData() {
         last_message_at,
         messages (count)
       `)
-      .eq('widget_id', widgetId)
+      .in('widget_id', widgetIds)
       .order('started_at', { ascending: false })
       .limit(5);
-
-    console.log('📋 [Dashboard] Recent conversations:', conversations?.length || 0, 'Error:', conversationsError);
 
     const formattedConversations = conversations?.map((conv: any) => ({
       id: conv.id,
@@ -119,11 +120,10 @@ async function loadDashboardData() {
       messageCount: conv.messages?.[0]?.count || 0,
     })) || [];
 
-    console.log('✅ [Dashboard] Formatted conversations:', formattedConversations);
-
     return {
       stats: statsData,
       recentConversations: formattedConversations,
+      widgets,
     };
   } catch (error) {
     console.error('Error loading dashboard data:', error);
@@ -157,10 +157,31 @@ export default async function DashboardOverview() {
     );
   }
 
-  const { stats, recentConversations } = data;
+  const { stats, recentConversations, widgets } = data;
 
   return (
     <div className="space-y-6">
+      {/* No Widgets Warning */}
+      {widgets.length === 0 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">⚠️</span>
+            <div>
+              <h3 className="font-semibold text-yellow-900 mb-1">No widgets found</h3>
+              <p className="text-sm text-yellow-700 mb-3">
+                You don't have any chat widgets yet. Create one to start collecting conversations and leads.
+              </p>
+              <Link
+                href="/dashboard/settings"
+                className="inline-flex items-center px-4 py-2 bg-yellow-600 text-white text-sm font-medium rounded-lg hover:bg-yellow-700 transition-colors"
+              >
+                Create Your First Widget →
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg shadow p-6">
