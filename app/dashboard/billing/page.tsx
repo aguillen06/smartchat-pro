@@ -145,7 +145,8 @@ export default function BillingPage() {
       }
     } catch (error) {
       console.error('Checkout error:', error);
-      alert(`Failed to start checkout: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Failed to start checkout: ${errorMessage}`);
     } finally {
       setChangingPlan(false);
     }

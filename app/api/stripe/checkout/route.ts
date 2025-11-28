@@ -23,7 +23,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Get price ID based on billing period
-    const priceId = plan.stripePriceId?.[billingPeriod as 'monthly' | 'yearly'];
+    // TypeScript now knows plan is not 'free' due to the check above
+    const priceId = 'stripePriceId' in plan ? plan.stripePriceId[billingPeriod as 'monthly' | 'yearly'] : undefined;
     console.log('Using price ID:', priceId);
     if (!priceId) {
       console.error('Invalid billing period:', billingPeriod);
@@ -139,8 +140,9 @@ export async function POST(request: NextRequest) {
       });
     } catch (stripeError) {
       console.error('Stripe API error:', stripeError);
+      const errorMessage = stripeError instanceof Error ? stripeError.message : 'Unknown error';
       return NextResponse.json(
-        { error: `Stripe error: ${stripeError.message}` },
+        { error: `Stripe error: ${errorMessage}` },
         { status: 500 }
       );
     }
