@@ -100,7 +100,10 @@ export default function SettingsPage() {
   function getEmbedCode() {
     if (!selectedWidget) return '';
 
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://yourdomain.com';
+    // Use window.location.origin in browser, or NEXT_PUBLIC_APP_URL for SSR/fallback
+    const origin = typeof window !== 'undefined'
+      ? window.location.origin
+      : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
     return `<!-- SmartChat Pro Widget -->
 <script>
