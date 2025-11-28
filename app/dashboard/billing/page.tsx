@@ -291,7 +291,7 @@ export default function BillingPage() {
               />
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              {subscription?.widget_limit - (subscription?.current_widget_count || 0)} available
+              {(subscription?.widget_limit || 0) - (subscription?.current_widget_count || 0)} available
             </p>
           </div>
         </div>
