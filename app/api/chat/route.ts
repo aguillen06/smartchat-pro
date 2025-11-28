@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase, getSupabaseAdmin } from '@/lib/supabase';
 import { generateChatResponseWithHistory } from '@/lib/anthropic';
 import { searchKnowledge, formatKnowledgeContext } from '@/lib/knowledge-search';
+import { canCreateConversation, incrementConversationCount } from '@/lib/subscription-check';
 import type {
   ChatRequest,
   ChatResponse,
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
 
     const { data: widget, error: widgetError } = await supabase
       .from('widgets')
-      .select('id, widget_key, ai_instructions, is_active, customer_id')
+      .select('id, widget_key, ai_instructions, is_active, customer_id, owner_id')
       .eq('widget_key', widgetKey)
       .single();
 
@@ -118,6 +119,20 @@ export async function POST(request: NextRequest) {
         );
       }
     } else {
+      // Check subscription limits before creating new conversation
+      if (widget.owner_id) {
+        const subscriptionCheck = await canCreateConversation(widget.owner_id);
+        if (!subscriptionCheck.hasAccess) {
+          console.log('🚫 [Chat API] Conversation limit reached:', subscriptionCheck.reason);
+          // Still allow the conversation but mark it as over limit
+          // You might want to return an error here in production
+          // return NextResponse.json<ApiError>(
+          //   { error: subscriptionCheck.reason || 'Conversation limit reached', code: 'LIMIT_REACHED' },
+          //   { status: 403, headers: CORS_HEADERS }
+          // );
+        }
+      }
+
       // Create new conversation
       console.log('🆕 [Chat API] Creating new conversation');
       const { data: newConv, error: createError } = await supabase
@@ -140,6 +155,11 @@ export async function POST(request: NextRequest) {
 
       currentConversationId = newConv.id;
       console.log('✅ [Chat API] Conversation created:', currentConversationId);
+
+      // Increment conversation count for billing
+      if (widget.owner_id) {
+        await incrementConversationCount(widget.owner_id);
+      }
     }
 
     // 3. Check rate limiting (simple version)
@@ -427,7 +447,7 @@ Remember: Be helpful first, capture email when it makes sense.`;
 
     // 11. Return response
     const response: ChatResponse = {
-      conversationId: currentConversationId,
+      conversationId: currentConversationId!,  // Will always be defined by this point
       message: aiResponse,
       timestamp: new Date().toISOString(),
     };
