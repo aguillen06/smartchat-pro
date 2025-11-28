@@ -1,62 +1,69 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-
-const WIDGET_KEY = 'demo_widget_key_123';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface WidgetSettings {
   id: string;
-  name: string;
+  widget_key: string;
   welcome_message: string;
   primary_color: string;
   ai_instructions: string | null;
-  widget_key: string;
 }
 
 export default function SettingsPage() {
-  const [settings, setSettings] = useState<WidgetSettings | null>(null);
+  const { user } = useAuth();
+  const [widgets, setWidgets] = useState<WidgetSettings[]>([]);
+  const [selectedWidget, setSelectedWidget] = useState<WidgetSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
 
   useEffect(() => {
-    loadSettings();
-  }, []);
+    if (user) {
+      loadWidgets();
+    }
+  }, [user]);
 
-  async function loadSettings() {
+  async function loadWidgets() {
     try {
-      const response = await fetch(`/api/widgets/${WIDGET_KEY}`);
+      // For now, we'll fetch from the API endpoint you'll need to create
+      // Or we can use a direct Supabase query
+      const response = await fetch('/api/user/widgets');
 
       if (!response.ok) {
-        console.error('Error loading widget settings:', await response.text());
+        console.error('Error loading widgets:', await response.text());
+        setLoading(false);
         return;
       }
 
-      const widget = await response.json();
-      setSettings(widget);
+      const data = await response.json();
+      setWidgets(data);
+      if (data.length > 0) {
+        setSelectedWidget(data[0]); // Select first widget by default
+      }
     } catch (error) {
-      console.error('Error loading settings:', error);
+      console.error('Error loading widgets:', error);
     } finally {
       setLoading(false);
     }
   }
 
   async function handleSave() {
-    if (!settings) return;
+    if (!selectedWidget) return;
 
     setSaving(true);
 
     try {
-      const response = await fetch(`/api/widgets/${WIDGET_KEY}`, {
+      const response = await fetch(`/api/widgets/${selectedWidget.widget_key}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: settings.name,
-          welcome_message: settings.welcome_message,
-          primary_color: settings.primary_color,
-          ai_instructions: settings.ai_instructions || null,
+          welcome_message: selectedWidget.welcome_message,
+          primary_color: selectedWidget.primary_color,
+          ai_instructions: selectedWidget.ai_instructions || null,
         }),
       });
 
@@ -65,7 +72,13 @@ export default function SettingsPage() {
       }
 
       const updatedWidget = await response.json();
-      setSettings(updatedWidget);
+      setSelectedWidget(updatedWidget);
+
+      // Update in list
+      setWidgets(widgets.map(w =>
+        w.id === updatedWidget.id ? updatedWidget : w
+      ));
+
       alert('Settings saved successfully!');
     } catch (error) {
       console.error('Error saving settings:', error);
@@ -76,17 +89,30 @@ export default function SettingsPage() {
   }
 
   function copyEmbedCode() {
-    const embedCode = `<!-- SmartChat Pro Widget -->
-<script
-  src="${window.location.origin}/widget.js"
-  data-widget-key="${settings?.widget_key}"
-  data-primary-color="${settings?.primary_color || '#3B82F6'}"
-  data-position="bottom-right"
-></script>`;
+    if (!selectedWidget) return;
 
+    const embedCode = getEmbedCode();
     navigator.clipboard.writeText(embedCode);
     setShowCopied(true);
     setTimeout(() => setShowCopied(false), 2000);
+  }
+
+  function getEmbedCode() {
+    if (!selectedWidget) return '';
+
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://yourdomain.com';
+
+    return `<!-- SmartChat Pro Widget -->
+<script>
+  (function() {
+    var script = document.createElement('script');
+    script.src = '${origin}/widget.js';
+    script.setAttribute('data-widget-key', '${selectedWidget.widget_key}');
+    script.setAttribute('data-primary-color', '${selectedWidget.primary_color || '#3B82F6'}');
+    script.async = true;
+    document.body.appendChild(script);
+  })();
+</script>`;
   }
 
   if (loading) {
@@ -97,21 +123,19 @@ export default function SettingsPage() {
     );
   }
 
-  if (!settings) {
+  if (!selectedWidget) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-red-500">Failed to load settings</div>
+        <div className="text-center">
+          <div className="text-gray-400 text-5xl mb-4">⚙️</div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No widgets found</h3>
+          <p className="text-gray-500">
+            Create your first widget to get started.
+          </p>
+        </div>
       </div>
     );
   }
-
-  const embedCode = `<!-- SmartChat Pro Widget -->
-<script
-  src="${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/widget.js"
-  data-widget-key="${settings.widget_key}"
-  data-primary-color="${settings.primary_color || '#3B82F6'}"
-  data-position="bottom-right"
-></script>`;
 
   return (
     <div className="space-y-6">
@@ -123,32 +147,41 @@ export default function SettingsPage() {
         </p>
       </div>
 
+      {/* Widget Selector */}
+      {widgets.length > 1 && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Select Widget
+          </label>
+          <select
+            value={selectedWidget.id}
+            onChange={(e) => {
+              const widget = widgets.find(w => w.id === e.target.value);
+              if (widget) setSelectedWidget(widget);
+            }}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            {widgets.map((widget) => (
+              <option key={widget.id} value={widget.id}>
+                {widget.widget_key}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* Settings Form */}
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-6">General Settings</h3>
         <div className="space-y-6">
-          {/* Widget Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Widget Name
-            </label>
-            <input
-              type="text"
-              value={settings.name}
-              onChange={(e) => setSettings({ ...settings, name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="My Chatbot"
-            />
-          </div>
-
           {/* Welcome Message */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Welcome Message
             </label>
             <textarea
-              value={settings.welcome_message}
-              onChange={(e) => setSettings({ ...settings, welcome_message: e.target.value })}
+              value={selectedWidget.welcome_message}
+              onChange={(e) => setSelectedWidget({ ...selectedWidget, welcome_message: e.target.value })}
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Hi! How can I help you today?"
@@ -163,14 +196,14 @@ export default function SettingsPage() {
             <div className="flex items-center gap-3">
               <input
                 type="color"
-                value={settings.primary_color || '#3B82F6'}
-                onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })}
+                value={selectedWidget.primary_color || '#3B82F6'}
+                onChange={(e) => setSelectedWidget({ ...selectedWidget, primary_color: e.target.value })}
                 className="h-10 w-20 border border-gray-300 rounded cursor-pointer"
               />
               <input
                 type="text"
-                value={settings.primary_color || '#3B82F6'}
-                onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })}
+                value={selectedWidget.primary_color || '#3B82F6'}
+                onChange={(e) => setSelectedWidget({ ...selectedWidget, primary_color: e.target.value })}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
                 placeholder="#3B82F6"
               />
@@ -183,8 +216,8 @@ export default function SettingsPage() {
               AI Instructions (Optional)
             </label>
             <textarea
-              value={settings.ai_instructions || ''}
-              onChange={(e) => setSettings({ ...settings, ai_instructions: e.target.value })}
+              value={selectedWidget.ai_instructions || ''}
+              onChange={(e) => setSelectedWidget({ ...selectedWidget, ai_instructions: e.target.value })}
               rows={6}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
               placeholder="Custom instructions for the AI (leave empty to use default)..."
@@ -210,8 +243,8 @@ export default function SettingsPage() {
       {/* Widget Key */}
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Widget Key</h3>
-        <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm">
-          {settings.widget_key}
+        <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm break-all">
+          {selectedWidget.widget_key}
         </div>
         <p className="text-xs text-gray-500 mt-2">
           This is your unique widget identifier. Keep it secure.
@@ -230,12 +263,25 @@ export default function SettingsPage() {
           </button>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
-          <pre className="text-sm text-gray-100 font-mono">{embedCode}</pre>
+          <pre className="text-sm text-gray-100 font-mono whitespace-pre-wrap">{getEmbedCode()}</pre>
         </div>
-        <p className="text-sm text-gray-600 mt-3">
-          Copy this code and paste it into your website's HTML, just before the closing{' '}
-          <code className="bg-gray-100 px-1 rounded">&lt;/body&gt;</code> tag.
-        </p>
+
+        <div className="mt-4 space-y-3">
+          <h4 className="font-medium text-gray-900">Installation Instructions:</h4>
+          <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
+            <li>Copy the embed code above</li>
+            <li>Open your website's HTML file</li>
+            <li>Paste the code just before the closing <code className="bg-gray-100 px-1 rounded">&lt;/body&gt;</code> tag</li>
+            <li>Save and publish your changes</li>
+            <li>The chat widget will appear on your website!</li>
+          </ol>
+
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <strong>💡 Tip:</strong> You can customize the widget's appearance using the settings above before embedding it.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Preview */}
@@ -244,12 +290,12 @@ export default function SettingsPage() {
         <div className="bg-gray-50 rounded-lg p-8 text-center">
           <div
             className="inline-flex items-center gap-3 rounded-full px-6 py-3 text-white font-medium shadow-lg"
-            style={{ backgroundColor: settings.primary_color || '#3B82F6' }}
+            style={{ backgroundColor: selectedWidget.primary_color || '#3B82F6' }}
           >
             <span className="text-2xl">💬</span>
-            <span>{settings.name}</span>
+            <span>Chat with us</span>
           </div>
-          <p className="text-gray-600 mt-4">{settings.welcome_message}</p>
+          <p className="text-gray-600 mt-4">{selectedWidget.welcome_message}</p>
         </div>
       </div>
     </div>

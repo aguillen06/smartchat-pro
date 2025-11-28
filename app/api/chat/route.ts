@@ -19,6 +19,15 @@ const RATE_LIMIT = {
 };
 
 /**
+ * CORS headers for external widget support
+ */
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+/**
  * POST /api/chat
  * Handle incoming chat messages and generate AI responses
  */
@@ -41,21 +50,21 @@ export async function POST(request: NextRequest) {
     if (!widgetKey || typeof widgetKey !== 'string') {
       return NextResponse.json<ApiError>(
         { error: 'widgetKey is required and must be a string' },
-        { status: 400 }
+        { status: 400, headers: CORS_HEADERS }
       );
     }
 
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
       return NextResponse.json<ApiError>(
         { error: 'message is required and must be a non-empty string' },
-        { status: 400 }
+        { status: 400, headers: CORS_HEADERS }
       );
     }
 
     if (!visitorId || typeof visitorId !== 'string') {
       return NextResponse.json<ApiError>(
         { error: 'visitorId is required and must be a string' },
-        { status: 400 }
+        { status: 400, headers: CORS_HEADERS }
       );
     }
 
@@ -77,7 +86,7 @@ export async function POST(request: NextRequest) {
       console.error('❌ [Chat API] Widget lookup error:', widgetError);
       return NextResponse.json<ApiError>(
         { error: 'Widget not found', code: 'WIDGET_NOT_FOUND' },
-        { status: 404 }
+        { status: 404, headers: CORS_HEADERS }
       );
     }
 
@@ -86,7 +95,7 @@ export async function POST(request: NextRequest) {
     if (!widget.is_active) {
       return NextResponse.json<ApiError>(
         { error: 'Widget is not active', code: 'WIDGET_INACTIVE' },
-        { status: 403 }
+        { status: 403, headers: CORS_HEADERS }
       );
     }
 
@@ -105,7 +114,7 @@ export async function POST(request: NextRequest) {
       if (convError || !existingConv) {
         return NextResponse.json<ApiError>(
           { error: 'Conversation not found', code: 'CONVERSATION_NOT_FOUND' },
-          { status: 404 }
+          { status: 404, headers: CORS_HEADERS }
         );
       }
     } else {
@@ -125,7 +134,7 @@ export async function POST(request: NextRequest) {
         console.error('❌ [Chat API] Error creating conversation:', createError);
         return NextResponse.json<ApiError>(
           { error: 'Failed to create conversation', code: 'CONVERSATION_CREATE_ERROR' },
-          { status: 500 }
+          { status: 500, headers: CORS_HEADERS }
         );
       }
 
@@ -151,7 +160,7 @@ export async function POST(request: NextRequest) {
             error: 'Rate limit exceeded. Please try again later.',
             code: 'RATE_LIMIT_EXCEEDED',
           },
-          { status: 429 }
+          { status: 429, headers: CORS_HEADERS }
         );
       }
     }
@@ -169,7 +178,7 @@ export async function POST(request: NextRequest) {
       console.error('Error saving user message:', userMessageError);
       return NextResponse.json<ApiError>(
         { error: 'Failed to save message', code: 'MESSAGE_SAVE_ERROR' },
-        { status: 500 }
+        { status: 500, headers: CORS_HEADERS }
       );
     }
 
@@ -286,7 +295,7 @@ Remember: Be helpful first, capture email when it makes sense.`;
           code: 'AI_GENERATION_ERROR',
           details: { message: anthropicError instanceof Error ? anthropicError.message : 'Unknown error' }
         },
-        { status: 500 }
+        { status: 500, headers: CORS_HEADERS }
       );
     }
 
@@ -424,7 +433,7 @@ Remember: Be helpful first, capture email when it makes sense.`;
     };
 
     console.log('✅ [Chat API] Request completed successfully');
-    return NextResponse.json(response, { status: 200 });
+    return NextResponse.json(response, { status: 200, headers: CORS_HEADERS });
 
   } catch (error) {
     console.error('❌ [Chat API] Unexpected error:', {
@@ -438,7 +447,7 @@ Remember: Be helpful first, capture email when it makes sense.`;
         code: 'INTERNAL_ERROR',
         details: { message: error instanceof Error ? error.message : 'Unknown error' }
       },
-      { status: 500 }
+      { status: 500, headers: CORS_HEADERS }
     );
   }
 }
@@ -448,15 +457,5 @@ Remember: Be helpful first, capture email when it makes sense.`;
  * Handle CORS preflight requests
  */
 export async function OPTIONS() {
-  return NextResponse.json(
-    {},
-    {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
-    }
-  );
+  return NextResponse.json({}, { status: 200, headers: CORS_HEADERS });
 }
