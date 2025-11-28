@@ -55,7 +55,7 @@ async function executeSqlFile(filePath: string, fileName: string): Promise<void>
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': supabaseServiceKey,
+        'apikey': supabaseServiceKey || '',
         'Authorization': `Bearer ${supabaseServiceKey}`,
       },
       body: JSON.stringify({ query: sql }),

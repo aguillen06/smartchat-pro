@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -22,7 +22,7 @@ interface Subscription {
   widget_limit: number;
 }
 
-export default function BillingPage() {
+function BillingContent() {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -339,10 +339,10 @@ export default function BillingPage() {
               <div
                 key={plan.id}
                 className={`bg-white rounded-lg shadow p-6 ${
-                  plan.highlighted ? 'ring-2 ring-blue-500' : ''
+                  'highlighted' in plan && plan.highlighted ? 'ring-2 ring-blue-500' : ''
                 } ${isCurrentPlan ? 'bg-blue-50' : ''}`}
               >
-                {plan.highlighted && (
+                {'highlighted' in plan && plan.highlighted && (
                   <div className="bg-blue-500 text-white text-xs font-semibold px-2 py-1 rounded-full inline-block mb-4">
                     RECOMMENDED
                   </div>
@@ -395,7 +395,7 @@ export default function BillingPage() {
                     onClick={() => handleUpgrade(plan.id)}
                     disabled={changingPlan}
                     className={`w-full py-2 rounded-lg font-medium transition-colors ${
-                      plan.highlighted
+                      'highlighted' in plan && plan.highlighted
                         ? 'bg-blue-500 text-white hover:bg-blue-600'
                         : 'bg-gray-900 text-white hover:bg-gray-800'
                     } disabled:opacity-50 disabled:cursor-not-allowed`}
@@ -429,5 +429,17 @@ export default function BillingPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function BillingPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-500">Loading billing information...</div>
+      </div>
+    }>
+      <BillingContent />
+    </Suspense>
   );
 }

@@ -4,7 +4,7 @@
 
 export const STRIPE_CONFIG = {
   // API version
-  apiVersion: '2024-11-20.acacia' as const,
+  apiVersion: '2025-02-24.acacia' as const,
 
   // Price IDs (replace with your actual Stripe price IDs)
   // These should be created in Stripe Dashboard
