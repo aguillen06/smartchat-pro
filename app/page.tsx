@@ -41,6 +41,35 @@ export default function Home() {
     };
   }, [loading, user]);
 
+  // Embed the SmartChat widget for demo
+  useEffect(() => {
+    // Only load widget if not authenticated and not loading
+    if (!loading && !user) {
+      // Check if widget script already exists
+      const existingScript = document.querySelector('script[data-widget-key]');
+      if (!existingScript) {
+        const script = document.createElement('script');
+        script.src = 'https://smartchat-pro-ohmk.vercel.app/widget.js';
+        script.setAttribute('data-widget-key', 'demo_widget_key_123');
+        script.setAttribute('data-primary-color', '#0D9488');
+        script.async = true;
+        document.body.appendChild(script);
+
+        // Cleanup function to remove script when component unmounts
+        return () => {
+          if (script.parentNode) {
+            script.parentNode.removeChild(script);
+          }
+          // Also remove the widget iframe if it exists
+          const widgetContainer = document.getElementById('smartchat-widget-container');
+          if (widgetContainer && widgetContainer.parentNode) {
+            widgetContainer.parentNode.removeChild(widgetContainer);
+          }
+        };
+      }
+    }
+  }, [loading, user]);
+
   const toggleFaq = (index: number) => {
     setFaqOpen(prev => ({ ...prev, [index]: !prev[index] }));
   };
@@ -174,17 +203,66 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Hero Image/Mockup */}
-          <div className="mt-16 relative">
-            <div className="bg-gradient-to-r from-teal-500 to-lime-400 rounded-lg p-1">
-              <div className="bg-white rounded-lg p-8">
-                <div className="bg-gray-100 rounded-lg h-96 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="inline-flex items-center gap-3 bg-teal-600 text-white rounded-full px-6 py-3 shadow-lg mb-4">
-                      <span className="text-2xl">💬</span>
-                      <span className="font-medium">Symtri AI SmartChat Widget</span>
+          {/* Hero Widget Mockup */}
+          <div className="mt-16 flex justify-center">
+            <div className="relative">
+              {/* Browser window frame */}
+              <div className="bg-gray-200 rounded-t-lg p-2 flex items-center gap-2 px-4">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                </div>
+                <div className="flex-1 bg-white rounded px-2 py-1 text-xs text-gray-600 ml-2">
+                  yourwebsite.com
+                </div>
+              </div>
+              {/* Website content with widget */}
+              <div className="bg-white rounded-b-lg shadow-2xl p-8 w-96">
+                <div className="space-y-3 mb-4">
+                  <div className="h-2 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-2 bg-gray-200 rounded w-full"></div>
+                  <div className="h-2 bg-gray-200 rounded w-5/6"></div>
+                </div>
+
+                {/* Chat widget mockup */}
+                <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 mt-8">
+                  <div className="flex items-center gap-2 mb-3 pb-3 border-b">
+                    <div className="w-8 h-8 bg-teal-600 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm">🤖</span>
                     </div>
-                    <p className="text-gray-600">Your AI assistant is ready to help!</p>
+                    <div>
+                      <p className="text-sm font-semibold">Symtri AI SmartChat</p>
+                      <p className="text-xs text-green-600">● Online</p>
+                    </div>
+                  </div>
+
+                  {/* Sample conversation */}
+                  <div className="space-y-2 text-sm">
+                    <div className="bg-gray-100 rounded-lg p-2 max-w-[80%]">
+                      <p className="text-gray-700">Hi! How can I help you today?</p>
+                    </div>
+                    <div className="bg-teal-600 rounded-lg p-2 max-w-[80%] ml-auto">
+                      <p className="text-white">What are your business hours?</p>
+                    </div>
+                    <div className="bg-gray-100 rounded-lg p-2 max-w-[80%]">
+                      <p className="text-gray-700">We're open Monday-Friday, 9AM-6PM CST!</p>
+                    </div>
+                  </div>
+
+                  {/* Input field */}
+                  <div className="mt-3 flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Type a message..."
+                      className="flex-1 px-3 py-1.5 border border-gray-300 rounded-full text-xs"
+                      disabled
+                    />
+                    <button className="bg-teal-600 text-white p-1.5 rounded-full">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -536,20 +614,49 @@ export default function Home() {
           </div>
 
           <div className="bg-white rounded-lg shadow-lg p-8">
-            <div className="bg-gray-50 rounded-lg h-96 flex items-center justify-center">
+            <div className="bg-gradient-to-br from-teal-50 to-lime-50 rounded-lg p-12">
               <div className="text-center">
-                <div className="text-6xl mb-4">💬</div>
-                <p className="text-gray-600 mb-4">
-                  The Symtri AI SmartChat widget is embedded on this page.
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg mb-6">
+                  <span className="text-5xl">💬</span>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                  Widget is Live on This Page!
+                </h3>
+                <p className="text-lg text-gray-700 mb-2">
+                  The Symtri AI SmartChat widget is already embedded and working.
                 </p>
-                <p className="text-gray-600">
-                  Look for the chat bubble in the bottom-right corner!
+                <p className="text-gray-600 mb-6">
+                  Look for the teal chat bubble in the bottom-right corner of your screen!
                 </p>
-                <div className="mt-6 inline-flex items-center gap-2 text-teal-600">
-                  <svg className="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                  </svg>
-                  <span className="font-medium">Try it below</span>
+
+                {/* Arrow pointing to corner */}
+                <div className="flex justify-center">
+                  <div className="relative">
+                    <div className="bg-teal-600 text-white px-4 py-2 rounded-lg font-medium">
+                      Click the chat bubble to try it →
+                    </div>
+                    <div className="absolute -bottom-2 right-0 text-teal-600">
+                      <svg className="w-12 h-12 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 13l-7 7-7-7m14 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Features of the demo */}
+                <div className="mt-8 grid grid-cols-3 gap-4 text-sm">
+                  <div className="bg-white rounded-lg p-3">
+                    <div className="text-teal-600 mb-1">⚡</div>
+                    <p className="text-gray-700 font-medium">Instant Responses</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-3">
+                    <div className="text-teal-600 mb-1">🤖</div>
+                    <p className="text-gray-700 font-medium">AI-Powered</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-3">
+                    <div className="text-teal-600 mb-1">📧</div>
+                    <p className="text-gray-700 font-medium">Lead Capture</p>
+                  </div>
                 </div>
               </div>
             </div>
