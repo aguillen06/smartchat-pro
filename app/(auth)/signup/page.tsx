@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { signUp } from '@/lib/auth';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -33,7 +32,33 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      await signUp(email, password, fullName);
+      // Use the new API route with rate limiting and notifications
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          fullName,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle rate limiting specifically
+        if (response.status === 429) {
+          const resetTime = data.resetTime ? new Date(data.resetTime) : null;
+          const timeMessage = resetTime
+            ? ` Try again at ${resetTime.toLocaleTimeString()}.`
+            : '';
+          throw new Error(`Too many signup attempts. Please wait and try again.${timeMessage}`);
+        }
+        throw new Error(data.error || 'Failed to sign up');
+      }
+
       setSuccess(true);
     } catch (err: any) {
       setError(err.message || 'Failed to sign up');
