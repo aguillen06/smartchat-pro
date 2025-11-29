@@ -9,8 +9,22 @@
 (function() {
   'use strict';
 
-  // Configuration
-  const API_BASE_URL = window.location.origin;
+  // Configuration - Extract base URL from script source
+  function getScriptBaseUrl() {
+    // Find the script tag that loaded this widget
+    const scripts = document.getElementsByTagName('script');
+    for (let script of scripts) {
+      if (script.src && script.src.includes('/widget.js')) {
+        // Extract the base URL from the script src
+        const url = new URL(script.src);
+        return `${url.protocol}//${url.host}`;
+      }
+    }
+    // Fallback to window origin if script not found (shouldn't happen)
+    return window.location.origin;
+  }
+
+  const API_BASE_URL = getScriptBaseUrl();
   const STORAGE_KEYS = {
     VISITOR_ID: 'smartchat_visitor_id',
     CONVERSATION_ID: 'smartchat_conversation_id'
@@ -24,6 +38,13 @@
         position: config.position || 'bottom-right',
         apiUrl: config.apiUrl || API_BASE_URL
       };
+
+      // Debug logging
+      console.log('[SmartChat] Widget initialized with:', {
+        widgetKey: this.config.widgetKey,
+        apiUrl: this.config.apiUrl,
+        apiEndpoint: `${this.config.apiUrl}/api/chat`
+      });
 
       this.isOpen = false;
       this.conversationId = null;
@@ -464,7 +485,10 @@
 
       try {
         // Send to API
-        const response = await fetch(`${this.config.apiUrl}/api/chat`, {
+        const apiUrl = `${this.config.apiUrl}/api/chat`;
+        console.log('[SmartChat] Sending message to:', apiUrl);
+
+        const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -481,8 +505,15 @@
         this.removeTypingIndicator(typingId);
 
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Failed to send message');
+          let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+          try {
+            const error = await response.json();
+            errorMessage = error.error || errorMessage;
+          } catch (e) {
+            // Response wasn't JSON
+          }
+          console.error('[SmartChat] API Error:', errorMessage);
+          throw new Error(errorMessage);
         }
 
         const data = await response.json();
