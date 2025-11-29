@@ -70,7 +70,7 @@ export default function Home() {
     },
     {
       question: "Do I need coding skills?",
-      answer: "Not at all! If you can copy and paste, you can install SmartChat Pro. We handle all the technical complexity for you."
+      answer: "Not at all! If you can copy and paste, you can install Symtri AI SmartChat. We handle all the technical complexity for you."
     },
     {
       question: "What happens after my free trial?",
@@ -134,7 +134,7 @@ export default function Home() {
           <div className="text-center">
             <div className="mb-4">
               <span className="inline-block px-3 py-1 text-sm font-medium bg-lime-100 text-lime-800 rounded-full">
-                by Symtri AI
+                Symtri AI SmartChat
               </span>
             </div>
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
@@ -182,7 +182,7 @@ export default function Home() {
                   <div className="text-center">
                     <div className="inline-flex items-center gap-3 bg-teal-600 text-white rounded-full px-6 py-3 shadow-lg mb-4">
                       <span className="text-2xl">💬</span>
-                      <span className="font-medium">SmartChat Pro Widget</span>
+                      <span className="font-medium">Symtri AI SmartChat Widget</span>
                     </div>
                     <p className="text-gray-600">Your AI assistant is ready to help!</p>
                   </div>
@@ -224,7 +224,7 @@ export default function Home() {
             </div>
             <div className="bg-white rounded-lg shadow-lg p-8">
               <h3 className="text-2xl font-bold text-teal-600 mb-4">
-                The SmartChat Pro Solution
+                The Symtri AI SmartChat Solution
               </h3>
               <div className="space-y-4">
                 <div className="flex gap-3">
@@ -386,7 +386,7 @@ export default function Home() {
             {/* Free Trial */}
             <div className="border rounded-lg p-8 hover:shadow-lg transition-shadow">
               <h3 className="text-2xl font-bold mb-2">Free Trial</h3>
-              <p className="text-gray-600 mb-4">Test drive SmartChat Pro</p>
+              <p className="text-gray-600 mb-4">Test drive Symtri AI SmartChat</p>
               <div className="mb-6">
                 <span className="text-4xl font-bold">$0</span>
                 <span className="text-gray-600">/month</span>
@@ -531,7 +531,7 @@ export default function Home() {
               Try It Now - Live Demo
             </h2>
             <p className="text-xl text-gray-600">
-              Click the chat bubble in the corner to test SmartChat Pro
+              Click the chat bubble in the corner to test Symtri AI SmartChat
             </p>
           </div>
 
@@ -540,7 +540,7 @@ export default function Home() {
               <div className="text-center">
                 <div className="text-6xl mb-4">💬</div>
                 <p className="text-gray-600 mb-4">
-                  The SmartChat Pro widget is embedded on this page.
+                  The Symtri AI SmartChat widget is embedded on this page.
                 </p>
                 <p className="text-gray-600">
                   Look for the chat bubble in the bottom-right corner!
@@ -579,7 +579,7 @@ export default function Home() {
                 ))}
               </div>
               <p className="text-gray-700 mb-4">
-                "SmartChat Pro has transformed our customer service. We're capturing 3x more leads than before!"
+                "Symtri AI SmartChat has transformed our customer service. We're capturing 3x more leads than before!"
               </p>
               <p className="text-sm text-gray-600">
                 <strong>Sarah Johnson</strong><br />
@@ -673,7 +673,7 @@ export default function Home() {
             Ready to Convert More Visitors into Customers?
           </h2>
           <p className="text-xl text-teal-100 mb-8">
-            Join hundreds of businesses using SmartChat Pro to delight their customers
+            Join hundreds of businesses using Symtri AI SmartChat to delight their customers
           </p>
           <div className="flex gap-4 justify-center">
             <Link
@@ -703,6 +703,9 @@ export default function Home() {
               <h3 className="text-2xl font-bold bg-gradient-to-r from-teal-400 to-lime-400 bg-clip-text text-transparent mb-4">
                 Symtri AI
               </h3>
+              <p className="text-sm text-gray-400 mb-2">
+                SmartChat by Symtri AI
+              </p>
               <p className="text-sm text-gray-400 mb-4">
                 Intelligent AI solutions for small businesses
               </p>
@@ -778,7 +781,7 @@ export default function Home() {
           <div className="border-t border-gray-800 mt-8 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <p className="text-sm text-gray-400">
-                © {new Date().getFullYear()} Symtri AI LLC. All rights reserved.
+                © 2025 Symtri AI LLC. All rights reserved.
               </p>
               <div className="flex gap-6 mt-4 md:mt-0">
                 <Link href="/privacy" className="text-sm hover:text-teal-400 transition-colors">
