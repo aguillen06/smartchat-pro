@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Symtri AI SmartChat - AI-Powered Chat Support for Your Website",
   description: "Convert more visitors into customers with intelligent chatbots that capture leads 24/7. Deploy in minutes, not months. Start your free trial today!",
-  keywords: "AI chatbot, customer support, lead generation, small business, chat widget, Symtri AI, SmartChat, Texas",
+  keywords: "AI chatbot, customer support, lead generation, business automation, chat widget, Symtri AI, SmartChat, multilingual support, global",
   authors: [{ name: "Symtri AI" }],
   creator: "Symtri AI",
   publisher: "Symtri AI",

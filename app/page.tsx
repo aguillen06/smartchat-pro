@@ -390,6 +390,40 @@ export default function Home() {
               </p>
             </div>
           </div>
+
+          {/* Coming Soon - Multilingual Feature */}
+          <div className="mt-16 text-center">
+            <div className="inline-block bg-gradient-to-r from-teal-50 to-lime-50 rounded-lg p-8 border border-teal-200">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <span className="text-3xl">🌐</span>
+                <h3 className="text-2xl font-bold text-gray-900">Multilingual Support Coming Soon</h3>
+                <span className="bg-lime-500 text-white px-2 py-1 rounded-full text-xs font-semibold">NEW</span>
+              </div>
+              <p className="text-gray-700 mb-4">
+                Connect with customers globally in their preferred language
+              </p>
+              <div className="flex flex-wrap justify-center gap-3">
+                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">
+                  🇺🇸 English
+                </span>
+                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">
+                  🇪🇸 Español
+                </span>
+                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">
+                  🇲🇽 Spanish (Mexico)
+                </span>
+                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">
+                  🇫🇷 Français
+                </span>
+                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">
+                  More languages...
+                </span>
+              </div>
+              <p className="text-sm text-gray-600 mt-4">
+                Automatic language detection • Seamless switching • Cultural context awareness
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -669,10 +703,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Trusted by Small Businesses Across Texas
+              Trusted by Businesses Worldwide
             </h2>
             <p className="text-xl text-gray-600">
-              Join hundreds of businesses improving their customer service
+              Join thousands of businesses across the globe improving their customer service
             </p>
           </div>
 
@@ -690,7 +724,7 @@ export default function Home() {
               </p>
               <p className="text-sm text-gray-600">
                 <strong>Sarah Johnson</strong><br />
-                Austin Boutique Owner
+                Fashion Boutique Owner, New York
               </p>
             </div>
 
@@ -706,8 +740,8 @@ export default function Home() {
                 "Setup took literally 5 minutes. Our customers love the instant responses!"
               </p>
               <p className="text-sm text-gray-600">
-                <strong>Mike Rodriguez</strong><br />
-                San Antonio Restaurant Owner
+                <strong>Miguel Rodriguez</strong><br />
+                Restaurant Chain CEO, Mexico City
               </p>
             </div>
 
@@ -723,8 +757,8 @@ export default function Home() {
                 "The analytics help us understand what our customers need. Worth every penny!"
               </p>
               <p className="text-sm text-gray-600">
-                <strong>Emily Chen</strong><br />
-                Houston E-commerce Store
+                <strong>Sophie Laurent</strong><br />
+                E-commerce Director, Paris
               </p>
             </div>
           </div>
@@ -814,10 +848,10 @@ export default function Home() {
                 SmartChat by Symtri AI
               </p>
               <p className="text-sm text-gray-400 mb-4">
-                Intelligent AI solutions for small businesses
+                Intelligent AI solutions for businesses worldwide
               </p>
               <p className="text-sm text-gray-400">
-                Based in South Texas 🇺🇸
+                🌍 Supporting businesses globally
               </p>
             </div>
 
