@@ -146,7 +146,7 @@ export async function sendSignupNotification(data: SignupNotificationData) {
     });
 
     console.log('Signup notification sent successfully:', result);
-    return { success: true, messageId: result.id };
+    return { success: true, messageId: (result as any).id || 'sent' };
   } catch (error) {
     // Log error but don't fail the signup if email fails
     console.error('Failed to send signup notification email:', error);
