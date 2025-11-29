@@ -640,57 +640,97 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Try It Now - Live Demo
+              Experience SmartChat in Action
             </h2>
             <p className="text-xl text-gray-600">
-              Click the chat bubble in the corner to test Symtri AI SmartChat
+              Watch the demo video or try the live widget
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <div className="bg-gradient-to-br from-teal-50 to-lime-50 rounded-lg p-12">
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg mb-6">
-                  <span className="text-5xl">💬</span>
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Video Demo Placeholder */}
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <div className="bg-gray-900 h-96 flex items-center justify-center relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-teal-900/20 to-lime-900/20"></div>
+                <div className="text-center z-10">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 backdrop-blur rounded-full mb-4">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-white text-lg font-semibold mb-2">Demo Video Coming Soon</h3>
+                  <p className="text-gray-300 text-sm">
+                    See how SmartChat transforms customer interactions
+                  </p>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                  Widget is Live on This Page!
-                </h3>
-                <p className="text-lg text-gray-700 mb-2">
-                  The Symtri AI SmartChat widget is already embedded and working.
-                </p>
-                <p className="text-gray-600 mb-6">
-                  Look for the teal chat bubble in the bottom-right corner of your screen!
-                </p>
+              </div>
+            </div>
 
-                {/* Arrow pointing to corner */}
-                <div className="flex justify-center">
-                  <div className="relative">
-                    <div className="bg-teal-600 text-white px-4 py-2 rounded-lg font-medium">
-                      Click the chat bubble to try it →
-                    </div>
-                    <div className="absolute -bottom-2 right-0 text-teal-600">
-                      <svg className="w-12 h-12 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 13l-7 7-7-7m14 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            {/* Live Widget Instructions */}
+            <div className="bg-white rounded-lg shadow-lg p-8">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                Try the Live Widget
+              </h3>
+              <p className="text-gray-600 mb-6">
+                The Symtri AI SmartChat widget is active on this page. Click the chat bubble in the bottom-right corner to start a conversation.
+              </p>
+
+              {/* Features with SVG icons */}
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0">
+                    <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     </div>
                   </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Instant Responses</h4>
+                    <p className="text-sm text-gray-600">Get immediate answers powered by advanced AI</p>
+                  </div>
                 </div>
 
-                {/* Features of the demo */}
-                <div className="mt-8 grid grid-cols-3 gap-4 text-sm">
-                  <div className="bg-white rounded-lg p-3">
-                    <div className="text-teal-600 mb-1">⚡</div>
-                    <p className="text-gray-700 font-medium">Instant Responses</p>
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0">
+                    <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
                   </div>
-                  <div className="bg-white rounded-lg p-3">
-                    <div className="text-teal-600 mb-1">🤖</div>
-                    <p className="text-gray-700 font-medium">AI-Powered</p>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">AI-Powered Intelligence</h4>
+                    <p className="text-sm text-gray-600">Natural conversations with context understanding</p>
                   </div>
-                  <div className="bg-white rounded-lg p-3">
-                    <div className="text-teal-600 mb-1">📧</div>
-                    <p className="text-gray-700 font-medium">Lead Capture</p>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0">
+                    <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
                   </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Smart Lead Capture</h4>
+                    <p className="text-sm text-gray-600">Automatically collect visitor information</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="mt-8 p-4 bg-teal-50 rounded-lg border border-teal-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-teal-900">Widget is live!</p>
+                    <p className="text-xs text-teal-700">Look for the chat bubble →</p>
+                  </div>
+                  <svg className="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
                 </div>
               </div>
             </div>
