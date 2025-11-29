@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function Home() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [faqOpen, setFaqOpen] = useState<{ [key: number]: boolean }>({});
 
   useEffect(() => {
     // Redirect authenticated users to dashboard
@@ -15,6 +16,34 @@ export default function Home() {
       router.push('/dashboard');
     }
   }, [user, loading, router]);
+
+  // Add smooth scrolling
+  useEffect(() => {
+    const handleSmoothScroll = (e: MouseEvent) => {
+      const target = e.target as HTMLAnchorElement;
+      if (target.hash) {
+        e.preventDefault();
+        const element = document.querySelector(target.hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    };
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', handleSmoothScroll as any);
+    });
+
+    return () => {
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.removeEventListener('click', handleSmoothScroll as any);
+      });
+    };
+  }, [loading, user]);
+
+  const toggleFaq = (index: number) => {
+    setFaqOpen(prev => ({ ...prev, [index]: !prev[index] }));
+  };
 
   // Show loading state while checking auth
   if (loading) {
@@ -34,26 +63,63 @@ export default function Home() {
     );
   }
 
+  const faqs = [
+    {
+      question: "How long does setup take?",
+      answer: "Setup takes literally 5 minutes. Create your account, customize your widget, and paste one line of code on your website. That's it!"
+    },
+    {
+      question: "Do I need coding skills?",
+      answer: "Not at all! If you can copy and paste, you can install SmartChat Pro. We handle all the technical complexity for you."
+    },
+    {
+      question: "What happens after my free trial?",
+      answer: "After your 14-day free trial, you can choose to upgrade to a paid plan or your widget will be deactivated. No surprise charges!"
+    },
+    {
+      question: "Can I cancel anytime?",
+      answer: "Yes! There are no contracts or cancellation fees. You can cancel your subscription anytime from your dashboard."
+    }
+  ];
+
   // Landing page for non-authenticated users
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-white">
+      {/* SEO Meta Tags would go in layout.tsx or use next/head */}
+
       {/* Navigation */}
-      <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+      <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">SmartChat Pro</h1>
+              <Link href="/" className="flex items-center gap-2">
+                <span className="text-2xl font-bold bg-gradient-to-r from-teal-600 to-teal-500 bg-clip-text text-transparent">
+                  Symtri AI
+                </span>
+              </Link>
             </div>
-            <div className="flex items-center gap-4">
-              <Link
-                href="/login"
-                className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
-              >
-                Sign In
+            <div className="hidden md:flex items-center gap-8">
+              <a href="#features" className="text-gray-700 hover:text-teal-600 transition-colors">
+                Features
+              </a>
+              <a href="#pricing" className="text-gray-700 hover:text-teal-600 transition-colors">
+                Pricing
+              </a>
+              <Link href="/login" className="text-gray-700 hover:text-teal-600 transition-colors">
+                Login
               </Link>
               <Link
                 href="/signup"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                className="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2 rounded-lg font-medium transition-colors"
+              >
+                Start Free Trial
+              </Link>
+            </div>
+            {/* Mobile menu button */}
+            <div className="md:hidden">
+              <Link
+                href="/signup"
+                className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
               >
                 Get Started
               </Link>
@@ -63,116 +129,292 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
-        <div className="text-center">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            AI-Powered Customer Support
-            <br />
-            <span className="text-blue-600">That Actually Works</span>
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Transform your customer service with intelligent chat widgets powered by advanced AI.
-            Provide instant, accurate responses 24/7 while reducing support costs.
-          </p>
-          <div className="flex gap-4 justify-center">
-            <Link
-              href="/signup"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-colors inline-block"
-            >
-              Start Free Trial
-            </Link>
-            <Link
-              href="/login"
-              className="border-2 border-gray-300 hover:border-gray-400 text-gray-700 px-8 py-4 rounded-lg text-lg font-semibold transition-colors inline-block"
-            >
-              View Demo
-            </Link>
+      <section className="pt-24 pb-16 bg-gradient-to-b from-teal-50/50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="mb-4">
+              <span className="inline-block px-3 py-1 text-sm font-medium bg-lime-100 text-lime-800 rounded-full">
+                by Symtri AI
+              </span>
+            </div>
+            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+              AI-Powered Chat Support
+              <br />
+              <span className="bg-gradient-to-r from-teal-600 to-teal-500 bg-clip-text text-transparent">
+                for Your Website
+              </span>
+            </h1>
+            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+              Convert more visitors into customers with intelligent chatbots that capture leads 24/7.
+              Deploy in minutes, not months.
+            </p>
+            <div className="flex gap-4 justify-center">
+              <Link
+                href="/signup"
+                className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-colors inline-flex items-center gap-2"
+              >
+                Start Free Trial
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
+              <a
+                href="#demo"
+                className="border-2 border-gray-300 hover:border-teal-600 text-gray-700 px-8 py-4 rounded-lg text-lg font-semibold transition-colors inline-flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Watch Demo
+              </a>
+            </div>
+            <p className="text-sm text-gray-500 mt-4">
+              14-day free trial • No credit card required • Setup in 5 minutes
+            </p>
           </div>
-          <p className="text-sm text-gray-500 mt-4">
-            14-day free trial • No credit card required • Setup in minutes
-          </p>
+
+          {/* Hero Image/Mockup */}
+          <div className="mt-16 relative">
+            <div className="bg-gradient-to-r from-teal-500 to-lime-400 rounded-lg p-1">
+              <div className="bg-white rounded-lg p-8">
+                <div className="bg-gray-100 rounded-lg h-96 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="inline-flex items-center gap-3 bg-teal-600 text-white rounded-full px-6 py-3 shadow-lg mb-4">
+                      <span className="text-2xl">💬</span>
+                      <span className="font-medium">SmartChat Pro Widget</span>
+                    </div>
+                    <p className="text-gray-600">Your AI assistant is ready to help!</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Problem/Solution Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                The AI Adoption Challenge
+              </h2>
+              <div className="space-y-4">
+                <div className="flex gap-3">
+                  <span className="text-red-500 text-xl">⚠️</span>
+                  <p className="text-gray-700">
+                    <strong>77% of SMBs</strong> want to adopt AI for customer service
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <span className="text-red-500 text-xl">❌</span>
+                  <p className="text-gray-700">
+                    <strong>85% of AI projects fail</strong> due to complexity and cost
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <span className="text-red-500 text-xl">⏰</span>
+                  <p className="text-gray-700">
+                    <strong>6-12 months</strong> average implementation time for enterprise solutions
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-lg shadow-lg p-8">
+              <h3 className="text-2xl font-bold text-teal-600 mb-4">
+                The SmartChat Pro Solution
+              </h3>
+              <div className="space-y-4">
+                <div className="flex gap-3">
+                  <span className="text-lime-500 text-xl">✅</span>
+                  <p className="text-gray-700">
+                    <strong>Deploy in 5 minutes</strong>, not months
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <span className="text-lime-500 text-xl">✅</span>
+                  <p className="text-gray-700">
+                    <strong>No coding required</strong> - just copy & paste
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <span className="text-lime-500 text-xl">✅</span>
+                  <p className="text-gray-700">
+                    <strong>Affordable pricing</strong> starting at $199/month
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="bg-white py-20 border-t">
+      <section id="features" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-            Everything You Need to Scale Support
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Instant Setup</h3>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Everything You Need to Delight Customers
+            </h2>
+            <p className="text-xl text-gray-600">
+              Powerful features that are simple to use
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="group hover:bg-teal-50 p-6 rounded-lg transition-colors">
+              <div className="text-4xl mb-4">🤖</div>
+              <h3 className="text-xl font-semibold mb-2">AI-Powered Conversations</h3>
               <p className="text-gray-600">
-                Add AI chat to your website in minutes. No coding required - just copy and paste.
+                Natural responses using your knowledge base. Train it with your FAQs and product info.
               </p>
             </div>
-            <div className="text-center">
-              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Smart AI Responses</h3>
+
+            <div className="group hover:bg-teal-50 p-6 rounded-lg transition-colors">
+              <div className="text-4xl mb-4">📧</div>
+              <h3 className="text-xl font-semibold mb-2">Automatic Lead Capture</h3>
               <p className="text-gray-600">
-                Powered by advanced AI that understands context and provides accurate, helpful answers.
+                Collects contact info naturally during conversations without being pushy.
               </p>
             </div>
-            <div className="text-center">
-              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Analytics & Insights</h3>
+
+            <div className="group hover:bg-teal-50 p-6 rounded-lg transition-colors">
+              <div className="text-4xl mb-4">📊</div>
+              <h3 className="text-xl font-semibold mb-2">Real-time Dashboard</h3>
               <p className="text-gray-600">
-                Track conversations, measure satisfaction, and optimize your support strategy.
+                Track conversations, leads, and analytics. See what your customers are asking about.
+              </p>
+            </div>
+
+            <div className="group hover:bg-teal-50 p-6 rounded-lg transition-colors">
+              <div className="text-4xl mb-4">⚡</div>
+              <h3 className="text-xl font-semibold mb-2">5-Minute Setup</h3>
+              <p className="text-gray-600">
+                Just copy/paste one line of code. Works with any website or platform.
+              </p>
+            </div>
+
+            <div className="group hover:bg-teal-50 p-6 rounded-lg transition-colors">
+              <div className="text-4xl mb-4">🎨</div>
+              <h3 className="text-xl font-semibold mb-2">Fully Customizable</h3>
+              <p className="text-gray-600">
+                Match your brand colors and style. Customize welcome messages and responses.
+              </p>
+            </div>
+
+            <div className="group hover:bg-teal-50 p-6 rounded-lg transition-colors">
+              <div className="text-4xl mb-4">🔒</div>
+              <h3 className="text-xl font-semibold mb-2">Secure & Reliable</h3>
+              <p className="text-gray-600">
+                Enterprise-grade security with 99.9% uptime. Your data is encrypted and protected.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Pricing Preview */}
-      <section className="py-20">
+      {/* How It Works */}
+      <section className="py-20 bg-gradient-to-b from-teal-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">
-            Simple, Transparent Pricing
-          </h2>
-          <p className="text-center text-gray-600 mb-12">
-            Choose the plan that fits your business
-          </p>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Get Started in 3 Simple Steps
+            </h2>
+            <p className="text-xl text-gray-600">
+              No technical expertise required
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="bg-teal-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                1
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Sign Up</h3>
+              <p className="text-gray-600">
+                Create your account in 30 seconds. Start with a free 14-day trial.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="bg-teal-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                2
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Customize</h3>
+              <p className="text-gray-600">
+                Add your knowledge base and match your brand colors.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="bg-teal-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                3
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Go Live</h3>
+              <p className="text-gray-600">
+                Paste one line of code on your website. You're done!
+              </p>
+            </div>
+          </div>
+
+          <div className="text-center mt-12">
+            <Link
+              href="/signup"
+              className="bg-lime-500 hover:bg-lime-600 text-gray-900 px-8 py-4 rounded-lg text-lg font-semibold transition-colors inline-block"
+            >
+              Start Your Free Trial Now
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="text-xl text-gray-600">
+              Choose the plan that fits your business
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {/* Free Trial */}
             <div className="border rounded-lg p-8 hover:shadow-lg transition-shadow">
-              <h3 className="text-2xl font-bold mb-2">Starter</h3>
-              <p className="text-gray-600 mb-4">Perfect for small businesses</p>
+              <h3 className="text-2xl font-bold mb-2">Free Trial</h3>
+              <p className="text-gray-600 mb-4">Test drive SmartChat Pro</p>
               <div className="mb-6">
-                <span className="text-4xl font-bold">$199</span>
+                <span className="text-4xl font-bold">$0</span>
                 <span className="text-gray-600">/month</span>
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start">
-                  <svg className="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  <span>Up to 1,000 conversations/month</span>
+                  <span>14 days free</span>
                 </li>
                 <li className="flex items-start">
-                  <svg className="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  <span>1 chat widget</span>
+                  <span>100 conversations</span>
                 </li>
                 <li className="flex items-start">
-                  <svg className="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  <span>Email support</span>
+                  <span>1 widget</span>
+                </li>
+                <li className="flex items-start">
+                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  <span>All features included</span>
                 </li>
               </ul>
               <Link
@@ -182,9 +424,53 @@ export default function Home() {
                 Start Free Trial
               </Link>
             </div>
-            <div className="border-2 border-blue-500 rounded-lg p-8 hover:shadow-lg transition-shadow relative">
+
+            {/* Starter */}
+            <div className="border rounded-lg p-8 hover:shadow-lg transition-shadow">
+              <h3 className="text-2xl font-bold mb-2">Starter</h3>
+              <p className="text-gray-600 mb-4">Perfect for small businesses</p>
+              <div className="mb-6">
+                <span className="text-4xl font-bold">$199</span>
+                <span className="text-gray-600">/month</span>
+              </div>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-start">
+                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  <span>1,000 conversations/month</span>
+                </li>
+                <li className="flex items-start">
+                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  <span>1 widget</span>
+                </li>
+                <li className="flex items-start">
+                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  <span>Email support</span>
+                </li>
+                <li className="flex items-start">
+                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  <span>Lead capture & analytics</span>
+                </li>
+              </ul>
+              <Link
+                href="/signup"
+                className="block w-full text-center bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-lg font-semibold transition-colors"
+              >
+                Start Free Trial
+              </Link>
+            </div>
+
+            {/* Pro */}
+            <div className="border-2 border-teal-500 rounded-lg p-8 hover:shadow-lg transition-shadow relative">
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                <span className="bg-teal-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
                   POPULAR
                 </span>
               </div>
@@ -196,57 +482,313 @@ export default function Home() {
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start">
-                  <svg className="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  <span>Up to 5,000 conversations/month</span>
+                  <span>5,000 conversations/month</span>
                 </li>
                 <li className="flex items-start">
-                  <svg className="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  <span>3 chat widgets</span>
+                  <span>3 widgets</span>
                 </li>
                 <li className="flex items-start">
-                  <svg className="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                   <span>Priority support</span>
                 </li>
+                <li className="flex items-start">
+                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  <span>Advanced analytics</span>
+                </li>
               </ul>
               <Link
                 href="/signup"
-                className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-colors"
+                className="block w-full text-center bg-lime-500 hover:bg-lime-600 text-gray-900 py-3 rounded-lg font-semibold transition-colors"
               >
                 Start Free Trial
               </Link>
             </div>
           </div>
+
+          <div className="text-center mt-8">
+            <p className="text-gray-600">
+              All plans include: AI responses • Lead capture • Dashboard • Analytics • Customization
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Live Demo Section */}
+      <section id="demo" className="py-20 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Try It Now - Live Demo
+            </h2>
+            <p className="text-xl text-gray-600">
+              Click the chat bubble in the corner to test SmartChat Pro
+            </p>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-lg p-8">
+            <div className="bg-gray-50 rounded-lg h-96 flex items-center justify-center">
+              <div className="text-center">
+                <div className="text-6xl mb-4">💬</div>
+                <p className="text-gray-600 mb-4">
+                  The SmartChat Pro widget is embedded on this page.
+                </p>
+                <p className="text-gray-600">
+                  Look for the chat bubble in the bottom-right corner!
+                </p>
+                <div className="mt-6 inline-flex items-center gap-2 text-teal-600">
+                  <svg className="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  </svg>
+                  <span className="font-medium">Try it below</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials/Social Proof */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Trusted by Small Businesses Across Texas
+            </h2>
+            <p className="text-xl text-gray-600">
+              Join hundreds of businesses improving their customer service
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-gray-50 rounded-lg p-6">
+              <div className="flex gap-1 mb-3">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <svg key={star} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                ))}
+              </div>
+              <p className="text-gray-700 mb-4">
+                "SmartChat Pro has transformed our customer service. We're capturing 3x more leads than before!"
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Sarah Johnson</strong><br />
+                Austin Boutique Owner
+              </p>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-6">
+              <div className="flex gap-1 mb-3">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <svg key={star} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                ))}
+              </div>
+              <p className="text-gray-700 mb-4">
+                "Setup took literally 5 minutes. Our customers love the instant responses!"
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Mike Rodriguez</strong><br />
+                San Antonio Restaurant Owner
+              </p>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-6">
+              <div className="flex gap-1 mb-3">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <svg key={star} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                ))}
+              </div>
+              <p className="text-gray-700 mb-4">
+                "The analytics help us understand what our customers need. Worth every penny!"
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Emily Chen</strong><br />
+                Houston E-commerce Store
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-xl text-gray-600">
+              Got questions? We've got answers
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {faqs.map((faq, index) => (
+              <div key={index} className="bg-white rounded-lg shadow-sm">
+                <button
+                  onClick={() => toggleFaq(index)}
+                  className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors"
+                >
+                  <span className="font-medium text-gray-900">{faq.question}</span>
+                  <svg
+                    className={`w-5 h-5 text-gray-500 transform transition-transform ${
+                      faqOpen[index] ? 'rotate-180' : ''
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {faqOpen[index] && (
+                  <div className="px-6 pb-4 text-gray-600">
+                    {faq.answer}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-gradient-to-r from-teal-600 to-teal-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl font-bold text-white mb-4">
+            Ready to Convert More Visitors into Customers?
+          </h2>
+          <p className="text-xl text-teal-100 mb-8">
+            Join hundreds of businesses using SmartChat Pro to delight their customers
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Link
+              href="/signup"
+              className="bg-white hover:bg-gray-100 text-teal-600 px-8 py-4 rounded-lg text-lg font-semibold transition-colors inline-block"
+            >
+              Start Your Free Trial
+            </Link>
+            <a
+              href="#pricing"
+              className="border-2 border-white hover:bg-white hover:text-teal-600 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-colors inline-block"
+            >
+              View Pricing
+            </a>
+          </div>
+          <p className="text-teal-100 mt-4">
+            No credit card required • 14-day free trial • Cancel anytime
+          </p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-50 border-t">
+      <footer className="bg-gray-900 text-gray-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-4 md:mb-0">
-              <h3 className="text-lg font-bold text-gray-900">SmartChat Pro</h3>
-              <p className="text-sm text-gray-600 mt-1">AI-powered customer support platform</p>
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-teal-400 to-lime-400 bg-clip-text text-transparent mb-4">
+                Symtri AI
+              </h3>
+              <p className="text-sm text-gray-400 mb-4">
+                Intelligent AI solutions for small businesses
+              </p>
+              <p className="text-sm text-gray-400">
+                Based in South Texas 🇺🇸
+              </p>
             </div>
-            <div className="flex gap-6">
-              <Link href="/login" className="text-gray-600 hover:text-gray-900 text-sm">
-                Sign In
-              </Link>
-              <Link href="/signup" className="text-gray-600 hover:text-gray-900 text-sm">
-                Sign Up
-              </Link>
-              <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 text-sm">
-                Dashboard
-              </Link>
+
+            <div>
+              <h4 className="font-semibold mb-4">Product</h4>
+              <ul className="space-y-2">
+                <li>
+                  <a href="#features" className="hover:text-teal-400 transition-colors">
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a href="#pricing" className="hover:text-teal-400 transition-colors">
+                    Pricing
+                  </a>
+                </li>
+                <li>
+                  <a href="#demo" className="hover:text-teal-400 transition-colors">
+                    Demo
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold mb-4">Company</h4>
+              <ul className="space-y-2">
+                <li>
+                  <Link href="/about" className="hover:text-teal-400 transition-colors">
+                    About
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact" className="hover:text-teal-400 transition-colors">
+                    Contact
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/blog" className="hover:text-teal-400 transition-colors">
+                    Blog
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold mb-4">Get Started</h4>
+              <ul className="space-y-2">
+                <li>
+                  <Link href="/login" className="hover:text-teal-400 transition-colors">
+                    Login
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/signup" className="hover:text-teal-400 transition-colors">
+                    Sign Up
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/dashboard" className="hover:text-teal-400 transition-colors">
+                    Dashboard
+                  </Link>
+                </li>
+              </ul>
             </div>
           </div>
-          <div className="border-t mt-8 pt-8 text-center text-sm text-gray-600">
-            © {new Date().getFullYear()} SmartChat Pro. All rights reserved.
+
+          <div className="border-t border-gray-800 mt-8 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <p className="text-sm text-gray-400">
+                © {new Date().getFullYear()} Symtri AI LLC. All rights reserved.
+              </p>
+              <div className="flex gap-6 mt-4 md:mt-0">
+                <Link href="/privacy" className="text-sm hover:text-teal-400 transition-colors">
+                  Privacy Policy
+                </Link>
+                <Link href="/terms" className="text-sm hover:text-teal-400 transition-colors">
+                  Terms of Service
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </footer>

@@ -14,8 +14,40 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SmartChat Pro",
-  description: "AI-powered customer support chatbot for small businesses",
+  title: "SmartChat Pro by Symtri AI - AI-Powered Chat Support for Your Website",
+  description: "Convert more visitors into customers with intelligent chatbots that capture leads 24/7. Deploy in minutes, not months. Start your free trial today!",
+  keywords: "AI chatbot, customer support, lead generation, small business, chat widget, Symtri AI, Texas",
+  authors: [{ name: "Symtri AI" }],
+  creator: "Symtri AI",
+  publisher: "Symtri AI",
+  openGraph: {
+    title: "SmartChat Pro by Symtri AI - AI Chat Support",
+    description: "Convert more visitors into customers with AI-powered chat support. 14-day free trial, no credit card required.",
+    url: "https://smartchat-pro.vercel.app",
+    siteName: "SmartChat Pro",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SmartChat Pro by Symtri AI",
+    description: "AI-powered chat support for your website. Convert visitors into customers 24/7.",
+    creator: "@symtri_ai",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    google: "google-site-verification-code",
+  },
 };
 
 export default function RootLayout({
