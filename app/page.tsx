@@ -4,6 +4,15 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  Bot,
+  Mail,
+  BarChart3,
+  Zap,
+  Palette,
+  Shield,
+  Globe
+} from 'lucide-react';
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -229,7 +238,7 @@ export default function Home() {
                 <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 mt-8">
                   <div className="flex items-center gap-2 mb-3 pb-3 border-b">
                     <div className="w-8 h-8 bg-teal-600 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm">🤖</span>
+                      <Bot className="w-4 h-4 text-white" />
                     </div>
                     <div>
                       <p className="text-sm font-semibold">Symtri AI SmartChat</p>
@@ -343,7 +352,9 @@ export default function Home() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="group hover:bg-teal-50 p-6 rounded-lg transition-colors">
-              <div className="text-4xl mb-4">🤖</div>
+              <div className="mb-4">
+                <Bot className="w-10 h-10 text-teal-600" />
+              </div>
               <h3 className="text-xl font-semibold mb-2">AI-Powered Conversations</h3>
               <p className="text-gray-600">
                 Natural responses using your knowledge base. Train it with your FAQs and product info.
@@ -351,7 +362,9 @@ export default function Home() {
             </div>
 
             <div className="group hover:bg-teal-50 p-6 rounded-lg transition-colors">
-              <div className="text-4xl mb-4">📧</div>
+              <div className="mb-4">
+                <Mail className="w-10 h-10 text-teal-600" />
+              </div>
               <h3 className="text-xl font-semibold mb-2">Automatic Lead Capture</h3>
               <p className="text-gray-600">
                 Collects contact info naturally during conversations without being pushy.
@@ -359,7 +372,9 @@ export default function Home() {
             </div>
 
             <div className="group hover:bg-teal-50 p-6 rounded-lg transition-colors">
-              <div className="text-4xl mb-4">📊</div>
+              <div className="mb-4">
+                <BarChart3 className="w-10 h-10 text-teal-600" />
+              </div>
               <h3 className="text-xl font-semibold mb-2">Real-time Dashboard</h3>
               <p className="text-gray-600">
                 Track conversations, leads, and analytics. See what your customers are asking about.
@@ -367,7 +382,9 @@ export default function Home() {
             </div>
 
             <div className="group hover:bg-teal-50 p-6 rounded-lg transition-colors">
-              <div className="text-4xl mb-4">⚡</div>
+              <div className="mb-4">
+                <Zap className="w-10 h-10 text-teal-600" />
+              </div>
               <h3 className="text-xl font-semibold mb-2">5-Minute Setup</h3>
               <p className="text-gray-600">
                 Just copy/paste one line of code. Works with any website or platform.
@@ -375,7 +392,9 @@ export default function Home() {
             </div>
 
             <div className="group hover:bg-teal-50 p-6 rounded-lg transition-colors">
-              <div className="text-4xl mb-4">🎨</div>
+              <div className="mb-4">
+                <Palette className="w-10 h-10 text-teal-600" />
+              </div>
               <h3 className="text-xl font-semibold mb-2">Fully Customizable</h3>
               <p className="text-gray-600">
                 Match your brand colors and style. Customize welcome messages and responses.
@@ -383,7 +402,9 @@ export default function Home() {
             </div>
 
             <div className="group hover:bg-teal-50 p-6 rounded-lg transition-colors">
-              <div className="text-4xl mb-4">🔒</div>
+              <div className="mb-4">
+                <Shield className="w-10 h-10 text-teal-600" />
+              </div>
               <h3 className="text-xl font-semibold mb-2">Secure & Reliable</h3>
               <p className="text-gray-600">
                 Enterprise-grade security with 99.9% uptime. Your data is encrypted and protected.
@@ -395,7 +416,7 @@ export default function Home() {
           <div className="mt-16 text-center">
             <div className="inline-block bg-gradient-to-r from-teal-50 to-lime-50 rounded-lg p-8 border border-teal-200">
               <div className="flex items-center justify-center gap-3 mb-4">
-                <span className="text-3xl">🌐</span>
+                <Globe className="w-8 h-8 text-teal-600" />
                 <h3 className="text-2xl font-bold text-gray-900">Multilingual Support Coming Soon</h3>
                 <span className="bg-lime-500 text-white px-2 py-1 rounded-full text-xs font-semibold">NEW</span>
               </div>
@@ -403,19 +424,19 @@ export default function Home() {
                 Connect with customers globally in their preferred language
               </p>
               <div className="flex flex-wrap justify-center gap-3">
-                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">
-                  🇺🇸 English
+                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm border border-gray-200">
+                  <span className="text-xs text-gray-500 mr-1">EN</span> English
                 </span>
-                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">
-                  🇪🇸 Español
+                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm border border-gray-200">
+                  <span className="text-xs text-gray-500 mr-1">ES</span> Español
                 </span>
-                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">
-                  🇲🇽 Spanish (Mexico)
+                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm border border-gray-200">
+                  <span className="text-xs text-gray-500 mr-1">ES-MX</span> Spanish (Mexico)
                 </span>
-                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">
-                  🇫🇷 Français
+                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm border border-gray-200">
+                  <span className="text-xs text-gray-500 mr-1">FR</span> Français
                 </span>
-                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">
+                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm border border-gray-200">
                   More languages...
                 </span>
               </div>
