@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerUser, getServerSupabase } from '@/lib/auth-server';
 import { stripe } from '@/lib/stripe';

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import Link from 'next/link';
 import { getServerUser, getServerSupabase } from '@/lib/auth-server';
 import { redirect } from 'next/navigation';

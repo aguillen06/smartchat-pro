@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import Link from 'next/link';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
