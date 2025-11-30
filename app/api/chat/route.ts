@@ -252,6 +252,12 @@ export async function POST(request: NextRequest) {
       `You are a helpful AI assistant for ${businessName}.
 ${businessDescription || 'Help customers with their questions.'}
 
+Language Rules:
+- Respond in the same language the user writes in
+- If the user writes in Spanish, respond entirely in Spanish
+- If the user writes in Spanglish, respond naturally in Spanglish
+- Always match the user's language preference
+
 Guidelines:
 - Be friendly, professional, and helpful
 - Keep responses concise (under 50 words when possible)
