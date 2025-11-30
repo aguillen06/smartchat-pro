@@ -1,42 +1,63 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { cookies } from 'next/headers';
 
 /**
- * GET /api/knowledge?widgetKey=xxx
- * Get all knowledge docs for a widget
+ * GET /api/knowledge
+ * Get all knowledge docs for the authenticated user's widgets
  */
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabaseAdmin();
-    const searchParams = request.nextUrl.searchParams;
-    const widgetKey = searchParams.get('widgetKey');
+    const cookieStore = await cookies();
 
-    if (!widgetKey) {
+    // Get the session token from cookies
+    const sessionToken = cookieStore.get('supabase-auth-token');
+
+    if (!sessionToken) {
       return NextResponse.json(
-        { error: 'widgetKey is required' },
-        { status: 400 }
+        { error: 'Unauthorized' },
+        { status: 401 }
       );
     }
 
-    // Get widget ID
-    const { data: widget, error: widgetError } = await supabase
+    // Verify the session and get user
+    const { data: { user }, error: userError } = await supabase.auth.getUser(sessionToken.value);
+
+    if (userError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Get user's widgets
+    const { data: widgets, error: widgetsError } = await supabase
       .from('widgets')
       .select('id')
-      .eq('widget_key', widgetKey)
-      .single();
+      .eq('owner_id', user.id);
 
-    if (widgetError || !widget) {
+    if (widgetsError) {
+      console.error('Error fetching widgets:', widgetsError);
       return NextResponse.json(
-        { error: 'Widget not found' },
-        { status: 404 }
+        { error: 'Failed to fetch widgets' },
+        { status: 500 }
       );
     }
 
-    // Get all knowledge docs
+    if (!widgets || widgets.length === 0) {
+      return NextResponse.json([]);
+    }
+
+    const widgetIds = widgets.map(w => w.id);
+
+    // Get all knowledge docs for user's widgets
     const { data: docs, error } = await supabase
       .from('knowledge_docs')
       .select('*')
-      .eq('widget_id', widget.id)
+      .in('widget_id', widgetIds)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -59,46 +80,103 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/knowledge
- * Create a new knowledge doc
+ * Create a new knowledge doc for the authenticated user
  */
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabaseAdmin();
+    const cookieStore = await cookies();
     const body = await request.json();
-    const { widgetKey, title, content } = body;
+    const { title, content } = body;
 
-    if (!widgetKey || !title || !content) {
+    if (!title || !content) {
       return NextResponse.json(
-        { error: 'widgetKey, title, and content are required' },
+        { error: 'title and content are required' },
         { status: 400 }
       );
     }
 
-    // Get widget ID
-    const { data: widget, error: widgetError } = await supabase
-      .from('widgets')
-      .select('id')
-      .eq('widget_key', widgetKey)
-      .single();
+    // Get the session token from cookies
+    const sessionToken = cookieStore.get('supabase-auth-token');
 
-    if (widgetError || !widget) {
+    if (!sessionToken) {
       return NextResponse.json(
-        { error: 'Widget not found' },
-        { status: 404 }
+        { error: 'Unauthorized' },
+        { status: 401 }
       );
     }
 
-    // Create knowledge doc
-    console.log('Creating knowledge doc with data:', {
-      widget_id: widget.id,
-      title: title.trim(),
-      content: content.trim().substring(0, 100) + '...'
-    });
+    // Verify the session and get user
+    const { data: { user }, error: userError } = await supabase.auth.getUser(sessionToken.value);
 
+    if (userError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Get user's first widget (or create one if they don't have any)
+    const { data: widgets, error: widgetsError } = await supabase
+      .from('widgets')
+      .select('id')
+      .eq('owner_id', user.id)
+      .limit(1);
+
+    if (widgetsError) {
+      console.error('Error fetching widgets:', widgetsError);
+      return NextResponse.json(
+        { error: 'Failed to fetch widgets' },
+        { status: 500 }
+      );
+    }
+
+    let widgetId: string;
+
+    if (!widgets || widgets.length === 0) {
+      // Create a default widget for the user
+      const { data: newWidget, error: createError } = await supabase
+        .from('widgets')
+        .insert({
+          owner_id: user.id,
+          widget_key: `widget_${user.id}_${Date.now()}`,
+          settings: {
+            theme_color: '#14b8a6',
+            welcome_message: 'Hi! How can I help you today?',
+            position: 'bottom-right',
+            collect_email: true,
+            auto_open: false,
+            business_name: 'My Business',
+            business_description: 'Welcome to our chat support.',
+            notification_sound: true,
+            working_hours: {
+              enabled: false,
+              timezone: 'America/New_York',
+              schedule: {}
+            }
+          }
+        })
+        .select()
+        .single();
+
+      if (createError || !newWidget) {
+        console.error('Error creating widget:', createError);
+        return NextResponse.json(
+          { error: 'Failed to create widget' },
+          { status: 500 }
+        );
+      }
+
+      widgetId = newWidget.id;
+    } else {
+      widgetId = widgets[0].id;
+    }
+
+    // Create knowledge doc
     const { data, error } = await supabase
       .from('knowledge_docs')
       .insert({
-        widget_id: widget.id,
+        widget_id: widgetId,
         title: title.trim(),
         content: content.trim(),
       })

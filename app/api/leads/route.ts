@@ -1,38 +1,59 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { cookies } from 'next/headers';
 
 /**
- * GET /api/leads?widgetKey=xxx
- * Get all leads for a widget
+ * GET /api/leads
+ * Get all leads for the authenticated user's widgets
  */
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabaseAdmin();
-    const searchParams = request.nextUrl.searchParams;
-    const widgetKey = searchParams.get('widgetKey');
+    const cookieStore = await cookies();
 
-    if (!widgetKey) {
+    // Get the session token from cookies
+    const sessionToken = cookieStore.get('supabase-auth-token');
+
+    if (!sessionToken) {
       return NextResponse.json(
-        { error: 'widgetKey is required' },
-        { status: 400 }
+        { error: 'Unauthorized' },
+        { status: 401 }
       );
     }
 
-    // Get widget ID
-    const { data: widget, error: widgetError } = await supabase
+    // Verify the session and get user
+    const { data: { user }, error: userError } = await supabase.auth.getUser(sessionToken.value);
+
+    if (userError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Get user's widgets
+    const { data: widgets, error: widgetsError } = await supabase
       .from('widgets')
       .select('id')
-      .eq('widget_key', widgetKey)
-      .single();
+      .eq('owner_id', user.id);
 
-    if (widgetError || !widget) {
+    if (widgetsError) {
+      console.error('Error fetching widgets:', widgetsError);
       return NextResponse.json(
-        { error: 'Widget not found' },
-        { status: 404 }
+        { error: 'Failed to fetch widgets' },
+        { status: 500 }
       );
     }
 
-    // Get all leads with conversation info
+    if (!widgets || widgets.length === 0) {
+      return NextResponse.json([]);
+    }
+
+    const widgetIds = widgets.map(w => w.id);
+
+    // Get all leads for user's widgets
     const { data: leads, error } = await supabase
       .from('leads')
       .select(`
@@ -43,7 +64,7 @@ export async function GET(request: NextRequest) {
           started_at
         )
       `)
-      .eq('widget_id', widget.id)
+      .in('widget_id', widgetIds)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -66,7 +87,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/leads
- * Create a new lead
+ * Create a new lead (called from widget, not dashboard)
  */
 export async function POST(request: NextRequest) {
   try {

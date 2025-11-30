@@ -5,8 +5,6 @@ export const dynamic = 'force-dynamic';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-const WIDGET_KEY = 'demo_widget_key_123';
-
 interface Lead {
   id: string;
   name: string | null;
@@ -32,7 +30,8 @@ export default function LeadsPage() {
 
   async function loadLeads() {
     try {
-      const response = await fetch(`/api/leads?widgetKey=${WIDGET_KEY}`);
+      // Fetch leads for the authenticated user's widgets
+      const response = await fetch('/api/leads');
 
       if (!response.ok) {
         console.error('Error loading leads:', await response.text());

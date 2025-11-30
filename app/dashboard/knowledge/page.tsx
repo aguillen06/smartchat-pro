@@ -4,8 +4,6 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from 'react';
 
-const WIDGET_KEY = 'demo_widget_key_123';
-
 interface KnowledgeDoc {
   id: string;
   title: string;
@@ -17,7 +15,6 @@ interface KnowledgeDoc {
 export default function KnowledgeBasePage() {
   const [docs, setDocs] = useState<KnowledgeDoc[]>([]);
   const [loading, setLoading] = useState(true);
-  const [widgetId, setWidgetId] = useState<string | null>(null);
 
   // Form state
   const [isAdding, setIsAdding] = useState(false);
@@ -31,7 +28,8 @@ export default function KnowledgeBasePage() {
 
   async function loadKnowledgeDocs() {
     try {
-      const response = await fetch(`/api/knowledge?widgetKey=${WIDGET_KEY}`);
+      // Fetch knowledge docs for the authenticated user's widgets
+      const response = await fetch('/api/knowledge');
 
       if (!response.ok) {
         console.error('Error loading knowledge docs:', await response.text());
@@ -40,7 +38,6 @@ export default function KnowledgeBasePage() {
 
       const knowledgeDocs = await response.json();
       setDocs(knowledgeDocs || []);
-      setWidgetId(WIDGET_KEY); // Store widget key instead of ID
     } catch (error) {
       console.error('Error loading knowledge docs:', error);
     } finally {
@@ -49,7 +46,7 @@ export default function KnowledgeBasePage() {
   }
 
   async function handleSave() {
-    if (!widgetId || !formData.title.trim() || !formData.content.trim()) {
+    if (!formData.title.trim() || !formData.content.trim()) {
       alert('Please fill in both title and content');
       return;
     }
@@ -81,7 +78,6 @@ export default function KnowledgeBasePage() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            widgetKey: widgetId,
             title: formData.title.trim(),
             content: formData.content.trim(),
           }),
