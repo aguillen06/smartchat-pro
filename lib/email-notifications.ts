@@ -4,6 +4,13 @@ import { Resend } from 'resend';
 const resendApiKey = process.env.RESEND_API_KEY;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
+// Log Resend configuration status on initialization
+if (!resendApiKey) {
+  console.log('🔧 [Email] RESEND_API_KEY not found in environment variables');
+} else {
+  console.log('🔧 [Email] RESEND_API_KEY detected (length:', resendApiKey.length, ')');
+}
+
 interface SignupNotificationData {
   userEmail: string;
   fullName: string;
@@ -17,6 +24,13 @@ interface SignupNotificationData {
  * Send email notification to admin when a new user signs up
  */
 export async function sendSignupNotification(data: SignupNotificationData) {
+  console.log('📬 [Email] sendSignupNotification called with:', {
+    userEmail: data.userEmail,
+    fullName: data.fullName,
+    ipAddress: data.ipAddress,
+    timestamp: data.timestamp.toISOString(),
+  });
+
   try {
     // Format the timestamp for the email
     const formattedTime = new Intl.DateTimeFormat('en-US', {
@@ -77,14 +91,19 @@ export async function sendSignupNotification(data: SignupNotificationData) {
 
     // If Resend is not configured, try alternative notification methods
     if (!resend) {
-      console.log('⚠️  Resend API key not configured.');
+      console.log('⚠️  [Email] Resend API key not configured - email will NOT be sent');
       console.log('📌 To enable email notifications:');
-      console.log('   1. Add RESEND_API_KEY to your .env file');
-      console.log('   2. Or add SIGNUP_WEBHOOK_URL for webhook notifications');
+      console.log('   1. Add RESEND_API_KEY to your .env.local file');
+      console.log('   2. Get your API key from https://resend.com/api-keys');
+      console.log('   3. Add: RESEND_API_KEY=re_xxxxxxxxxxxxx');
+      console.log('   4. Or add SIGNUP_WEBHOOK_URL for webhook notifications');
       console.log('');
       console.log('📮 Email would be sent to: andres@symtri.ai');
-      return { success: true, message: 'Notification logged (configure RESEND_API_KEY or SIGNUP_WEBHOOK_URL for email delivery)' };
+      console.log('📮 From: notifications@symtri.ai');
+      return { success: false, message: 'Email not sent - RESEND_API_KEY not configured' };
     }
+
+    console.log('🚀 [Email] Attempting to send email via Resend...');
 
     // Build the email HTML
     const emailHtml = `
@@ -137,6 +156,12 @@ export async function sendSignupNotification(data: SignupNotificationData) {
     `;
 
     // Send the email with simplified format as requested
+    console.log('📤 [Email] Sending email with params:', {
+      from: 'Symtri AI SmartChat <notifications@symtri.ai>',
+      to: 'andres@symtri.ai',
+      subject: `New SmartChat Signup: ${data.userEmail}`,
+    });
+
     const result = await resend.emails.send({
       from: 'Symtri AI SmartChat <notifications@symtri.ai>',
       to: 'andres@symtri.ai',
@@ -145,11 +170,17 @@ export async function sendSignupNotification(data: SignupNotificationData) {
       text: `New SmartChat user signup:\n\nEmail: ${data.userEmail}\nName: ${data.fullName}\nSignup Timestamp: ${formattedTime}\n\nAdditional Details:\nIP Address: ${data.ipAddress}\nLocation: ${locationInfo}`,
     });
 
-    console.log('Signup notification sent successfully:', result);
+    console.log('✉️ [Email] Signup notification sent successfully!');
+    console.log('📨 [Email] Resend response:', result);
     return { success: true, messageId: (result as any).id || 'sent' };
-  } catch (error) {
+  } catch (error: any) {
     // Log error but don't fail the signup if email fails
-    console.error('Failed to send signup notification email:', error);
-    return { success: false, error };
+    console.error('❌ [Email] Failed to send signup notification email:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      response: error.response,
+    });
+    return { success: false, error: error.message };
   }
 }

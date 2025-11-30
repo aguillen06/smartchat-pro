@@ -99,6 +99,7 @@ export async function POST(request: NextRequest) {
     // with email_confirm: false, so we don't need to manually send it
 
     // Send admin notification email (non-blocking)
+    console.log('📨 [Signup] Attempting to send admin notification email...');
     sendSignupNotification({
       userEmail: email,
       fullName,
@@ -106,16 +107,26 @@ export async function POST(request: NextRequest) {
       timestamp: new Date(),
       userAgent,
       location: request.headers.get('cf-ipcountry') || undefined,
-    }).catch((err) => {
-      console.error('Failed to send admin notification:', err);
-    });
+    })
+      .then((result) => {
+        if (result.success) {
+          console.log('✅ [Signup] Admin notification sent successfully:', result);
+        } else {
+          console.log('⚠️ [Signup] Admin notification failed:', result);
+        }
+      })
+      .catch((err) => {
+        console.error('❌ [Signup] Failed to send admin notification:', err);
+        console.error('Stack trace:', err.stack);
+      });
 
     // Log signup for monitoring
-    console.log('New user signup:', {
+    console.log('🎉 [Signup] New user signup successful:', {
       email,
       fullName,
       ip: clientIp,
       timestamp: new Date().toISOString(),
+      notificationTargetEmail: 'andres@symtri.ai',
     });
 
     // Return success response
