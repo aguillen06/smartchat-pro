@@ -99,7 +99,7 @@ export async function sendSignupNotification(data: SignupNotificationData) {
       console.log('   4. Or add SIGNUP_WEBHOOK_URL for webhook notifications');
       console.log('');
       console.log('📮 Email would be sent to: andres@symtri.ai');
-      console.log('📮 From: notifications@symtri.ai');
+      console.log('📮 From: Symtri AI <onboarding@resend.dev>');
       return { success: false, message: 'Email not sent - RESEND_API_KEY not configured' };
     }
 
@@ -156,14 +156,15 @@ export async function sendSignupNotification(data: SignupNotificationData) {
     `;
 
     // Send the email with simplified format as requested
+    // Using Resend's default verified domain for immediate email delivery
     console.log('📤 [Email] Sending email with params:', {
-      from: 'Symtri AI SmartChat <notifications@symtri.ai>',
+      from: 'Symtri AI <onboarding@resend.dev>',
       to: 'andres@symtri.ai',
       subject: `New SmartChat Signup: ${data.userEmail}`,
     });
 
     const result = await resend.emails.send({
-      from: 'Symtri AI SmartChat <notifications@symtri.ai>',
+      from: 'Symtri AI <onboarding@resend.dev>',  // Using Resend's default domain until symtri.ai is verified
       to: 'andres@symtri.ai',
       subject: `New SmartChat Signup: ${data.userEmail}`,
       html: emailHtml,
