@@ -35,9 +35,9 @@ export default function NewWidgetPage() {
     };
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Widget name is required';
+      newErrors.name = 'Assistant name is required';
     } else if (formData.name.trim().length < 3) {
-      newErrors.name = 'Widget name must be at least 3 characters';
+      newErrors.name = 'Assistant name must be at least 3 characters';
     }
 
     if (!formData.welcomeMessage.trim()) {
@@ -110,9 +110,9 @@ export default function NewWidgetPage() {
           <ArrowLeft className="w-4 h-4 mr-1" />
           Back to Dashboard
         </Link>
-        <h1 className="text-3xl font-bold text-gray-900">Create Your Widget</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Create Your AI Assistant</h1>
         <p className="text-gray-600 mt-2">
-          Set up your AI chat widget to start engaging with your website visitors
+          Set up your AI assistant to start engaging with your website visitors
         </p>
       </div>
 
@@ -135,7 +135,7 @@ export default function NewWidgetPage() {
           <div className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                Widget Name <span className="text-red-500">*</span>
+                Assistant Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -295,10 +295,10 @@ export default function NewWidgetPage() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Creating Widget...
+                Creating AI Assistant...
               </span>
             ) : (
-              'Create Widget'
+              'Create AI Assistant'
             )}
           </button>
         </div>

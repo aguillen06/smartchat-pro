@@ -187,16 +187,16 @@ export default function SettingsPage() {
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-lg shadow p-12 text-center">
           <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No Widgets Yet</h3>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No AI Assistant Yet</h3>
           <p className="text-gray-600 mb-6">
-            Create your first widget to start engaging with your website visitors.
+            Create your first AI assistant to start engaging with your website visitors.
           </p>
           <Link
             href="/dashboard/widgets/new"
             className="inline-flex items-center px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
           >
             <Plus className="w-5 h-5 mr-2" />
-            Create Your First Widget
+            Create Your First AI Assistant
           </Link>
         </div>
       </div>
@@ -208,9 +208,9 @@ export default function SettingsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Widget Settings</h2>
+          <h2 className="text-2xl font-bold text-gray-900">AI Assistant Settings</h2>
           <p className="text-gray-600 mt-1">
-            Manage and configure your chat widgets
+            Manage and configure your AI assistants
           </p>
         </div>
         <div className="flex gap-3">
@@ -219,14 +219,14 @@ export default function SettingsPage() {
             className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
           >
             <TestTube className="w-4 h-4 mr-2" />
-            Test Widget
+            Test Assistant
           </Link>
           <Link
             href="/dashboard/widgets/new"
             className="inline-flex items-center px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Create Widget
+            Create AI Assistant
           </Link>
         </div>
       </div>
@@ -235,7 +235,7 @@ export default function SettingsPage() {
       {widgets.length > 1 && (
         <div className="bg-white rounded-lg shadow p-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select Widget
+            Select AI Assistant
           </label>
           <select
             value={selectedWidget.id}
@@ -260,7 +260,7 @@ export default function SettingsPage() {
       {/* Widget Details */}
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">Widget Details</h3>
+          <h3 className="text-lg font-semibold text-gray-900">AI Assistant Details</h3>
           <div className="flex gap-2">
             {!isEditing ? (
               <button
@@ -300,7 +300,7 @@ export default function SettingsPage() {
         {!isEditing ? (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Widget Name</label>
+              <label className="block text-sm font-medium text-gray-500 mb-1">Assistant Name</label>
               <div className="text-gray-900 font-medium">{selectedWidget.name}</div>
             </div>
             <div>
@@ -333,7 +333,7 @@ export default function SettingsPage() {
         ) : (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Widget Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Assistant Name</label>
               <input
                 type="text"
                 value={editForm.name}
@@ -414,12 +414,12 @@ export default function SettingsPage() {
 
       {/* Widget Key */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Widget Key</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Assistant ID</h3>
         <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm break-all">
           {selectedWidget.widget_key}
         </div>
         <p className="text-xs text-gray-500 mt-2">
-          This is your unique widget identifier. Keep it secure.
+          This is your unique assistant identifier. Keep it secure.
         </p>
       </div>
 
@@ -455,7 +455,7 @@ export default function SettingsPage() {
             <li>Open your website's HTML file</li>
             <li>Paste the code just before the closing <code className="bg-gray-100 px-1 rounded">&lt;/body&gt;</code> tag</li>
             <li>Save and publish your changes</li>
-            <li>The chat widget will appear on your website!</li>
+            <li>The AI assistant will appear on your website!</li>
           </ol>
         </div>
       </div>

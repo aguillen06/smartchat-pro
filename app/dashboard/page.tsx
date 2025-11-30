@@ -169,15 +169,15 @@ export default async function DashboardOverview() {
           <div className="flex items-start gap-3">
             <span className="text-2xl">⚠️</span>
             <div>
-              <h3 className="font-semibold text-yellow-900 mb-1">No widgets found</h3>
+              <h3 className="font-semibold text-yellow-900 mb-1">No AI Assistant found</h3>
               <p className="text-sm text-yellow-700 mb-3">
-                You don't have any chat widgets yet. Create one to start collecting conversations and leads.
+                You don't have any AI Assistant yet. Create one to start collecting conversations and leads.
               </p>
               <Link
                 href="/dashboard/widgets/new"
                 className="inline-flex items-center px-4 py-2 bg-yellow-600 text-white text-sm font-medium rounded-lg hover:bg-yellow-700 transition-colors"
               >
-                Create Your First Widget →
+                Create Your First AI Assistant →
               </Link>
             </div>
           </div>
@@ -300,7 +300,7 @@ export default async function DashboardOverview() {
           className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow"
         >
           <div className="text-3xl mb-3">⚙️</div>
-          <h3 className="font-semibold text-gray-900 mb-2">Widget Settings</h3>
+          <h3 className="font-semibold text-gray-900 mb-2">AI Assistant Settings</h3>
           <p className="text-sm text-gray-600">
             Customize appearance and AI behavior
           </p>
@@ -311,9 +311,9 @@ export default async function DashboardOverview() {
           className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow"
         >
           <div className="text-3xl mb-3">🧪</div>
-          <h3 className="font-semibold text-gray-900 mb-2">Test Widget</h3>
+          <h3 className="font-semibold text-gray-900 mb-2">Test Your AI Assistant</h3>
           <p className="text-sm text-gray-600">
-            Try out your chatbot in a live demo
+            Try out your AI assistant in a live demo
           </p>
         </Link>
       </div>

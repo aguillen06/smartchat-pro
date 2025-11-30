@@ -69,7 +69,7 @@ export default function TestWidgetPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">Loading widget preview...</div>
+        <div className="text-gray-500">Loading AI assistant preview...</div>
       </div>
     );
   }
@@ -79,15 +79,15 @@ export default function TestWidgetPage() {
       <div className="flex flex-col items-center justify-center min-h-screen p-8">
         <div className="text-center max-w-md">
           <Globe className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">No Widget Found</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">No AI Assistant Found</h2>
           <p className="text-gray-600 mb-6">
-            You need to create a widget before you can test it.
+            You need to create an AI assistant before you can test it.
           </p>
           <Link
             href="/dashboard/widgets/new"
             className="inline-flex items-center px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
           >
-            Create Your First Widget
+            Create Your First AI Assistant
           </Link>
         </div>
       </div>
@@ -109,13 +109,13 @@ export default function TestWidgetPage() {
             </Link>
             <span className="text-gray-500">|</span>
             <p className="text-gray-700">
-              This is how your <strong>{widget.name}</strong> widget will appear on your website
+              This is how your <strong>{widget.name}</strong> AI assistant will appear on your website
             </p>
           </div>
           {scriptLoaded && (
             <span className="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
               <Check className="w-4 h-4 mr-1" />
-              Widget Active
+              Assistant Active
             </span>
           )}
         </div>
@@ -258,9 +258,9 @@ export default function TestWidgetPage() {
         <div className="flex items-start gap-3">
           <span className="text-yellow-600">💡</span>
           <div>
-            <p className="text-sm font-medium text-gray-900 mb-1">Your Widget is Active</p>
+            <p className="text-sm font-medium text-gray-900 mb-1">Your AI Assistant is Active</p>
             <p className="text-sm text-gray-600">
-              Look for the chat icon in the bottom-right corner. Click it to test your widget!
+              Look for the chat icon in the bottom-right corner. Click it to test your AI assistant!
             </p>
           </div>
         </div>
