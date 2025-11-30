@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
-import { Plus, Settings, Trash2, Edit2, Copy, Check, AlertTriangle } from 'lucide-react';
+import { Plus, Settings, Trash2, Edit2, Copy, Check, AlertTriangle, TestTube } from 'lucide-react';
 
 interface Widget {
   id: string;
@@ -213,13 +213,22 @@ export default function SettingsPage() {
             Manage and configure your chat widgets
           </p>
         </div>
-        <Link
-          href="/dashboard/widgets/new"
-          className="inline-flex items-center px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Create Widget
-        </Link>
+        <div className="flex gap-3">
+          <Link
+            href="/dashboard/test-widget"
+            className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+          >
+            <TestTube className="w-4 h-4 mr-2" />
+            Test Widget
+          </Link>
+          <Link
+            href="/dashboard/widgets/new"
+            className="inline-flex items-center px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Create Widget
+          </Link>
+        </div>
       </div>
 
       {/* Widget Selector */}

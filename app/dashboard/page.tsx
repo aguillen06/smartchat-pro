@@ -307,7 +307,7 @@ export default async function DashboardOverview() {
         </Link>
 
         <Link
-          href="/test-widget"
+          href="/dashboard/test-widget"
           className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow"
         >
           <div className="text-3xl mb-3">🧪</div>
