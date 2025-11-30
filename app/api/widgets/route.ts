@@ -1,8 +1,28 @@
 export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { createServerClient } from '@supabase/ssr';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { getServerUser, getServerSupabase } from '@/lib/auth-server';
+
+/**
+ * Create a Supabase client for server-side API routes
+ */
+async function createClient() {
+  const cookieStore = await cookies();
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
+}
 
 /**
  * Generate a unique widget key
@@ -21,12 +41,21 @@ export async function GET(request: NextRequest) {
   try {
     console.log('[GET /api/widgets] Starting request');
 
-    // Get authenticated user using the server helper
-    const user = await getServerUser();
-    console.log('[GET /api/widgets] User:', user?.id, user?.email);
+    // Create server client with cookies
+    const supabase = await createClient();
 
-    if (!user) {
-      console.log('[GET /api/widgets] No authenticated user found');
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    console.log('[GET /api/widgets] Auth check:', {
+      hasUser: !!user,
+      userId: user?.id,
+      email: user?.email,
+      authError: authError?.message
+    });
+
+    if (authError || !user) {
+      console.log('[GET /api/widgets] Auth failed:', authError);
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -34,10 +63,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Use admin client to query (bypasses RLS)
-    const supabase = getSupabaseAdmin();
+    const adminSupabase = getSupabaseAdmin();
 
     // Get user's widgets
-    const { data: widgets, error: widgetsError } = await supabase
+    const { data: widgets, error: widgetsError } = await adminSupabase
       .from('widgets')
       .select('*')
       .eq('owner_id', user.id)
@@ -72,7 +101,12 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { name, welcomeMessage, primaryColor, businessDescription } = body;
-    console.log('[POST /api/widgets] Request body:', { name, welcomeMessage, primaryColor, hasBusinessDescription: !!businessDescription });
+    console.log('[POST /api/widgets] Request body:', {
+      name,
+      welcomeMessage,
+      primaryColor,
+      hasBusinessDescription: !!businessDescription
+    });
 
     // Validate required fields
     if (!name || !welcomeMessage) {
@@ -83,12 +117,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get authenticated user using the server helper
-    const user = await getServerUser();
-    console.log('[POST /api/widgets] User:', user?.id, user?.email);
+    // Create server client with cookies
+    const supabase = await createClient();
 
-    if (!user) {
-      console.log('[POST /api/widgets] No authenticated user found');
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    console.log('[POST /api/widgets] Auth check:', {
+      hasUser: !!user,
+      userId: user?.id,
+      email: user?.email,
+      authError: authError?.message
+    });
+
+    if (authError || !user) {
+      console.log('[POST /api/widgets] Auth failed:', authError);
       return NextResponse.json(
         { error: 'Unauthorized - Please log in to create a widget' },
         { status: 401 }
@@ -117,10 +160,10 @@ export async function POST(request: NextRequest) {
     };
 
     // Use admin client to create widget (bypasses RLS)
-    const supabase = getSupabaseAdmin();
+    const adminSupabase = getSupabaseAdmin();
 
     // Create the widget
-    const { data: widget, error: createError } = await supabase
+    const { data: widget, error: createError } = await adminSupabase
       .from('widgets')
       .insert({
         owner_id: user.id,
@@ -170,12 +213,21 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Get authenticated user using the server helper
-    const user = await getServerUser();
-    console.log('[PUT /api/widgets] User:', user?.id, user?.email);
+    // Create server client with cookies
+    const supabase = await createClient();
 
-    if (!user) {
-      console.log('[PUT /api/widgets] No authenticated user found');
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    console.log('[PUT /api/widgets] Auth check:', {
+      hasUser: !!user,
+      userId: user?.id,
+      email: user?.email,
+      authError: authError?.message
+    });
+
+    if (authError || !user) {
+      console.log('[PUT /api/widgets] Auth failed:', authError);
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -183,10 +235,10 @@ export async function PUT(request: NextRequest) {
     }
 
     // Use admin client to query and update (bypasses RLS)
-    const supabase = getSupabaseAdmin();
+    const adminSupabase = getSupabaseAdmin();
 
     // Verify the user owns this widget
-    const { data: existingWidget, error: widgetError } = await supabase
+    const { data: existingWidget, error: widgetError } = await adminSupabase
       .from('widgets')
       .select('owner_id, settings')
       .eq('id', widgetId)
@@ -236,7 +288,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update the widget
-    const { data: updatedWidget, error: updateError } = await supabase
+    const { data: updatedWidget, error: updateError } = await adminSupabase
       .from('widgets')
       .update(updateData)
       .eq('id', widgetId)
@@ -281,12 +333,21 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Get authenticated user using the server helper
-    const user = await getServerUser();
-    console.log('[DELETE /api/widgets] User:', user?.id, user?.email);
+    // Create server client with cookies
+    const supabase = await createClient();
 
-    if (!user) {
-      console.log('[DELETE /api/widgets] No authenticated user found');
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    console.log('[DELETE /api/widgets] Auth check:', {
+      hasUser: !!user,
+      userId: user?.id,
+      email: user?.email,
+      authError: authError?.message
+    });
+
+    if (authError || !user) {
+      console.log('[DELETE /api/widgets] Auth failed:', authError);
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -294,10 +355,10 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Use admin client to query and delete (bypasses RLS)
-    const supabase = getSupabaseAdmin();
+    const adminSupabase = getSupabaseAdmin();
 
     // Verify the user owns this widget
-    const { data: widget, error: widgetError } = await supabase
+    const { data: widget, error: widgetError } = await adminSupabase
       .from('widgets')
       .select('owner_id')
       .eq('id', widgetId)
@@ -313,7 +374,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete the widget (cascading deletes should handle related records)
-    const { error: deleteError } = await supabase
+    const { error: deleteError } = await adminSupabase
       .from('widgets')
       .delete()
       .eq('id', widgetId);
