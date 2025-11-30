@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { cookies } from 'next/headers';
+import { getServerUser, getServerSupabase } from '@/lib/auth-server';
 
 /**
  * Generate a unique widget key
@@ -19,28 +19,22 @@ function generateWidgetKey(): string {
  */
 export async function GET(request: NextRequest) {
   try {
+    console.log('[GET /api/widgets] Starting request');
+
+    // Get authenticated user using the server helper
+    const user = await getServerUser();
+    console.log('[GET /api/widgets] User:', user?.id, user?.email);
+
+    if (!user) {
+      console.log('[GET /api/widgets] No authenticated user found');
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Use admin client to query (bypasses RLS)
     const supabase = getSupabaseAdmin();
-    const cookieStore = await cookies();
-
-    // Get the session token from cookies
-    const sessionToken = cookieStore.get('supabase-auth-token');
-
-    if (!sessionToken) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Verify the session and get user
-    const { data: { user }, error: userError } = await supabase.auth.getUser(sessionToken.value);
-
-    if (userError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
 
     // Get user's widgets
     const { data: widgets, error: widgetsError } = await supabase
@@ -50,16 +44,17 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false });
 
     if (widgetsError) {
-      console.error('Error fetching widgets:', widgetsError);
+      console.error('[GET /api/widgets] Error fetching widgets:', widgetsError);
       return NextResponse.json(
         { error: 'Failed to fetch widgets' },
         { status: 500 }
       );
     }
 
+    console.log('[GET /api/widgets] Found widgets:', widgets?.length || 0);
     return NextResponse.json(widgets || []);
   } catch (error) {
-    console.error('Error in GET /api/widgets:', error);
+    console.error('[GET /api/widgets] Unexpected error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -73,41 +68,36 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = getSupabaseAdmin();
-    const cookieStore = await cookies();
+    console.log('[POST /api/widgets] Starting request');
+
     const body = await request.json();
     const { name, welcomeMessage, primaryColor, businessDescription } = body;
+    console.log('[POST /api/widgets] Request body:', { name, welcomeMessage, primaryColor, hasBusinessDescription: !!businessDescription });
 
     // Validate required fields
     if (!name || !welcomeMessage) {
+      console.log('[POST /api/widgets] Missing required fields');
       return NextResponse.json(
         { error: 'Name and welcome message are required' },
         { status: 400 }
       );
     }
 
-    // Get the session token from cookies
-    const sessionToken = cookieStore.get('supabase-auth-token');
+    // Get authenticated user using the server helper
+    const user = await getServerUser();
+    console.log('[POST /api/widgets] User:', user?.id, user?.email);
 
-    if (!sessionToken) {
+    if (!user) {
+      console.log('[POST /api/widgets] No authenticated user found');
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Verify the session and get user
-    const { data: { user }, error: userError } = await supabase.auth.getUser(sessionToken.value);
-
-    if (userError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized - Please log in to create a widget' },
         { status: 401 }
       );
     }
 
     // Generate unique widget key
     const widgetKey = generateWidgetKey();
+    console.log('[POST /api/widgets] Generated widget key:', widgetKey);
 
     // Create widget settings object
     const settings = {
@@ -126,6 +116,9 @@ export async function POST(request: NextRequest) {
       }
     };
 
+    // Use admin client to create widget (bypasses RLS)
+    const supabase = getSupabaseAdmin();
+
     // Create the widget
     const { data: widget, error: createError } = await supabase
       .from('widgets')
@@ -139,16 +132,18 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (createError) {
-      console.error('Error creating widget:', createError);
+      console.error('[POST /api/widgets] Error creating widget:', createError);
+      console.error('[POST /api/widgets] Error details:', JSON.stringify(createError, null, 2));
       return NextResponse.json(
-        { error: 'Failed to create widget' },
+        { error: 'Failed to create widget', details: createError },
         { status: 500 }
       );
     }
 
+    console.log('[POST /api/widgets] Widget created successfully:', widget?.id);
     return NextResponse.json(widget);
   } catch (error) {
-    console.error('Error in POST /api/widgets:', error);
+    console.error('[POST /api/widgets] Unexpected error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -162,37 +157,33 @@ export async function POST(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = getSupabaseAdmin();
-    const cookieStore = await cookies();
+    console.log('[PUT /api/widgets] Starting request');
+
     const body = await request.json();
     const { widgetId, name, welcomeMessage, primaryColor, businessDescription, settings } = body;
 
     if (!widgetId) {
+      console.log('[PUT /api/widgets] Missing widget ID');
       return NextResponse.json(
         { error: 'Widget ID is required' },
         { status: 400 }
       );
     }
 
-    // Get the session token from cookies
-    const sessionToken = cookieStore.get('supabase-auth-token');
+    // Get authenticated user using the server helper
+    const user = await getServerUser();
+    console.log('[PUT /api/widgets] User:', user?.id, user?.email);
 
-    if (!sessionToken) {
+    if (!user) {
+      console.log('[PUT /api/widgets] No authenticated user found');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    // Verify the session and get user
-    const { data: { user }, error: userError } = await supabase.auth.getUser(sessionToken.value);
-
-    if (userError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Use admin client to query and update (bypasses RLS)
+    const supabase = getSupabaseAdmin();
 
     // Verify the user owns this widget
     const { data: existingWidget, error: widgetError } = await supabase
@@ -203,6 +194,7 @@ export async function PUT(request: NextRequest) {
       .single();
 
     if (widgetError || !existingWidget) {
+      console.log('[PUT /api/widgets] Widget not found or unauthorized');
       return NextResponse.json(
         { error: 'Widget not found or unauthorized' },
         { status: 403 }
@@ -252,16 +244,17 @@ export async function PUT(request: NextRequest) {
       .single();
 
     if (updateError) {
-      console.error('Error updating widget:', updateError);
+      console.error('[PUT /api/widgets] Error updating widget:', updateError);
       return NextResponse.json(
         { error: 'Failed to update widget' },
         { status: 500 }
       );
     }
 
+    console.log('[PUT /api/widgets] Widget updated successfully');
     return NextResponse.json(updatedWidget);
   } catch (error) {
-    console.error('Error in PUT /api/widgets:', error);
+    console.error('[PUT /api/widgets] Unexpected error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -275,37 +268,33 @@ export async function PUT(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = getSupabaseAdmin();
-    const cookieStore = await cookies();
+    console.log('[DELETE /api/widgets] Starting request');
+
     const { searchParams } = new URL(request.url);
     const widgetId = searchParams.get('id');
 
     if (!widgetId) {
+      console.log('[DELETE /api/widgets] Missing widget ID');
       return NextResponse.json(
         { error: 'Widget ID is required' },
         { status: 400 }
       );
     }
 
-    // Get the session token from cookies
-    const sessionToken = cookieStore.get('supabase-auth-token');
+    // Get authenticated user using the server helper
+    const user = await getServerUser();
+    console.log('[DELETE /api/widgets] User:', user?.id, user?.email);
 
-    if (!sessionToken) {
+    if (!user) {
+      console.log('[DELETE /api/widgets] No authenticated user found');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    // Verify the session and get user
-    const { data: { user }, error: userError } = await supabase.auth.getUser(sessionToken.value);
-
-    if (userError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Use admin client to query and delete (bypasses RLS)
+    const supabase = getSupabaseAdmin();
 
     // Verify the user owns this widget
     const { data: widget, error: widgetError } = await supabase
@@ -316,6 +305,7 @@ export async function DELETE(request: NextRequest) {
       .single();
 
     if (widgetError || !widget) {
+      console.log('[DELETE /api/widgets] Widget not found or unauthorized');
       return NextResponse.json(
         { error: 'Widget not found or unauthorized' },
         { status: 403 }
@@ -329,16 +319,17 @@ export async function DELETE(request: NextRequest) {
       .eq('id', widgetId);
 
     if (deleteError) {
-      console.error('Error deleting widget:', deleteError);
+      console.error('[DELETE /api/widgets] Error deleting widget:', deleteError);
       return NextResponse.json(
         { error: 'Failed to delete widget' },
         { status: 500 }
       );
     }
 
+    console.log('[DELETE /api/widgets] Widget deleted successfully');
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error in DELETE /api/widgets:', error);
+    console.error('[DELETE /api/widgets] Unexpected error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
