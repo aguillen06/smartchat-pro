@@ -4,22 +4,42 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import Link from 'next/link';
+import { Plus, Settings, Trash2, Edit2, Copy, Check, AlertTriangle } from 'lucide-react';
 
-interface WidgetSettings {
+interface Widget {
   id: string;
   widget_key: string;
-  welcome_message: string;
-  primary_color: string;
-  ai_instructions: string | null;
+  name: string;
+  settings: {
+    theme_color?: string;
+    welcome_message?: string;
+    business_name?: string;
+    business_description?: string;
+    position?: string;
+    collect_email?: boolean;
+  };
+  created_at: string;
+  updated_at: string;
 }
 
 export default function SettingsPage() {
   const { user } = useAuth();
-  const [widgets, setWidgets] = useState<WidgetSettings[]>([]);
-  const [selectedWidget, setSelectedWidget] = useState<WidgetSettings | null>(null);
+  const [widgets, setWidgets] = useState<Widget[]>([]);
+  const [selectedWidget, setSelectedWidget] = useState<Widget | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  // Edit form state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    welcomeMessage: '',
+    primaryColor: '',
+    businessDescription: '',
+  });
 
   useEffect(() => {
     if (user) {
@@ -29,9 +49,7 @@ export default function SettingsPage() {
 
   async function loadWidgets() {
     try {
-      // For now, we'll fetch from the API endpoint you'll need to create
-      // Or we can use a direct Supabase query
-      const response = await fetch('/api/user/widgets');
+      const response = await fetch('/api/widgets');
 
       if (!response.ok) {
         console.error('Error loading widgets:', await response.text());
@@ -42,7 +60,7 @@ export default function SettingsPage() {
       const data = await response.json();
       setWidgets(data);
       if (data.length > 0) {
-        setSelectedWidget(data[0]); // Select first widget by default
+        setSelectedWidget(data[0]);
       }
     } catch (error) {
       console.error('Error loading widgets:', error);
@@ -51,21 +69,35 @@ export default function SettingsPage() {
     }
   }
 
+  function startEdit() {
+    if (!selectedWidget) return;
+
+    setEditForm({
+      name: selectedWidget.name,
+      welcomeMessage: selectedWidget.settings.welcome_message || '',
+      primaryColor: selectedWidget.settings.theme_color || '#0D9488',
+      businessDescription: selectedWidget.settings.business_description || '',
+    });
+    setIsEditing(true);
+  }
+
   async function handleSave() {
     if (!selectedWidget) return;
 
     setSaving(true);
 
     try {
-      const response = await fetch(`/api/widgets/${selectedWidget.widget_key}`, {
+      const response = await fetch('/api/widgets', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          welcome_message: selectedWidget.welcome_message,
-          primary_color: selectedWidget.primary_color,
-          ai_instructions: selectedWidget.ai_instructions || null,
+          widgetId: selectedWidget.id,
+          name: editForm.name,
+          welcomeMessage: editForm.welcomeMessage,
+          primaryColor: editForm.primaryColor,
+          businessDescription: editForm.businessDescription,
         }),
       });
 
@@ -74,19 +106,43 @@ export default function SettingsPage() {
       }
 
       const updatedWidget = await response.json();
-      setSelectedWidget(updatedWidget);
 
-      // Update in list
+      // Update local state
+      setSelectedWidget(updatedWidget);
       setWidgets(widgets.map(w =>
         w.id === updatedWidget.id ? updatedWidget : w
       ));
-
-      alert('Settings saved successfully!');
+      setIsEditing(false);
     } catch (error) {
       console.error('Error saving settings:', error);
       alert('Failed to save settings');
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleDelete(widgetId: string) {
+    try {
+      const response = await fetch(`/api/widgets?id=${widgetId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete widget');
+      }
+
+      // Remove from local state
+      const remainingWidgets = widgets.filter(w => w.id !== widgetId);
+      setWidgets(remainingWidgets);
+
+      if (selectedWidget?.id === widgetId) {
+        setSelectedWidget(remainingWidgets[0] || null);
+      }
+
+      setDeleteConfirm(null);
+    } catch (error) {
+      console.error('Error deleting widget:', error);
+      alert('Failed to delete widget');
     }
   }
 
@@ -102,7 +158,6 @@ export default function SettingsPage() {
   function getEmbedCode() {
     if (!selectedWidget) return '';
 
-    // Use window.location.origin in browser, or NEXT_PUBLIC_APP_URL for SSR/fallback
     const origin = typeof window !== 'undefined'
       ? window.location.origin
       : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
@@ -113,7 +168,6 @@ export default function SettingsPage() {
     var script = document.createElement('script');
     script.src = '${origin}/widget.js';
     script.setAttribute('data-widget-key', '${selectedWidget.widget_key}');
-    script.setAttribute('data-primary-color', '${selectedWidget.primary_color || '#3B82F6'}');
     script.async = true;
     document.body.appendChild(script);
   })();
@@ -123,20 +177,27 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Loading settings...</div>
+        <div className="text-gray-500">Loading widgets...</div>
       </div>
     );
   }
 
   if (!selectedWidget) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="text-gray-400 text-5xl mb-4">⚙️</div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No widgets found</h3>
-          <p className="text-gray-500">
-            Create your first widget to get started.
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white rounded-lg shadow p-12 text-center">
+          <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No Widgets Yet</h3>
+          <p className="text-gray-600 mb-6">
+            Create your first widget to start engaging with your website visitors.
           </p>
+          <Link
+            href="/dashboard/widgets/new"
+            className="inline-flex items-center px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Create Your First Widget
+          </Link>
         </div>
       </div>
     );
@@ -145,11 +206,20 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Widget Settings</h2>
-        <p className="text-gray-600 mt-1">
-          Customize your chatbot's appearance and behavior
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Widget Settings</h2>
+          <p className="text-gray-600 mt-1">
+            Manage and configure your chat widgets
+          </p>
+        </div>
+        <Link
+          href="/dashboard/widgets/new"
+          className="inline-flex items-center px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Create Widget
+        </Link>
       </div>
 
       {/* Widget Selector */}
@@ -162,88 +232,176 @@ export default function SettingsPage() {
             value={selectedWidget.id}
             onChange={(e) => {
               const widget = widgets.find(w => w.id === e.target.value);
-              if (widget) setSelectedWidget(widget);
+              if (widget) {
+                setSelectedWidget(widget);
+                setIsEditing(false);
+              }
             }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
           >
             {widgets.map((widget) => (
               <option key={widget.id} value={widget.id}>
-                {widget.widget_key}
+                {widget.name}
               </option>
             ))}
           </select>
         </div>
       )}
 
-      {/* Settings Form */}
+      {/* Widget Details */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">General Settings</h3>
-        <div className="space-y-6">
-          {/* Welcome Message */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Welcome Message
-            </label>
-            <textarea
-              value={selectedWidget.welcome_message}
-              onChange={(e) => setSelectedWidget({ ...selectedWidget, welcome_message: e.target.value })}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Hi! How can I help you today?"
-            />
-          </div>
-
-          {/* Primary Color */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Primary Color
-            </label>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={selectedWidget.primary_color || '#3B82F6'}
-                onChange={(e) => setSelectedWidget({ ...selectedWidget, primary_color: e.target.value })}
-                className="h-10 w-20 border border-gray-300 rounded cursor-pointer"
-              />
-              <input
-                type="text"
-                value={selectedWidget.primary_color || '#3B82F6'}
-                onChange={(e) => setSelectedWidget({ ...selectedWidget, primary_color: e.target.value })}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
-                placeholder="#3B82F6"
-              />
-            </div>
-          </div>
-
-          {/* AI Instructions */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              AI Instructions (Optional)
-            </label>
-            <textarea
-              value={selectedWidget.ai_instructions || ''}
-              onChange={(e) => setSelectedWidget({ ...selectedWidget, ai_instructions: e.target.value })}
-              rows={6}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
-              placeholder="Custom instructions for the AI (leave empty to use default)..."
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Customize how the AI responds. Leave empty to use the default system prompt.
-            </p>
-          </div>
-
-          {/* Save Button */}
-          <div className="pt-4">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-gray-900">Widget Details</h3>
+          <div className="flex gap-2">
+            {!isEditing ? (
+              <button
+                onClick={startEdit}
+                className="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors font-medium text-sm"
+              >
+                <Edit2 className="w-4 h-4 mr-1" />
+                Edit
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => setIsEditing(false)}
+                  className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors font-medium text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="px-3 py-1.5 bg-teal-600 text-white rounded hover:bg-teal-700 transition-colors font-medium text-sm disabled:opacity-50"
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </>
+            )}
             <button
-              onClick={handleSave}
-              disabled={saving}
-              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium disabled:opacity-50"
+              onClick={() => setDeleteConfirm(selectedWidget.id)}
+              className="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors font-medium text-sm"
             >
-              {saving ? 'Saving...' : 'Save Settings'}
+              <Trash2 className="w-4 h-4 mr-1" />
+              Delete
             </button>
           </div>
         </div>
+
+        {!isEditing ? (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-500 mb-1">Widget Name</label>
+              <div className="text-gray-900 font-medium">{selectedWidget.name}</div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-500 mb-1">Welcome Message</label>
+              <div className="text-gray-900">{selectedWidget.settings.welcome_message}</div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-500 mb-1">Primary Color</label>
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-8 h-8 rounded border border-gray-300"
+                  style={{ backgroundColor: selectedWidget.settings.theme_color || '#0D9488' }}
+                />
+                <span className="font-mono text-sm">{selectedWidget.settings.theme_color || '#0D9488'}</span>
+              </div>
+            </div>
+            {selectedWidget.settings.business_description && (
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Business Description</label>
+                <div className="text-gray-900 text-sm">{selectedWidget.settings.business_description}</div>
+              </div>
+            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-500 mb-1">Created</label>
+              <div className="text-gray-900 text-sm">
+                {new Date(selectedWidget.created_at).toLocaleDateString()}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Widget Name</label>
+              <input
+                type="text"
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Welcome Message</label>
+              <input
+                type="text"
+                value={editForm.welcomeMessage}
+                onChange={(e) => setEditForm({ ...editForm, welcomeMessage: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Primary Color</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={editForm.primaryColor}
+                  onChange={(e) => setEditForm({ ...editForm, primaryColor: e.target.value })}
+                  className="h-10 w-20 border border-gray-300 rounded cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={editForm.primaryColor}
+                  onChange={(e) => setEditForm({ ...editForm, primaryColor: e.target.value })}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 font-mono text-sm"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Business Description <span className="text-gray-500">(Optional)</span>
+              </label>
+              <textarea
+                value={editForm.businessDescription}
+                onChange={(e) => setEditForm({ ...editForm, businessDescription: e.target.value })}
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                placeholder="Tell the AI about your business..."
+              />
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Delete Confirmation */}
+      {deleteConfirm && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <div className="flex items-start">
+            <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 mr-3" />
+            <div className="flex-1">
+              <h4 className="text-sm font-semibold text-red-900 mb-1">Delete Widget?</h4>
+              <p className="text-sm text-red-700 mb-4">
+                This will permanently delete the widget and all associated data. This action cannot be undone.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleDelete(deleteConfirm)}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors font-medium text-sm"
+                >
+                  Yes, Delete Widget
+                </button>
+                <button
+                  onClick={() => setDeleteConfirm(null)}
+                  className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors font-medium text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Widget Key */}
       <div className="bg-white rounded-lg shadow p-6">
@@ -262,9 +420,19 @@ export default function SettingsPage() {
           <h3 className="text-lg font-semibold text-gray-900">Embed Code</h3>
           <button
             onClick={copyEmbedCode}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm"
+            className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm"
           >
-            {showCopied ? '✓ Copied!' : 'Copy Code'}
+            {showCopied ? (
+              <>
+                <Check className="w-4 h-4 mr-2 text-green-600" />
+                Copied!
+              </>
+            ) : (
+              <>
+                <Copy className="w-4 h-4 mr-2" />
+                Copy Code
+              </>
+            )}
           </button>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
@@ -280,27 +448,6 @@ export default function SettingsPage() {
             <li>Save and publish your changes</li>
             <li>The chat widget will appear on your website!</li>
           </ol>
-
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800">
-              <strong>💡 Tip:</strong> You can customize the widget's appearance using the settings above before embedding it.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Preview */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Preview</h3>
-        <div className="bg-gray-50 rounded-lg p-8 text-center">
-          <div
-            className="inline-flex items-center gap-3 rounded-full px-6 py-3 text-white font-medium shadow-lg"
-            style={{ backgroundColor: selectedWidget.primary_color || '#3B82F6' }}
-          >
-            <span className="text-2xl">💬</span>
-            <span>Chat with us</span>
-          </div>
-          <p className="text-gray-600 mt-4">{selectedWidget.welcome_message}</p>
         </div>
       </div>
     </div>

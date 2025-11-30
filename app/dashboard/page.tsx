@@ -174,7 +174,7 @@ export default async function DashboardOverview() {
                 You don't have any chat widgets yet. Create one to start collecting conversations and leads.
               </p>
               <Link
-                href="/dashboard/settings"
+                href="/dashboard/widgets/new"
                 className="inline-flex items-center px-4 py-2 bg-yellow-600 text-white text-sm font-medium rounded-lg hover:bg-yellow-700 transition-colors"
               >
                 Create Your First Widget →
