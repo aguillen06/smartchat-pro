@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
 
     const { data: widget, error: widgetError } = await supabase
       .from('widgets')
-      .select('id, widget_key, ai_instructions, is_active, customer_id, owner_id')
+      .select('id, widget_key, name, settings, ai_instructions, is_active, customer_id, owner_id')
       .eq('widget_key', widgetKey)
       .single();
 
@@ -232,51 +232,34 @@ export async function POST(request: NextRequest) {
     const knowledgeContext = formatKnowledgeContext(knowledgeResults);
 
     // 7. Build system prompt with widget instructions and knowledge
+    // Extract widget settings
+    const widgetSettings = widget.settings as any || {};
+    const businessName = widget.name || widgetSettings.business_name || 'this business';
+    const businessDescription = widgetSettings.business_description || '';
+    const welcomeMessage = widgetSettings.welcome_message || 'How can I help you today?';
+
+    console.log('🎯 [Chat API] Widget personalization:', {
+      widgetName: widget.name,
+      businessName,
+      hasBusinessDescription: !!businessDescription,
+      businessDescriptionLength: businessDescription.length,
+      welcomeMessage,
+      hasCustomAiInstructions: !!widget.ai_instructions
+    });
+
+    // Use ai_instructions if provided, otherwise create personalized prompt
     let systemPrompt = widget.ai_instructions ||
-      `You are a helpful AI assistant for Symtri AI, an AI automation company helping small businesses.
+      `You are a helpful AI assistant for ${businessName}.
+${businessDescription || 'Help customers with their questions.'}
 
-⚠️ LENGTH RULES:
-- Maximum 2-3 sentences per response
-- Keep it under 50 words
-- Sound conversational and natural
+Guidelines:
+- Be friendly, professional, and helpful
+- Keep responses concise (under 50 words when possible)
+- If asked for contact info or a demo, try to collect their email naturally
+- Only discuss topics related to this business
+- If you don't know something specific, offer to connect them with the team
 
-🎯 WHEN TO ASK FOR EMAIL (be selective):
-ASK for email when discussing:
-- Products, services, or solutions
-- Demos or trials
-- Pricing or quotes
-- Contact or scheduling
-- Case studies or examples
-
-DO NOT ask for email when:
-- Answering casual questions (weather, jokes, general chat)
-- Providing simple factual info (hours, location)
-- User is just browsing or exploring
-
-📝 RESPONSE STYLE:
-- Be helpful and friendly FIRST
-- Provide useful info
-- THEN offer to send more details via email (if relevant)
-- Don't force email capture on every message
-
-✅ GOOD EXAMPLES:
-
-Q: What does Symtri AI do?
-A: We're an AI automation company helping small businesses with chatbots, voice systems, lead management, and document processing. Want to see how we can help your business? I can email you some examples!
-
-Q: What's the weather?
-A: I focus on AI automation solutions, not weather! But I'm here if you have questions about our products.
-
-Q: How much does SmartChat Pro cost?
-A: Pricing starts at $99/month for basics. I can send you a detailed breakdown - what's your email?
-
-Q: Do you have demos?
-A: Yes! I can send you demo links right now. What's your email address?
-
-Q: Tell me a joke
-A: Why did the AI go to therapy? It had too many layers! 😄 Anything I can help you with about Symtri AI?
-
-Remember: Be helpful first, capture email when it makes sense.`;
+Welcome message for reference: ${welcomeMessage}`;
 
     if (knowledgeContext) {
       systemPrompt += '\n\n' + knowledgeContext + '\n\nUse this to answer naturally. Ask for email only if discussing products/services.';
