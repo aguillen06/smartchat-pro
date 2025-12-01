@@ -14,6 +14,14 @@ export async function POST(request: NextRequest) {
 
   let event: Stripe.Event;
 
+  // Log service role key status for debugging RLS issues
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  console.log('🔑 Service role key status:', {
+    exists: !!serviceRoleKey,
+    length: serviceRoleKey?.length || 0,
+    startsWidth: serviceRoleKey?.substring(0, 7) || 'missing',
+  });
+
   // Check if webhook secret is configured
   if (!webhookSecret || webhookSecret === 'whsec_placeholder_for_now') {
     if (process.env.NODE_ENV === 'production') {
@@ -105,7 +113,7 @@ export async function POST(request: NextRequest) {
               break;
             }
 
-            // Ensure we have required fields
+            // Ensure we have required fields with proper null checks
             const subscriptionData = {
               user_id: userId,
               stripe_customer_id: session.customer as string,
@@ -116,15 +124,13 @@ export async function POST(request: NextRequest) {
               trial_ends_at: subscription.trial_end
                 ? new Date(subscription.trial_end * 1000).toISOString()
                 : null,
-              current_period_start: new Date(
-                subscription.current_period_start * 1000
-              ).toISOString(),
-              current_period_end: new Date(
-                subscription.current_period_end * 1000
-              ).toISOString(),
-              cancel_at: subscription.cancel_at
-                ? new Date(subscription.cancel_at * 1000).toISOString()
-                : null,
+              current_period_start: subscription.current_period_start
+                ? new Date(subscription.current_period_start * 1000).toISOString()
+                : new Date().toISOString(),
+              current_period_end: subscription.current_period_end
+                ? new Date(subscription.current_period_end * 1000).toISOString()
+                : new Date().toISOString(),
+              // Note: cancel_at column removed - track via canceled_at instead
               canceled_at: subscription.canceled_at
                 ? new Date(subscription.canceled_at * 1000).toISOString()
                 : null,
@@ -200,7 +206,7 @@ export async function POST(request: NextRequest) {
             console.warn('⚠️ No price ID found in subscription items');
           }
 
-          // Prepare update data with null checks
+          // Prepare update data with proper null checks
           const updateData = {
             stripe_subscription_id: subscription.id,
             stripe_price_id: priceId || 'unknown',
@@ -209,15 +215,13 @@ export async function POST(request: NextRequest) {
             trial_ends_at: subscription.trial_end
               ? new Date(subscription.trial_end * 1000).toISOString()
               : null,
-            current_period_start: new Date(
-              subscription.current_period_start * 1000
-            ).toISOString(),
-            current_period_end: new Date(
-              subscription.current_period_end * 1000
-            ).toISOString(),
-            cancel_at: subscription.cancel_at
-              ? new Date(subscription.cancel_at * 1000).toISOString()
-              : null,
+            current_period_start: subscription.current_period_start
+              ? new Date(subscription.current_period_start * 1000).toISOString()
+              : new Date().toISOString(),
+            current_period_end: subscription.current_period_end
+              ? new Date(subscription.current_period_end * 1000).toISOString()
+              : new Date().toISOString(),
+            // Note: cancel_at column removed - track via canceled_at instead
             canceled_at: subscription.canceled_at
               ? new Date(subscription.canceled_at * 1000).toISOString()
               : null,
@@ -309,8 +313,8 @@ export async function POST(request: NextRequest) {
 
             if (lookupError) {
               console.error('⚠️ Error finding subscription:', lookupError);
-            } else if (subData?.user_id) {
-              // Create or update usage tracking for new period
+            } else if (subData?.user_id && sub.current_period_start && sub.current_period_end) {
+              // Create or update usage tracking for new period with null checks
               const usageData = {
                 user_id: subData.user_id,
                 period_start: new Date(sub.current_period_start * 1000).toISOString(),
