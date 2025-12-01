@@ -34,7 +34,7 @@ export async function sendSignupNotification(data: SignupNotificationData) {
     console.log('   3. Add: RESEND_API_KEY=re_xxxxxxxxxxxxx');
     console.log('');
     console.log('📮 Email would be sent to: andres@symtri.ai');
-    console.log('📮 From: Symtri AI <onboarding@resend.dev>');
+    console.log('📮 From: Symtri AI <notifications@symtri.ai>');
     return { success: false, message: 'RESEND_API_KEY not configured' };
   }
 
@@ -152,17 +152,17 @@ export async function sendSignupNotification(data: SignupNotificationData) {
       </div>
     `;
 
-    // Send the email using Resend's default verified domain
+    // Send the email using Resend with verified domain
     console.log('📤 [Email] Sending email with Resend...');
     console.log('📤 [Email] Parameters:', {
-      from: 'Symtri AI <onboarding@resend.dev>',
+      from: 'Symtri AI <notifications@symtri.ai>',
       to: 'andres@symtri.ai',
       subject: `New SmartChat Signup: ${data.userEmail}`,
     });
 
     // Use proper destructuring for Resend response
     const { data: emailData, error } = await resend.emails.send({
-      from: 'Symtri AI <onboarding@resend.dev>',  // Using Resend's default domain
+      from: 'Symtri AI <notifications@symtri.ai>',  // Using verified domain
       to: 'andres@symtri.ai',
       subject: `New SmartChat Signup: ${data.userEmail}`,
       html: emailHtml,
