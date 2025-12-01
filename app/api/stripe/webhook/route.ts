@@ -10,12 +10,24 @@ export const runtime = 'nodejs';
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const signature = request.headers.get('stripe-signature');
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   let event: Stripe.Event;
 
-  // In development, skip signature verification if webhook secret is placeholder
-  if (process.env.NODE_ENV === 'development' && process.env.STRIPE_WEBHOOK_SECRET === 'whsec_placeholder_for_now') {
-    console.log('⚠️ Webhook signature verification skipped in development');
+  // Check if webhook secret is configured
+  if (!webhookSecret || webhookSecret === 'whsec_placeholder_for_now') {
+    if (process.env.NODE_ENV === 'production') {
+      // In production, webhook secret MUST be configured
+      console.error('❌ CRITICAL: STRIPE_WEBHOOK_SECRET is not configured in production!');
+      return NextResponse.json(
+        { error: 'Webhook configuration error' },
+        { status: 500 }
+      );
+    }
+
+    // Development mode - skip verification but warn
+    console.warn('⚠️ Webhook signature verification skipped in development');
+    console.warn('⚠️ Set STRIPE_WEBHOOK_SECRET for production security');
     try {
       event = JSON.parse(body) as Stripe.Event;
     } catch (err) {
@@ -23,22 +35,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }
   } else {
-    // Production: Verify webhook signature
+    // Verify webhook signature (required for production)
     if (!signature) {
-      return NextResponse.json({ error: 'Missing signature' }, { status: 400 });
+      console.error('🔒 Webhook signature missing from request headers');
+      return NextResponse.json({ error: 'Webhook signature required' }, { status: 401 });
     }
 
     try {
       event = stripe.webhooks.constructEvent(
         body,
         signature,
-        process.env.STRIPE_WEBHOOK_SECRET!
+        webhookSecret
       );
-    } catch (err) {
-      console.error('Webhook signature verification failed:', err);
+      console.log('✅ Webhook signature verified successfully');
+    } catch (err: any) {
+      console.error('🔒 Webhook signature verification failed:', {
+        error: err.message,
+        type: err.type,
+        signature: signature?.substring(0, 20) + '...'
+      });
       return NextResponse.json(
-        { error: 'Invalid signature' },
-        { status: 400 }
+        { error: 'Webhook signature verification failed' },
+        { status: 401 }
       );
     }
   }
