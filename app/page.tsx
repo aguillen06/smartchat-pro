@@ -1,23 +1,29 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  Bot,
-  Mail,
-  BarChart3,
+  MessageSquare,
   Zap,
-  Palette,
   Shield,
-  Globe
+  BarChart3,
+  Users,
+  Clock,
+  ChevronRight,
+  Check,
+  ArrowRight,
+  Menu,
+  X
 } from 'lucide-react';
 
 export default function Home() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [faqOpen, setFaqOpen] = useState<{ [key: number]: boolean }>({});
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     // Redirect authenticated users to dashboard
@@ -25,6 +31,81 @@ export default function Home() {
       router.push('/dashboard');
     }
   }, [user, loading, router]);
+
+  // Add dot grid animation
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const setCanvasSize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    setCanvasSize();
+    window.addEventListener('resize', setCanvasSize);
+
+    const dots: { x: number; y: number; baseAlpha: number; currentAlpha: number }[] = [];
+    const spacing = 30;
+    const margin = 30;
+
+    // Create dots grid
+    for (let x = margin; x < canvas.width; x += spacing) {
+      for (let y = margin; y < canvas.height; y += spacing) {
+        dots.push({
+          x,
+          y,
+          baseAlpha: 0.1,
+          currentAlpha: 0.1
+        });
+      }
+    }
+
+    let mouseX = -1000;
+    let mouseY = -1000;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      dots.forEach(dot => {
+        const distance = Math.sqrt(
+          Math.pow(mouseX - dot.x, 2) + Math.pow(mouseY - dot.y, 2)
+        );
+
+        const maxDistance = 150;
+        if (distance < maxDistance) {
+          const intensity = 1 - (distance / maxDistance);
+          dot.currentAlpha = dot.baseAlpha + (0.5 * intensity);
+        } else {
+          dot.currentAlpha += (dot.baseAlpha - dot.currentAlpha) * 0.1;
+        }
+
+        ctx.beginPath();
+        ctx.arc(dot.x, dot.y, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(16, 185, 129, ${dot.currentAlpha})`;
+        ctx.fill();
+      });
+
+      requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      window.removeEventListener('resize', setCanvasSize);
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, [loading, user]);
 
   // Add smooth scrolling
   useEffect(() => {
@@ -48,35 +129,6 @@ export default function Home() {
         anchor.removeEventListener('click', handleSmoothScroll as any);
       });
     };
-  }, [loading, user]);
-
-  // Embed the SmartChat widget for demo
-  useEffect(() => {
-    // Only load widget if not authenticated and not loading
-    if (!loading && !user) {
-      // Check if widget script already exists
-      const existingScript = document.querySelector('script[data-widget-key]');
-      if (!existingScript) {
-        const script = document.createElement('script');
-        script.src = 'https://smartchat-pro-ohmk.vercel.app/widget.js';
-        script.setAttribute('data-widget-key', 'demo_widget_key_123');
-        script.setAttribute('data-primary-color', '#0D9488');
-        script.async = true;
-        document.body.appendChild(script);
-
-        // Cleanup function to remove script when component unmounts
-        return () => {
-          if (script.parentNode) {
-            script.parentNode.removeChild(script);
-          }
-          // Also remove the widget iframe if it exists
-          const widgetContainer = document.getElementById('smartchat-widget-container');
-          if (widgetContainer && widgetContainer.parentNode) {
-            widgetContainer.parentNode.removeChild(widgetContainer);
-          }
-        };
-      }
-    }
   }, [loading, user]);
 
   const toggleFaq = (index: number) => {
@@ -108,7 +160,7 @@ export default function Home() {
     },
     {
       question: "Do I need coding skills?",
-      answer: "Not at all! If you can copy and paste, you can install Symtri AI SmartChat. We handle all the technical complexity for you."
+      answer: "Not at all! If you can copy and paste, you can install SmartChat Pro. We handle all the technical complexity for you."
     },
     {
       question: "What happens after my free trial?",
@@ -120,240 +172,138 @@ export default function Home() {
     }
   ];
 
-  // Landing page for non-authenticated users
   return (
     <div className="min-h-screen bg-white">
-      {/* SEO Meta Tags would go in layout.tsx or use next/head */}
+      {/* Dot grid canvas */}
+      <canvas
+        ref={canvasRef}
+        className="fixed inset-0 pointer-events-none z-0"
+        style={{ opacity: 0.4 }}
+      />
 
       {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100">
+      <nav className="fixed top-0 w-full bg-white/90 backdrop-blur-md z-50 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Link href="/" className="flex items-center gap-2">
-                <span className="text-2xl font-bold bg-gradient-to-r from-teal-600 to-teal-500 bg-clip-text text-transparent">
-                  Symtri AI
-                </span>
+              <Link href="/" className="flex items-center gap-3">
+                <div className="flex flex-col">
+                  <span className="text-xl font-bold tracking-tight">SYMTRI AI</span>
+                  <span className="text-[10px] text-gray-500 tracking-widest">INTELLIGENT SYSTEMS</span>
+                </div>
               </Link>
             </div>
+
+            {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-gray-700 hover:text-teal-600 transition-colors">
+              <a href="#features" className="text-gray-600 hover:text-black transition-colors font-medium">
                 Features
               </a>
-              <a href="#pricing" className="text-gray-700 hover:text-teal-600 transition-colors">
+              <a href="#pricing" className="text-gray-600 hover:text-black transition-colors font-medium">
                 Pricing
               </a>
-              <Link href="/login" className="text-gray-700 hover:text-teal-600 transition-colors">
+              <Link href="/login" className="text-gray-600 hover:text-black transition-colors font-medium">
                 Login
               </Link>
               <Link
                 href="/signup"
-                className="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2 rounded-lg font-medium transition-colors"
-              >
-                Start Free Trial
-              </Link>
-            </div>
-            {/* Mobile menu button */}
-            <div className="md:hidden">
-              <Link
-                href="/signup"
-                className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                className="bg-black hover:bg-gray-800 text-white px-5 py-2 rounded-lg font-medium transition-all hover:transform hover:-translate-y-0.5"
               >
                 Get Started
               </Link>
             </div>
+
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2"
+            >
+              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Navigation */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-white border-b border-gray-100 px-4 py-4 space-y-3">
+            <a href="#features" className="block text-gray-600 hover:text-black transition-colors font-medium">
+              Features
+            </a>
+            <a href="#pricing" className="block text-gray-600 hover:text-black transition-colors font-medium">
+              Pricing
+            </a>
+            <Link href="/login" className="block text-gray-600 hover:text-black transition-colors font-medium">
+              Login
+            </Link>
+            <Link
+              href="/signup"
+              className="block bg-black hover:bg-gray-800 text-white px-5 py-2 rounded-lg font-medium transition-colors text-center"
+            >
+              Get Started
+            </Link>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-24 pb-16 bg-gradient-to-b from-teal-50/50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
+      <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+        <div className="relative max-w-7xl mx-auto">
+          <div className="text-center max-w-3xl mx-auto">
             <div className="mb-4">
-              <span className="inline-block px-3 py-1 text-sm font-medium bg-lime-100 text-lime-800 rounded-full">
-                Symtri AI SmartChat
+              <span className="inline-block px-3 py-1 text-xs font-semibold bg-emerald-50 text-emerald-700 rounded-full uppercase tracking-wider">
+                SmartChat Pro
               </span>
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-              AI-Powered Chat Support
-              <br />
-              <span className="bg-gradient-to-r from-teal-600 to-teal-500 bg-clip-text text-transparent">
-                for Your Website
-              </span>
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
+              AI Chat That
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-emerald-400"> Converts</span>
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Convert more visitors into customers with intelligent chatbots that capture leads 24/7.
-              Deploy in minutes, not months.
+            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+              Intelligent customer support that works 24/7. Deploy in minutes, not months.
             </p>
             <div className="flex gap-4 justify-center">
               <Link
                 href="/signup"
-                className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-colors inline-flex items-center gap-2"
+                className="bg-black hover:bg-gray-800 text-white px-8 py-4 rounded-lg font-semibold transition-all hover:transform hover:-translate-y-0.5 inline-flex items-center gap-2"
               >
                 Start Free Trial
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
+                <ArrowRight className="w-5 h-5" />
               </Link>
               <a
                 href="#demo"
-                className="border-2 border-gray-300 hover:border-teal-600 text-gray-700 px-8 py-4 rounded-lg text-lg font-semibold transition-colors inline-flex items-center gap-2"
+                className="border border-gray-300 hover:border-black text-black px-8 py-4 rounded-lg font-semibold transition-all hover:transform hover:-translate-y-0.5"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Watch Demo
+                See Demo
               </a>
             </div>
-            <p className="text-sm text-gray-500 mt-4">
-              14-day free trial • No credit card required • Setup in 5 minutes
+            <p className="text-sm text-gray-500 mt-6">
+              14-day free trial · No credit card required · 5-minute setup
             </p>
           </div>
 
-          {/* Hero Widget Mockup */}
-          <div className="mt-16 flex justify-center">
-            <div className="relative">
-              {/* Browser window frame */}
-              <div className="bg-gray-200 rounded-t-lg p-2 flex items-center gap-2 px-4">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                </div>
-                <div className="flex-1 bg-white rounded px-2 py-1 text-xs text-gray-600 ml-2">
-                  yourwebsite.com
-                </div>
-              </div>
-              {/* Website content with widget */}
-              <div className="bg-white rounded-b-lg shadow-2xl p-8 w-96">
-                <div className="space-y-3 mb-4">
-                  <div className="h-2 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-2 bg-gray-200 rounded w-full"></div>
-                  <div className="h-2 bg-gray-200 rounded w-5/6"></div>
-                </div>
-
-                {/* Chat widget mockup */}
-                <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 mt-8">
-                  <div className="flex items-center gap-2 mb-3 pb-3 border-b">
-                    <div className="w-8 h-8 bg-teal-600 rounded-full flex items-center justify-center">
-                      <Bot className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold">Symtri AI SmartChat</p>
-                      <p className="text-xs text-green-600">● Online</p>
-                    </div>
-                  </div>
-
-                  {/* Sample conversation */}
-                  <div className="space-y-2 text-sm">
-                    <div className="bg-gray-100 rounded-lg p-2 max-w-[80%]">
-                      <p className="text-gray-700">Hi! How can I help you today?</p>
-                    </div>
-                    <div className="bg-teal-600 rounded-lg p-2 max-w-[80%] ml-auto">
-                      <p className="text-white">What are your business hours?</p>
-                    </div>
-                    <div className="bg-gray-100 rounded-lg p-2 max-w-[80%]">
-                      <p className="text-gray-700">We're open Monday-Friday, 9AM-6PM CST!</p>
-                    </div>
-                  </div>
-
-                  {/* Input field */}
-                  <div className="mt-3 flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Type a message..."
-                      className="flex-1 px-3 py-1.5 border border-gray-300 rounded-full text-xs"
-                      disabled
-                    />
-                    <button className="bg-teal-600 text-white p-1.5 rounded-full">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Problem/Solution Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                The AI Adoption Challenge
-              </h2>
-              <div className="space-y-4">
-                <div className="flex gap-3">
-                  <span className="text-red-500 text-xl">⚠️</span>
-                  <p className="text-gray-700">
-                    <strong>77% of SMBs</strong> want to adopt AI for customer service
-                  </p>
-                </div>
-                <div className="flex gap-3">
-                  <span className="text-red-500 text-xl">❌</span>
-                  <p className="text-gray-700">
-                    <strong>85% of AI projects fail</strong> due to complexity and cost
-                  </p>
-                </div>
-                <div className="flex gap-3">
-                  <span className="text-red-500 text-xl">⏰</span>
-                  <p className="text-gray-700">
-                    <strong>6-12 months</strong> average implementation time for enterprise solutions
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-lg shadow-lg p-8">
-              <h3 className="text-2xl font-bold text-teal-600 mb-4">
-                The Symtri AI SmartChat Solution
-              </h3>
-              <div className="space-y-4">
-                <div className="flex gap-3">
-                  <span className="text-lime-500 text-xl">✅</span>
-                  <p className="text-gray-700">
-                    <strong>Deploy in 5 minutes</strong>, not months
-                  </p>
-                </div>
-                <div className="flex gap-3">
-                  <span className="text-lime-500 text-xl">✅</span>
-                  <p className="text-gray-700">
-                    <strong>No coding required</strong> - just copy & paste
-                  </p>
-                </div>
-                <div className="flex gap-3">
-                  <span className="text-lime-500 text-xl">✅</span>
-                  <p className="text-gray-700">
-                    <strong>Affordable pricing</strong> starting at $199/month
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Floating gradient orb */}
+          <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-emerald-400/20 to-teal-400/20 rounded-full blur-3xl animate-float"></div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Everything You Need to Delight Customers
+      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Everything You Need
             </h2>
             <p className="text-xl text-gray-600">
-              Powerful features that are simple to use
+              Powerful features, simple to use
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="group hover:bg-teal-50 p-6 rounded-lg transition-colors">
+            <div className="group p-6 rounded-xl border border-gray-200 hover:border-emerald-500 transition-all">
               <div className="mb-4">
-                <Bot className="w-10 h-10 text-teal-600" />
+                <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+                  <MessageSquare className="w-6 h-6 text-emerald-600" strokeWidth={1.5} />
+                </div>
               </div>
               <h3 className="text-xl font-semibold mb-2">AI-Powered Conversations</h3>
               <p className="text-gray-600">
@@ -361,9 +311,11 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="group hover:bg-teal-50 p-6 rounded-lg transition-colors">
+            <div className="group p-6 rounded-xl border border-gray-200 hover:border-emerald-500 transition-all">
               <div className="mb-4">
-                <Mail className="w-10 h-10 text-teal-600" />
+                <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+                  <Users className="w-6 h-6 text-emerald-600" strokeWidth={1.5} />
+                </div>
               </div>
               <h3 className="text-xl font-semibold mb-2">Automatic Lead Capture</h3>
               <p className="text-gray-600">
@@ -371,19 +323,23 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="group hover:bg-teal-50 p-6 rounded-lg transition-colors">
+            <div className="group p-6 rounded-xl border border-gray-200 hover:border-emerald-500 transition-all">
               <div className="mb-4">
-                <BarChart3 className="w-10 h-10 text-teal-600" />
+                <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+                  <BarChart3 className="w-6 h-6 text-emerald-600" strokeWidth={1.5} />
+                </div>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Real-time Dashboard</h3>
+              <h3 className="text-xl font-semibold mb-2">Real-time Analytics</h3>
               <p className="text-gray-600">
                 Track conversations, leads, and analytics. See what your customers are asking about.
               </p>
             </div>
 
-            <div className="group hover:bg-teal-50 p-6 rounded-lg transition-colors">
+            <div className="group p-6 rounded-xl border border-gray-200 hover:border-emerald-500 transition-all">
               <div className="mb-4">
-                <Zap className="w-10 h-10 text-teal-600" />
+                <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+                  <Zap className="w-6 h-6 text-emerald-600" strokeWidth={1.5} />
+                </div>
               </div>
               <h3 className="text-xl font-semibold mb-2">5-Minute Setup</h3>
               <p className="text-gray-600">
@@ -391,19 +347,23 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="group hover:bg-teal-50 p-6 rounded-lg transition-colors">
+            <div className="group p-6 rounded-xl border border-gray-200 hover:border-emerald-500 transition-all">
               <div className="mb-4">
-                <Palette className="w-10 h-10 text-teal-600" />
+                <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+                  <Clock className="w-6 h-6 text-emerald-600" strokeWidth={1.5} />
+                </div>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Fully Customizable</h3>
+              <h3 className="text-xl font-semibold mb-2">24/7 Availability</h3>
               <p className="text-gray-600">
-                Match your brand colors and style. Customize welcome messages and responses.
+                Never miss a lead. Your AI assistant works around the clock, every day.
               </p>
             </div>
 
-            <div className="group hover:bg-teal-50 p-6 rounded-lg transition-colors">
+            <div className="group p-6 rounded-xl border border-gray-200 hover:border-emerald-500 transition-all">
               <div className="mb-4">
-                <Shield className="w-10 h-10 text-teal-600" />
+                <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+                  <Shield className="w-6 h-6 text-emerald-600" strokeWidth={1.5} />
+                </div>
               </div>
               <h3 className="text-xl font-semibold mb-2">Secure & Reliable</h3>
               <p className="text-gray-600">
@@ -411,103 +371,60 @@ export default function Home() {
               </p>
             </div>
           </div>
-
-          {/* Coming Soon - Multilingual Feature */}
-          <div className="mt-16 text-center">
-            <div className="inline-block bg-gradient-to-r from-teal-50 to-lime-50 rounded-lg p-8 border border-teal-200">
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <Globe className="w-8 h-8 text-teal-600" />
-                <h3 className="text-2xl font-bold text-gray-900">Multilingual Support Coming Soon</h3>
-                <span className="bg-lime-500 text-white px-2 py-1 rounded-full text-xs font-semibold">NEW</span>
-              </div>
-              <p className="text-gray-700 mb-4">
-                Connect with customers globally in their preferred language
-              </p>
-              <div className="flex flex-wrap justify-center gap-3">
-                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm border border-gray-200">
-                  <span className="text-xs text-gray-500 mr-1">EN</span> English
-                </span>
-                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm border border-gray-200">
-                  <span className="text-xs text-gray-500 mr-1">ES</span> Español
-                </span>
-                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm border border-gray-200">
-                  <span className="text-xs text-gray-500 mr-1">ES-MX</span> Spanish (Mexico)
-                </span>
-                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm border border-gray-200">
-                  <span className="text-xs text-gray-500 mr-1">FR</span> Français
-                </span>
-                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm border border-gray-200">
-                  More languages...
-                </span>
-              </div>
-              <p className="text-sm text-gray-600 mt-4">
-                Automatic language detection • Seamless switching • Cultural context awareness
-              </p>
-            </div>
-          </div>
         </div>
       </section>
 
       {/* How It Works */}
-      <section className="py-20 bg-gradient-to-b from-teal-50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Get Started in 3 Simple Steps
+      <section className="py-20 bg-gray-50 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Get Started in 3 Steps
             </h2>
             <p className="text-xl text-gray-600">
               No technical expertise required
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-12">
             <div className="text-center">
-              <div className="bg-teal-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+              <div className="bg-black text-white w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-6">
                 1
               </div>
-              <h3 className="text-xl font-semibold mb-2">Sign Up</h3>
+              <h3 className="text-xl font-bold mb-3">Sign Up</h3>
               <p className="text-gray-600">
                 Create your account in 30 seconds. Start with a free 14-day trial.
               </p>
             </div>
 
             <div className="text-center">
-              <div className="bg-teal-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+              <div className="bg-black text-white w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-6">
                 2
               </div>
-              <h3 className="text-xl font-semibold mb-2">Customize</h3>
+              <h3 className="text-xl font-bold mb-3">Customize</h3>
               <p className="text-gray-600">
                 Add your knowledge base and match your brand colors.
               </p>
             </div>
 
             <div className="text-center">
-              <div className="bg-teal-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+              <div className="bg-black text-white w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-6">
                 3
               </div>
-              <h3 className="text-xl font-semibold mb-2">Go Live</h3>
+              <h3 className="text-xl font-bold mb-3">Go Live</h3>
               <p className="text-gray-600">
                 Paste one line of code on your website. You're done!
               </p>
             </div>
           </div>
-
-          <div className="text-center mt-12">
-            <Link
-              href="/signup"
-              className="bg-lime-500 hover:bg-lime-600 text-gray-900 px-8 py-4 rounded-lg text-lg font-semibold transition-colors inline-block"
-            >
-              Start Your Free Trial Now
-            </Link>
-          </div>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Simple, Transparent Pricing
             </h2>
             <p className="text-xl text-gray-600">
@@ -517,345 +434,143 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {/* Free Trial */}
-            <div className="border rounded-lg p-8 hover:shadow-lg transition-shadow">
+            <div className="bg-white rounded-xl border border-gray-200 p-8 hover:border-gray-300 transition-colors">
               <h3 className="text-2xl font-bold mb-2">Free Trial</h3>
-              <p className="text-gray-600 mb-4">Test drive Symtri AI SmartChat</p>
+              <p className="text-gray-600 mb-6">Test drive SmartChat Pro</p>
               <div className="mb-6">
                 <span className="text-4xl font-bold">$0</span>
                 <span className="text-gray-600">/month</span>
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start">
-                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
+                  <Check className="w-5 h-5 text-emerald-500 mr-3 mt-0.5" strokeWidth={2} />
                   <span>14 days free</span>
                 </li>
                 <li className="flex items-start">
-                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
+                  <Check className="w-5 h-5 text-emerald-500 mr-3 mt-0.5" strokeWidth={2} />
                   <span>100 conversations</span>
                 </li>
                 <li className="flex items-start">
-                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
+                  <Check className="w-5 h-5 text-emerald-500 mr-3 mt-0.5" strokeWidth={2} />
                   <span>1 widget</span>
                 </li>
                 <li className="flex items-start">
-                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
+                  <Check className="w-5 h-5 text-emerald-500 mr-3 mt-0.5" strokeWidth={2} />
                   <span>All features included</span>
                 </li>
               </ul>
               <Link
                 href="/signup"
-                className="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-900 py-3 rounded-lg font-semibold transition-colors"
+                className="block w-full text-center border border-gray-300 hover:border-black text-black py-3 rounded-lg font-semibold transition-colors"
               >
                 Start Free Trial
               </Link>
             </div>
 
             {/* Starter */}
-            <div className="border rounded-lg p-8 hover:shadow-lg transition-shadow">
+            <div className="bg-white rounded-xl border border-gray-200 p-8 hover:border-gray-300 transition-colors">
               <h3 className="text-2xl font-bold mb-2">Starter</h3>
-              <p className="text-gray-600 mb-4">Perfect for small businesses</p>
+              <p className="text-gray-600 mb-6">Perfect for small businesses</p>
               <div className="mb-6">
                 <span className="text-4xl font-bold">$199</span>
                 <span className="text-gray-600">/month</span>
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start">
-                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
+                  <Check className="w-5 h-5 text-emerald-500 mr-3 mt-0.5" strokeWidth={2} />
                   <span>1,000 conversations/month</span>
                 </li>
                 <li className="flex items-start">
-                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
+                  <Check className="w-5 h-5 text-emerald-500 mr-3 mt-0.5" strokeWidth={2} />
                   <span>1 widget</span>
                 </li>
                 <li className="flex items-start">
-                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
+                  <Check className="w-5 h-5 text-emerald-500 mr-3 mt-0.5" strokeWidth={2} />
                   <span>Email support</span>
                 </li>
                 <li className="flex items-start">
-                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
+                  <Check className="w-5 h-5 text-emerald-500 mr-3 mt-0.5" strokeWidth={2} />
                   <span>Lead capture & analytics</span>
                 </li>
               </ul>
               <Link
                 href="/signup"
-                className="block w-full text-center bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-lg font-semibold transition-colors"
+                className="block w-full text-center bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg font-semibold transition-colors"
               >
                 Start Free Trial
               </Link>
             </div>
 
             {/* Pro */}
-            <div className="border-2 border-teal-500 rounded-lg p-8 hover:shadow-lg transition-shadow relative">
+            <div className="bg-white rounded-xl border-2 border-emerald-500 p-8 relative">
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <span className="bg-teal-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                <span className="bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
                   POPULAR
                 </span>
               </div>
               <h3 className="text-2xl font-bold mb-2">Pro</h3>
-              <p className="text-gray-600 mb-4">For growing companies</p>
+              <p className="text-gray-600 mb-6">For growing companies</p>
               <div className="mb-6">
                 <span className="text-4xl font-bold">$399</span>
                 <span className="text-gray-600">/month</span>
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start">
-                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
+                  <Check className="w-5 h-5 text-emerald-500 mr-3 mt-0.5" strokeWidth={2} />
                   <span>5,000 conversations/month</span>
                 </li>
                 <li className="flex items-start">
-                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
+                  <Check className="w-5 h-5 text-emerald-500 mr-3 mt-0.5" strokeWidth={2} />
                   <span>3 widgets</span>
                 </li>
                 <li className="flex items-start">
-                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
+                  <Check className="w-5 h-5 text-emerald-500 mr-3 mt-0.5" strokeWidth={2} />
                   <span>Priority support</span>
                 </li>
                 <li className="flex items-start">
-                  <svg className="w-5 h-5 text-lime-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
+                  <Check className="w-5 h-5 text-emerald-500 mr-3 mt-0.5" strokeWidth={2} />
                   <span>Advanced analytics</span>
                 </li>
               </ul>
               <Link
                 href="/signup"
-                className="block w-full text-center bg-lime-500 hover:bg-lime-600 text-gray-900 py-3 rounded-lg font-semibold transition-colors"
+                className="block w-full text-center bg-black hover:bg-gray-800 text-white py-3 rounded-lg font-semibold transition-colors"
               >
                 Start Free Trial
               </Link>
             </div>
           </div>
 
-          <div className="text-center mt-8">
+          <div className="text-center mt-12">
             <p className="text-gray-600">
-              All plans include: AI responses • Lead capture • Dashboard • Analytics • Customization
+              All plans include: AI responses · Lead capture · Dashboard · Analytics · Customization
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Live Demo Section */}
-      <section id="demo" className="py-20 bg-gradient-to-b from-gray-50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Experience SmartChat in Action
-            </h2>
-            <p className="text-xl text-gray-600">
-              Watch the demo video or try the live widget
-            </p>
-          </div>
-
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Video Demo Placeholder */}
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-              <div className="bg-gray-900 h-96 flex items-center justify-center relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-teal-900/20 to-lime-900/20"></div>
-                <div className="text-center z-10">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 backdrop-blur rounded-full mb-4">
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-white text-lg font-semibold mb-2">Demo Video Coming Soon</h3>
-                  <p className="text-gray-300 text-sm">
-                    See how SmartChat transforms customer interactions
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Live Widget Instructions */}
-            <div className="bg-white rounded-lg shadow-lg p-8">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">
-                Try the Live Widget
-              </h3>
-              <p className="text-gray-600 mb-6">
-                The Symtri AI SmartChat widget is active on this page. Click the chat bubble in the bottom-right corner to start a conversation.
-              </p>
-
-              {/* Features with SVG icons */}
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0">
-                    <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900">Instant Responses</h4>
-                    <p className="text-sm text-gray-600">Get immediate answers powered by advanced AI</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0">
-                    <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900">AI-Powered Intelligence</h4>
-                    <p className="text-sm text-gray-600">Natural conversations with context understanding</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0">
-                    <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900">Smart Lead Capture</h4>
-                    <p className="text-sm text-gray-600">Automatically collect visitor information</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* CTA */}
-              <div className="mt-8 p-4 bg-teal-50 rounded-lg border border-teal-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-teal-900">Widget is live!</p>
-                    <p className="text-xs text-teal-700">Look for the chat bubble →</p>
-                  </div>
-                  <svg className="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials/Social Proof */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Trusted by Businesses Worldwide
-            </h2>
-            <p className="text-xl text-gray-600">
-              Join thousands of businesses across the globe improving their customer service
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-gray-50 rounded-lg p-6">
-              <div className="flex gap-1 mb-3">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <svg key={star} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                ))}
-              </div>
-              <p className="text-gray-700 mb-4">
-                "Symtri AI SmartChat has transformed our customer service. We're capturing 3x more leads than before!"
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Sarah Johnson</strong><br />
-                Fashion Boutique Owner, New York
-              </p>
-            </div>
-
-            <div className="bg-gray-50 rounded-lg p-6">
-              <div className="flex gap-1 mb-3">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <svg key={star} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                ))}
-              </div>
-              <p className="text-gray-700 mb-4">
-                "Setup took literally 5 minutes. Our customers love the instant responses!"
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Miguel Rodriguez</strong><br />
-                Restaurant Chain CEO, Mexico City
-              </p>
-            </div>
-
-            <div className="bg-gray-50 rounded-lg p-6">
-              <div className="flex gap-1 mb-3">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <svg key={star} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                ))}
-              </div>
-              <p className="text-gray-700 mb-4">
-                "The analytics help us understand what our customers need. Worth every penny!"
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Sophie Laurent</strong><br />
-                E-commerce Director, Paris
-              </p>
-            </div>
           </div>
         </div>
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+      <section className="py-20 bg-gray-50 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Frequently Asked Questions
             </h2>
-            <p className="text-xl text-gray-600">
-              Got questions? We've got answers
-            </p>
           </div>
 
           <div className="space-y-4">
             {faqs.map((faq, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-sm">
+              <div key={index} className="bg-white rounded-lg border border-gray-200">
                 <button
                   onClick={() => toggleFaq(index)}
                   className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors"
                 >
                   <span className="font-medium text-gray-900">{faq.question}</span>
-                  <svg
+                  <ChevronRight
                     className={`w-5 h-5 text-gray-500 transform transition-transform ${
-                      faqOpen[index] ? 'rotate-180' : ''
+                      faqOpen[index] ? 'rotate-90' : ''
                     }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                  />
                 </button>
                 {faqOpen[index] && (
                   <div className="px-6 pb-4 text-gray-600">
@@ -869,50 +584,42 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-teal-600 to-teal-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-white mb-4">
-            Ready to Convert More Visitors into Customers?
+      <section className="py-20 bg-black text-white px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Ready to Transform Your Customer Support?
           </h2>
-          <p className="text-xl text-teal-100 mb-8">
-            Join hundreds of businesses using Symtri AI SmartChat to delight their customers
+          <p className="text-xl text-gray-300 mb-8">
+            Join thousands of businesses using SmartChat Pro
           </p>
           <div className="flex gap-4 justify-center">
             <Link
               href="/signup"
-              className="bg-white hover:bg-gray-100 text-teal-600 px-8 py-4 rounded-lg text-lg font-semibold transition-colors inline-block"
+              className="bg-white hover:bg-gray-100 text-black px-8 py-4 rounded-lg font-semibold transition-all hover:transform hover:-translate-y-0.5 inline-block"
             >
               Start Your Free Trial
             </Link>
             <a
               href="#pricing"
-              className="border-2 border-white hover:bg-white hover:text-teal-600 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-colors inline-block"
+              className="border-2 border-white hover:bg-white hover:text-black text-white px-8 py-4 rounded-lg font-semibold transition-colors inline-block"
             >
               View Pricing
             </a>
           </div>
-          <p className="text-teal-100 mt-4">
-            No credit card required • 14-day free trial • Cancel anytime
-          </p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-300">
+      <footer className="bg-white border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-teal-400 to-lime-400 bg-clip-text text-transparent mb-4">
-                Symtri AI
-              </h3>
-              <p className="text-sm text-gray-400 mb-2">
-                SmartChat by Symtri AI
-              </p>
-              <p className="text-sm text-gray-400 mb-4">
-                Intelligent AI solutions for businesses worldwide
-              </p>
-              <p className="text-sm text-gray-400">
-                🌍 Supporting businesses globally
+              <div className="flex flex-col mb-4">
+                <span className="text-xl font-bold tracking-tight">SYMTRI AI</span>
+                <span className="text-[10px] text-gray-500 tracking-widest">INTELLIGENT SYSTEMS</span>
+              </div>
+              <p className="text-sm text-gray-600">
+                AI-powered customer support for modern businesses.
               </p>
             </div>
 
@@ -920,17 +627,17 @@ export default function Home() {
               <h4 className="font-semibold mb-4">Product</h4>
               <ul className="space-y-2">
                 <li>
-                  <a href="#features" className="hover:text-teal-400 transition-colors">
+                  <a href="#features" className="text-gray-600 hover:text-black transition-colors text-sm">
                     Features
                   </a>
                 </li>
                 <li>
-                  <a href="#pricing" className="hover:text-teal-400 transition-colors">
+                  <a href="#pricing" className="text-gray-600 hover:text-black transition-colors text-sm">
                     Pricing
                   </a>
                 </li>
                 <li>
-                  <a href="#demo" className="hover:text-teal-400 transition-colors">
+                  <a href="#demo" className="text-gray-600 hover:text-black transition-colors text-sm">
                     Demo
                   </a>
                 </li>
@@ -941,17 +648,17 @@ export default function Home() {
               <h4 className="font-semibold mb-4">Company</h4>
               <ul className="space-y-2">
                 <li>
-                  <Link href="/about" className="hover:text-teal-400 transition-colors">
+                  <Link href="/about" className="text-gray-600 hover:text-black transition-colors text-sm">
                     About
                   </Link>
                 </li>
                 <li>
-                  <Link href="/contact" className="hover:text-teal-400 transition-colors">
+                  <Link href="/contact" className="text-gray-600 hover:text-black transition-colors text-sm">
                     Contact
                   </Link>
                 </li>
                 <li>
-                  <Link href="/blog" className="hover:text-teal-400 transition-colors">
+                  <Link href="/blog" className="text-gray-600 hover:text-black transition-colors text-sm">
                     Blog
                   </Link>
                 </li>
@@ -959,40 +666,38 @@ export default function Home() {
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">Get Started</h4>
+              <h4 className="font-semibold mb-4">Support</h4>
               <ul className="space-y-2">
                 <li>
-                  <Link href="/login" className="hover:text-teal-400 transition-colors">
-                    Login
+                  <Link href="/help" className="text-gray-600 hover:text-black transition-colors text-sm">
+                    Help Center
                   </Link>
                 </li>
                 <li>
-                  <Link href="/signup" className="hover:text-teal-400 transition-colors">
-                    Sign Up
+                  <Link href="/docs" className="text-gray-600 hover:text-black transition-colors text-sm">
+                    Documentation
                   </Link>
                 </li>
                 <li>
-                  <Link href="/dashboard" className="hover:text-teal-400 transition-colors">
-                    Dashboard
+                  <Link href="/status" className="text-gray-600 hover:text-black transition-colors text-sm">
+                    Status
                   </Link>
                 </li>
               </ul>
             </div>
           </div>
 
-          <div className="border-t border-gray-800 mt-8 pt-8">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <p className="text-sm text-gray-400">
-                © 2025 Symtri AI LLC. All rights reserved.
-              </p>
-              <div className="flex gap-6 mt-4 md:mt-0">
-                <Link href="/privacy" className="text-sm hover:text-teal-400 transition-colors">
-                  Privacy Policy
-                </Link>
-                <Link href="/terms" className="text-sm hover:text-teal-400 transition-colors">
-                  Terms of Service
-                </Link>
-              </div>
+          <div className="border-t border-gray-200 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+            <p className="text-sm text-gray-600">
+              © 2025 Symtri AI. All rights reserved.
+            </p>
+            <div className="flex gap-6 mt-4 md:mt-0">
+              <Link href="/privacy" className="text-sm text-gray-600 hover:text-black transition-colors">
+                Privacy Policy
+              </Link>
+              <Link href="/terms" className="text-sm text-gray-600 hover:text-black transition-colors">
+                Terms of Service
+              </Link>
             </div>
           </div>
         </div>

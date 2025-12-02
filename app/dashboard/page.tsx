@@ -3,6 +3,16 @@ export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { getServerUser, getServerSupabase } from '@/lib/auth-server';
 import { redirect } from 'next/navigation';
+import {
+  AlertTriangle,
+  MessageSquare,
+  Mail,
+  Users,
+  TrendingUp,
+  BookOpen,
+  Settings,
+  TestTube
+} from 'lucide-react';
 
 interface DashboardStats {
   totalConversations: number;
@@ -27,7 +37,7 @@ async function loadDashboardData() {
       redirect('/login');
     }
 
-    console.log('🔍 [Dashboard] Loading data for user:', user.id, user.email);
+    console.log('[Dashboard] Loading data for user:', user.id, user.email);
 
     // Get user-scoped Supabase client (respects RLS)
     const supabase = await getServerSupabase();
@@ -39,12 +49,12 @@ async function loadDashboardData() {
       .eq('owner_id', user.id);
 
     if (widgetsError) {
-      console.error('❌ [Dashboard] Error fetching widgets:', widgetsError);
+      console.error('[Dashboard] Error fetching widgets:', widgetsError);
       return null;
     }
 
     if (!widgets || widgets.length === 0) {
-      console.log('⚠️ [Dashboard] No widgets found for user');
+      console.log('[Dashboard] No widgets found for user');
       return {
         stats: {
           totalConversations: 0,
@@ -58,7 +68,7 @@ async function loadDashboardData() {
     }
 
     const widgetIds = widgets.map(w => w.id);
-    console.log('✅ [Dashboard] Found', widgets.length, 'widget(s)');
+    console.log('[Dashboard] Found', widgets.length, 'widget(s)');
 
     // Get total conversations across all user's widgets
     const { count: conversationCount } = await supabase
@@ -167,7 +177,7 @@ export default async function DashboardOverview() {
       {widgets.length === 0 && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
           <div className="flex items-start gap-3">
-            <span className="text-2xl">⚠️</span>
+            <AlertTriangle className="w-6 h-6 text-yellow-600 mt-0.5" strokeWidth={1.5} />
             <div>
               <h3 className="font-semibold text-yellow-900 mb-1">No AI Assistant found</h3>
               <p className="text-sm text-yellow-700 mb-3">
@@ -186,62 +196,62 @@ export default async function DashboardOverview() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-6 hover:border-gray-300 transition-colors">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Conversations</p>
               <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalConversations}</p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">💬</span>
+            <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center">
+              <MessageSquare className="w-6 h-6 text-emerald-600" strokeWidth={1.5} />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-6 hover:border-gray-300 transition-colors">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Messages</p>
               <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalMessages}</p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">✉️</span>
+            <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center">
+              <Mail className="w-6 h-6 text-emerald-600" strokeWidth={1.5} />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-6 hover:border-gray-300 transition-colors">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Leads Captured</p>
               <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalLeads}</p>
             </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">👤</span>
+            <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center">
+              <Users className="w-6 h-6 text-emerald-600" strokeWidth={1.5} />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-6 hover:border-gray-300 transition-colors">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Today</p>
               <p className="text-3xl font-bold text-gray-900 mt-2">{stats.conversationsToday}</p>
             </div>
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">📈</span>
+            <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-emerald-600" strokeWidth={1.5} />
             </div>
           </div>
         </div>
       </div>
 
       {/* Recent Conversations */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white rounded-lg border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900">Recent Conversations</h2>
           <Link
             href="/dashboard/conversations"
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            className="text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
           >
             View all →
           </Link>
@@ -260,7 +270,7 @@ export default async function DashboardOverview() {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-medium">
+                    <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-white font-medium">
                       {conversation.visitor_id.substring(0, 2).toUpperCase()}
                     </div>
                     <div>
@@ -286,9 +296,13 @@ export default async function DashboardOverview() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Link
           href="/dashboard/knowledge"
-          className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow"
+          className="bg-white rounded-lg border border-gray-200 p-6 hover:border-emerald-500 transition-all group"
         >
-          <div className="text-3xl mb-3">📚</div>
+          <div className="mb-4">
+            <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+              <BookOpen className="w-6 h-6 text-emerald-600" strokeWidth={1.5} />
+            </div>
+          </div>
           <h3 className="font-semibold text-gray-900 mb-2">Manage Knowledge Base</h3>
           <p className="text-sm text-gray-600">
             Add or update documents to improve AI responses
@@ -297,9 +311,13 @@ export default async function DashboardOverview() {
 
         <Link
           href="/dashboard/settings"
-          className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow"
+          className="bg-white rounded-lg border border-gray-200 p-6 hover:border-emerald-500 transition-all group"
         >
-          <div className="text-3xl mb-3">⚙️</div>
+          <div className="mb-4">
+            <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+              <Settings className="w-6 h-6 text-emerald-600" strokeWidth={1.5} />
+            </div>
+          </div>
           <h3 className="font-semibold text-gray-900 mb-2">AI Assistant Settings</h3>
           <p className="text-sm text-gray-600">
             Customize appearance and AI behavior
@@ -308,9 +326,13 @@ export default async function DashboardOverview() {
 
         <Link
           href="/dashboard/test-widget"
-          className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow"
+          className="bg-white rounded-lg border border-gray-200 p-6 hover:border-emerald-500 transition-all group"
         >
-          <div className="text-3xl mb-3">🧪</div>
+          <div className="mb-4">
+            <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+              <TestTube className="w-6 h-6 text-emerald-600" strokeWidth={1.5} />
+            </div>
+          </div>
           <h3 className="font-semibold text-gray-900 mb-2">Test Your AI Assistant</h3>
           <p className="text-sm text-gray-600">
             Try out your AI assistant in a live demo
