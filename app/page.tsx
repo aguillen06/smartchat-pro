@@ -256,7 +256,7 @@ export default function Home() {
                 SmartChat Pro
               </span>
             </div>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
+            <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
               AI Chat That
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-emerald-400"> Converts</span>
             </h1>
@@ -292,7 +292,7 @@ export default function Home() {
       <section id="features" className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
               Everything You Need
             </h2>
             <p className="text-xl text-gray-600">
@@ -380,7 +380,7 @@ export default function Home() {
       <section className="py-24 bg-gray-50 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
               Get Started in 3 Steps
             </h2>
             <p className="text-xl text-gray-600">
@@ -426,7 +426,7 @@ export default function Home() {
       <section id="pricing" className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
               Simple, Transparent Pricing
             </h2>
             <p className="text-xl text-gray-600">
@@ -555,7 +555,7 @@ export default function Home() {
       <section className="py-24 bg-gray-50 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
               Frequently Asked Questions
             </h2>
           </div>
@@ -588,7 +588,7 @@ export default function Home() {
       {/* CTA Section */}
       <section className="py-24 bg-black text-white px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
             Ready to Transform Your Customer Support?
           </h2>
           <p className="text-xl text-gray-300 mb-8">
