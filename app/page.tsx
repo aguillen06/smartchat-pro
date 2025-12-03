@@ -283,6 +283,8 @@ export default function Home() {
             </p>
           </div>
 
+          {/* Animated geometric shape */}
+          <GeometricShape />
         </div>
       </section>
 
