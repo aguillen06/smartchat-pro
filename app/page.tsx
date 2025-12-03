@@ -1,3 +1,4 @@
+import GeometricShape from './components/GeometricShape';
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
@@ -281,9 +282,6 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Floating gradient orbs */}
-          <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-emerald-400/30 to-teal-400/30 rounded-full blur-3xl animate-float"></div>
-          <div className="absolute left-1/4 top-0 w-64 h-64 bg-gradient-to-br from-emerald-400/10 to-teal-400/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
         </div>
       </section>
 
