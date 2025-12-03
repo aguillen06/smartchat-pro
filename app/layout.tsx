@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Symtri AI SmartChat - AI Chat Support",
     description: "Convert more visitors into customers with AI-powered chat support. 14-day free trial, no credit card required.",
-    url: "https://smartchat-pro.vercel.app",
+    url: "https://smartchat.symtri.ai",
     siteName: "Symtri AI SmartChat",
     locale: "en_US",
     type: "website",
@@ -47,9 +47,6 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  verification: {
-    google: "google-site-verification-code",
-  },
 };
 
 export default function RootLayout({
@@ -59,9 +56,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${spaceGrotesk.variable} ${inter.variable} antialiased`}
-      >
+      <body className={`${spaceGrotesk.variable} ${inter.variable} antialiased font-sans`}>
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
