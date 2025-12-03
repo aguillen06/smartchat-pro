@@ -1,5 +1,6 @@
-import GeometricShape from './components/GeometricShape';
 'use client';
+
+import GeometricShape from './components/GeometricShape';
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
