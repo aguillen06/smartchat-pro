@@ -172,7 +172,7 @@ export default async function DashboardOverview() {
   const { stats, recentConversations, widgets } = data;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* No Widgets Warning */}
       {widgets.length === 0 && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">

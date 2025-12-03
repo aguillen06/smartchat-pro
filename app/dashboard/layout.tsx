@@ -33,7 +33,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
@@ -206,7 +206,7 @@ export default function DashboardLayout({
         </header>
 
         {/* Page content */}
-        <div className="p-6">
+        <div className="p-6 md:p-8 lg:p-10">
           {children}
         </div>
       </main>

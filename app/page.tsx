@@ -246,7 +246,7 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+      <section className="relative pt-32 pb-32 px-6 sm:px-8 lg:px-12">
         <div className="relative max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto">
             <div className="mb-4">
@@ -281,13 +281,14 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Floating gradient orb */}
-          <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-emerald-400/20 to-teal-400/20 rounded-full blur-3xl animate-float"></div>
+          {/* Floating gradient orbs */}
+          <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-emerald-400/30 to-teal-400/30 rounded-full blur-3xl animate-float"></div>
+          <div className="absolute left-1/4 top-0 w-64 h-64 bg-gradient-to-br from-emerald-400/10 to-teal-400/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8">
+      <section id="features" className="py-24 px-6 sm:px-8 lg:px-12">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -299,7 +300,7 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="group p-6 rounded-xl border border-gray-200 hover:border-emerald-500 transition-all">
+            <div className="group p-8 rounded-xl border border-gray-200 hover:border-emerald-500 transition-all">
               <div className="mb-4">
                 <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
                   <MessageSquare className="w-6 h-6 text-emerald-600" strokeWidth={1.5} />
@@ -311,7 +312,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="group p-6 rounded-xl border border-gray-200 hover:border-emerald-500 transition-all">
+            <div className="group p-8 rounded-xl border border-gray-200 hover:border-emerald-500 transition-all">
               <div className="mb-4">
                 <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
                   <Users className="w-6 h-6 text-emerald-600" strokeWidth={1.5} />
@@ -323,7 +324,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="group p-6 rounded-xl border border-gray-200 hover:border-emerald-500 transition-all">
+            <div className="group p-8 rounded-xl border border-gray-200 hover:border-emerald-500 transition-all">
               <div className="mb-4">
                 <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
                   <BarChart3 className="w-6 h-6 text-emerald-600" strokeWidth={1.5} />
@@ -335,7 +336,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="group p-6 rounded-xl border border-gray-200 hover:border-emerald-500 transition-all">
+            <div className="group p-8 rounded-xl border border-gray-200 hover:border-emerald-500 transition-all">
               <div className="mb-4">
                 <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
                   <Zap className="w-6 h-6 text-emerald-600" strokeWidth={1.5} />
@@ -347,7 +348,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="group p-6 rounded-xl border border-gray-200 hover:border-emerald-500 transition-all">
+            <div className="group p-8 rounded-xl border border-gray-200 hover:border-emerald-500 transition-all">
               <div className="mb-4">
                 <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
                   <Clock className="w-6 h-6 text-emerald-600" strokeWidth={1.5} />
@@ -359,7 +360,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="group p-6 rounded-xl border border-gray-200 hover:border-emerald-500 transition-all">
+            <div className="group p-8 rounded-xl border border-gray-200 hover:border-emerald-500 transition-all">
               <div className="mb-4">
                 <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
                   <Shield className="w-6 h-6 text-emerald-600" strokeWidth={1.5} />
@@ -375,7 +376,7 @@ export default function Home() {
       </section>
 
       {/* How It Works */}
-      <section className="py-20 bg-gray-50 px-4 sm:px-6 lg:px-8">
+      <section className="py-24 bg-gray-50 px-6 sm:px-8 lg:px-12">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -421,7 +422,7 @@ export default function Home() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8">
+      <section id="pricing" className="py-24 px-6 sm:px-8 lg:px-12">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -550,7 +551,7 @@ export default function Home() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-gray-50 px-4 sm:px-6 lg:px-8">
+      <section className="py-24 bg-gray-50 px-6 sm:px-8 lg:px-12">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -584,7 +585,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-black text-white px-4 sm:px-6 lg:px-8">
+      <section className="py-24 bg-black text-white px-6 sm:px-8 lg:px-12">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Ready to Transform Your Customer Support?
