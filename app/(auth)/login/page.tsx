@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signIn, signInWithMagicLink } from '@/lib/auth';
+import { isValidEmail } from '@/lib/validation';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,12 +15,6 @@ export default function LoginPage() {
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [useMagicLink, setUseMagicLink] = useState(false);
   const [validationErrors, setValidationErrors] = useState({ email: '', password: '' });
-
-  // Validate email format
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email.trim());
-  };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -33,7 +28,7 @@ export default function LoginPage() {
     if (!email.trim()) {
       errors.email = 'Email is required';
       hasErrors = true;
-    } else if (!validateEmail(email)) {
+    } else if (!isValidEmail(email)) {
       errors.email = 'Please enter a valid email address';
       hasErrors = true;
     }

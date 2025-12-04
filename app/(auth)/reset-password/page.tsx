@@ -18,6 +18,7 @@ export default function ResetPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isValidToken, setIsValidToken] = useState(false);
   const [checkingToken, setCheckingToken] = useState(true);
+  const [validationErrors, setValidationErrors] = useState({ password: '', confirmPassword: '' });
 
   // Check if user has a valid session from the reset link
   useEffect(() => {
@@ -62,15 +63,33 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setValidationErrors({ password: '', confirmPassword: '' });
 
-    // Validate passwords
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
+    // Client-side validation
+    const errors = { password: '', confirmPassword: '' };
+    let hasErrors = false;
+
+    if (!password) {
+      errors.password = 'Password is required';
+      hasErrors = true;
+    } else if (password.length < 6) {
+      errors.password = 'Password must be at least 6 characters long';
+      hasErrors = true;
+    } else if (password.length > 128) {
+      errors.password = 'Password must not exceed 128 characters';
+      hasErrors = true;
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long');
+    if (!confirmPassword) {
+      errors.confirmPassword = 'Please confirm your password';
+      hasErrors = true;
+    } else if (password !== confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match';
+      hasErrors = true;
+    }
+
+    if (hasErrors) {
+      setValidationErrors(errors);
       return;
     }
 
@@ -203,14 +222,23 @@ export default function ResetPasswordPage() {
                   type="password"
                   id="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setValidationErrors({ ...validationErrors, password: '' });
+                  }}
+                  className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors ${
+                    validationErrors.password ? 'border-red-300' : 'border-gray-300'
+                  }`}
                   placeholder="Enter new password"
                   required
                   minLength={6}
+                  maxLength={128}
                   disabled={loading}
                 />
               </div>
+              {validationErrors.password && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.password}</p>
+              )}
               <p className="mt-1 text-xs text-gray-500">
                 Must be at least 6 characters long
               </p>
@@ -228,14 +256,23 @@ export default function ResetPasswordPage() {
                   type="password"
                   id="confirmPassword"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    setValidationErrors({ ...validationErrors, confirmPassword: '' });
+                  }}
+                  className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors ${
+                    validationErrors.confirmPassword ? 'border-red-300' : 'border-gray-300'
+                  }`}
                   placeholder="Confirm new password"
                   required
                   minLength={6}
+                  maxLength={128}
                   disabled={loading}
                 />
               </div>
+              {validationErrors.confirmPassword && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.confirmPassword}</p>
+              )}
             </div>
 
             <button

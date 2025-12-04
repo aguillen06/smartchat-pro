@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { isValidEmail } from '@/lib/validation';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -19,12 +20,6 @@ export default function SignupPage() {
     password: '',
     confirmPassword: '',
   });
-
-  // Validate email format
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email.trim());
-  };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,7 +41,7 @@ export default function SignupPage() {
     if (!email.trim()) {
       errors.email = 'Email is required';
       hasErrors = true;
-    } else if (!validateEmail(email)) {
+    } else if (!isValidEmail(email)) {
       errors.email = 'Please enter a valid email address';
       hasErrors = true;
     } else if (email.trim().length > 255) {

@@ -11,11 +11,26 @@ const PHONE_REGEX = /^[\d\s\-\+\(\)]+$/;
 const HEX_COLOR_REGEX = /^#[0-9A-Fa-f]{6}$/;
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+// Shared validation utilities
+export function isValidEmail(email: string): boolean {
+  return EMAIL_REGEX.test(email.trim());
+}
+
 // Sanitization helper to prevent XSS
 export function sanitizeString(input: string): string {
   return input
     .trim()
-    .replace(/[<>]/g, '') // Remove potential HTML tags
+    // Remove HTML tags and dangerous characters
+    .replace(/[<>'"&]/g, (char) => {
+      const entities: Record<string, string> = {
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#x27;',
+        '&': '&amp;',
+      };
+      return entities[char] || char;
+    })
     .substring(0, 10000); // Limit to reasonable length
 }
 
@@ -159,11 +174,13 @@ export const WidgetKeySchema = z.object({
 export const UpdateWidgetByKeySchema = z.object({
   name: z
     .string()
+    .min(3, 'Widget name must be at least 3 characters')
     .max(100, 'Widget name must not exceed 100 characters')
     .transform(sanitizeString)
     .optional(),
   welcome_message: z
     .string()
+    .min(10, 'Welcome message must be at least 10 characters')
     .max(500, 'Welcome message must not exceed 500 characters')
     .transform(sanitizeString)
     .optional(),
