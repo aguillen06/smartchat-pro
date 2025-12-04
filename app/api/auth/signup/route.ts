@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limiter';
 import { sendSignupNotification } from '@/lib/email-notifications';
+import { SignupSchema, validateRequest } from '@/lib/validation';
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,33 +35,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse request body
-    const { email, password, fullName } = await request.json();
+    // Parse and validate request body
+    const body = await request.json();
+    const validation = validateRequest(SignupSchema, body);
 
-    // Validate input
-    if (!email || !password || !fullName) {
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'Email, password, and full name are required' },
+        { error: validation.error, details: validation.details },
         { status: 400 }
       );
     }
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: 'Invalid email address' },
-        { status: 400 }
-      );
-    }
-
-    // Password validation
-    if (password.length < 6) {
-      return NextResponse.json(
-        { error: 'Password must be at least 6 characters' },
-        { status: 400 }
-      );
-    }
+    const { email, password, fullName } = validation.data;
 
     // Get user agent for logging
     const userAgent = request.headers.get('user-agent') || 'Unknown';

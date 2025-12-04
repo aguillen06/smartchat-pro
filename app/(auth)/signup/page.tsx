@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { isValidEmail } from '@/lib/validation';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -13,19 +14,62 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    setValidationErrors({ fullName: '', email: '', password: '', confirmPassword: '' });
 
-    // Validation
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
+    // Client-side validation
+    const errors = { fullName: '', email: '', password: '', confirmPassword: '' };
+    let hasErrors = false;
+
+    if (!fullName.trim()) {
+      errors.fullName = 'Full name is required';
+      hasErrors = true;
+    } else if (fullName.trim().length > 100) {
+      errors.fullName = 'Full name must not exceed 100 characters';
+      hasErrors = true;
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (!email.trim()) {
+      errors.email = 'Email is required';
+      hasErrors = true;
+    } else if (!isValidEmail(email)) {
+      errors.email = 'Please enter a valid email address';
+      hasErrors = true;
+    } else if (email.trim().length > 255) {
+      errors.email = 'Email must not exceed 255 characters';
+      hasErrors = true;
+    }
+
+    if (!password) {
+      errors.password = 'Password is required';
+      hasErrors = true;
+    } else if (password.length < 6) {
+      errors.password = 'Password must be at least 6 characters';
+      hasErrors = true;
+    } else if (password.length > 128) {
+      errors.password = 'Password must not exceed 128 characters';
+      hasErrors = true;
+    }
+
+    if (!confirmPassword) {
+      errors.confirmPassword = 'Please confirm your password';
+      hasErrors = true;
+    } else if (password !== confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match';
+      hasErrors = true;
+    }
+
+    if (hasErrors) {
+      setValidationErrors(errors);
       return;
     }
 
@@ -119,11 +163,20 @@ export default function SignupPage() {
               id="fullName"
               type="text"
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              onChange={(e) => {
+                setFullName(e.target.value);
+                setValidationErrors({ ...validationErrors, fullName: '' });
+              }}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                validationErrors.fullName ? 'border-red-300' : 'border-gray-300'
+              }`}
               placeholder="John Doe"
+              maxLength={100}
             />
+            {validationErrors.fullName && (
+              <p className="mt-1 text-sm text-red-600">{validationErrors.fullName}</p>
+            )}
           </div>
 
           <div>
@@ -134,11 +187,20 @@ export default function SignupPage() {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setValidationErrors({ ...validationErrors, email: '' });
+              }}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                validationErrors.email ? 'border-red-300' : 'border-gray-300'
+              }`}
               placeholder="you@example.com"
+              maxLength={255}
             />
+            {validationErrors.email && (
+              <p className="mt-1 text-sm text-red-600">{validationErrors.email}</p>
+            )}
           </div>
 
           <div>
@@ -149,12 +211,21 @@ export default function SignupPage() {
               id="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setValidationErrors({ ...validationErrors, password: '' });
+              }}
               required
               minLength={6}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              maxLength={128}
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                validationErrors.password ? 'border-red-300' : 'border-gray-300'
+              }`}
               placeholder="••••••••"
             />
+            {validationErrors.password && (
+              <p className="mt-1 text-sm text-red-600">{validationErrors.password}</p>
+            )}
             <p className="text-xs text-gray-500 mt-1">Must be at least 6 characters</p>
           </div>
 
@@ -166,11 +237,20 @@ export default function SignupPage() {
               id="confirmPassword"
               type="password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                setValidationErrors({ ...validationErrors, confirmPassword: '' });
+              }}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                validationErrors.confirmPassword ? 'border-red-300' : 'border-gray-300'
+              }`}
               placeholder="••••••••"
+              maxLength={128}
             />
+            {validationErrors.confirmPassword && (
+              <p className="mt-1 text-sm text-red-600">{validationErrors.confirmPassword}</p>
+            )}
           </div>
 
           <button

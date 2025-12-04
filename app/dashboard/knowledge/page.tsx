@@ -21,6 +21,7 @@ export default function KnowledgeBasePage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ title: '', content: '' });
   const [saving, setSaving] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({ title: '', content: '' });
 
   useEffect(() => {
     loadKnowledgeDocs();
@@ -46,8 +47,30 @@ export default function KnowledgeBasePage() {
   }
 
   async function handleSave() {
-    if (!formData.title.trim() || !formData.content.trim()) {
-      alert('Please fill in both title and content');
+    setValidationErrors({ title: '', content: '' });
+
+    // Client-side validation
+    const errors = { title: '', content: '' };
+    let hasErrors = false;
+
+    if (!formData.title.trim()) {
+      errors.title = 'Title is required';
+      hasErrors = true;
+    } else if (formData.title.trim().length > 200) {
+      errors.title = 'Title must not exceed 200 characters';
+      hasErrors = true;
+    }
+
+    if (!formData.content.trim()) {
+      errors.content = 'Content is required';
+      hasErrors = true;
+    } else if (formData.content.trim().length > 50000) {
+      errors.content = 'Content must not exceed 50000 characters';
+      hasErrors = true;
+    }
+
+    if (hasErrors) {
+      setValidationErrors(errors);
       return;
     }
 
@@ -132,6 +155,7 @@ export default function KnowledgeBasePage() {
     setIsAdding(false);
     setEditingId(null);
     setFormData({ title: '', content: '' });
+    setValidationErrors({ title: '', content: '' });
   }
 
   if (loading) {
@@ -176,10 +200,19 @@ export default function KnowledgeBasePage() {
               <input
                 type="text"
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                onChange={(e) => {
+                  setFormData({ ...formData, title: e.target.value });
+                  setValidationErrors({ ...validationErrors, title: '' });
+                }}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  validationErrors.title ? 'border-red-300' : 'border-gray-300'
+                }`}
                 placeholder="e.g., Company Information, Product Features, FAQ"
+                maxLength={200}
               />
+              {validationErrors.title && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.title}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -187,11 +220,23 @@ export default function KnowledgeBasePage() {
               </label>
               <textarea
                 value={formData.content}
-                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, content: e.target.value });
+                  setValidationErrors({ ...validationErrors, content: '' });
+                }}
                 rows={10}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm ${
+                  validationErrors.content ? 'border-red-300' : 'border-gray-300'
+                }`}
                 placeholder="Enter the knowledge content that the AI can use to answer questions..."
+                maxLength={50000}
               />
+              {validationErrors.content && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.content}</p>
+              )}
+              <p className="mt-1 text-xs text-gray-500">
+                {formData.content.length} / 50000 characters
+              </p>
             </div>
             <div className="flex gap-3">
               <button

@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { cookies } from 'next/headers';
+import { CreateKnowledgeDocSchema, validateRequest } from '@/lib/validation';
 
 /**
  * GET /api/knowledge
@@ -86,15 +87,19 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabaseAdmin();
     const cookieStore = await cookies();
-    const body = await request.json();
-    const { title, content } = body;
 
-    if (!title || !content) {
+    // Parse and validate request body
+    const body = await request.json();
+    const validation = validateRequest(CreateKnowledgeDocSchema, body);
+
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'title and content are required' },
+        { error: validation.error, details: validation.details },
         { status: 400 }
       );
     }
+
+    const { title, content } = validation.data;
 
     // Get the session token from cookies
     const sessionToken = cookieStore.get('supabase-auth-token');
@@ -177,8 +182,8 @@ export async function POST(request: NextRequest) {
       .from('knowledge_docs')
       .insert({
         widget_id: widgetId,
-        title: title.trim(),
-        content: content.trim(),
+        title,
+        content,
       })
       .select()
       .single();

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signIn, signInWithMagicLink } from '@/lib/auth';
+import { isValidEmail } from '@/lib/validation';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,10 +14,35 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [useMagicLink, setUseMagicLink] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({ email: '', password: '' });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    setValidationErrors({ email: '', password: '' });
+
+    // Client-side validation
+    const errors = { email: '', password: '' };
+    let hasErrors = false;
+
+    if (!email.trim()) {
+      errors.email = 'Email is required';
+      hasErrors = true;
+    } else if (!isValidEmail(email)) {
+      errors.email = 'Please enter a valid email address';
+      hasErrors = true;
+    }
+
+    if (!useMagicLink && !password) {
+      errors.password = 'Password is required';
+      hasErrors = true;
+    }
+
+    if (hasErrors) {
+      setValidationErrors(errors);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -90,11 +116,20 @@ export default function LoginPage() {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setValidationErrors({ ...validationErrors, email: '' });
+              }}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                validationErrors.email ? 'border-red-300' : 'border-gray-300'
+              }`}
               placeholder="you@example.com"
+              maxLength={255}
             />
+            {validationErrors.email && (
+              <p className="mt-1 text-sm text-red-600">{validationErrors.email}</p>
+            )}
           </div>
 
           {!useMagicLink && (
@@ -106,11 +141,20 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setValidationErrors({ ...validationErrors, password: '' });
+                }}
                 required={!useMagicLink}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                  validationErrors.password ? 'border-red-300' : 'border-gray-300'
+                }`}
                 placeholder="••••••••"
+                maxLength={128}
               />
+              {validationErrors.password && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.password}</p>
+              )}
             </div>
           )}
 
