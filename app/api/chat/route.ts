@@ -3,6 +3,7 @@ import { supabase, getSupabaseAdmin } from '@/lib/supabase';
 import { generateChatResponseWithHistory } from '@/lib/anthropic';
 import { searchKnowledge, formatKnowledgeContext } from '@/lib/knowledge-search';
 import { canCreateConversation, incrementConversationCount } from '@/lib/subscription-check';
+import { ChatRequestSchema, validateRequest } from '@/lib/validation';
 import type {
   ChatRequest,
   ChatResponse,
@@ -36,38 +37,26 @@ export async function POST(request: NextRequest) {
   console.log('🚀 [Chat API] Request received');
 
   try {
-    // Parse request body
-    const body: ChatRequest = await request.json();
-    console.log('📦 [Chat API] Request body:', {
-      widgetKey: body.widgetKey,
-      messageLength: body.message?.length,
-      hasVisitorId: !!body.visitorId,
-      hasConversationId: !!body.conversationId
+    // Parse and validate request body
+    const body = await request.json();
+    const validation = validateRequest(ChatRequestSchema, body);
+
+    if (!validation.success) {
+      console.error('❌ [Chat API] Validation error:', validation.error);
+      return NextResponse.json<ApiError>(
+        { error: validation.error, details: validation.details },
+        { status: 400, headers: CORS_HEADERS }
+      );
+    }
+
+    const { widgetKey, message, visitorId, conversationId } = validation.data;
+
+    console.log('📦 [Chat API] Request validated:', {
+      widgetKey,
+      messageLength: message.length,
+      hasVisitorId: !!visitorId,
+      hasConversationId: !!conversationId
     });
-
-    // Validate required fields
-    const { widgetKey, message, visitorId, conversationId } = body;
-
-    if (!widgetKey || typeof widgetKey !== 'string') {
-      return NextResponse.json<ApiError>(
-        { error: 'widgetKey is required and must be a string' },
-        { status: 400, headers: CORS_HEADERS }
-      );
-    }
-
-    if (!message || typeof message !== 'string' || message.trim().length === 0) {
-      return NextResponse.json<ApiError>(
-        { error: 'message is required and must be a non-empty string' },
-        { status: 400, headers: CORS_HEADERS }
-      );
-    }
-
-    if (!visitorId || typeof visitorId !== 'string') {
-      return NextResponse.json<ApiError>(
-        { error: 'visitorId is required and must be a string' },
-        { status: 400, headers: CORS_HEADERS }
-      );
-    }
 
     // 1. Validate widget exists and is active
     console.log('🔍 [Chat API] Looking up widget:', widgetKey);

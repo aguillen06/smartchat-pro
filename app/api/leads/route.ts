@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { cookies } from 'next/headers';
+import { CreateLeadSchema, validateRequest } from '@/lib/validation';
 
 /**
  * GET /api/leads
@@ -92,22 +93,19 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabaseAdmin();
+
+    // Parse and validate request body
     const body = await request.json();
-    const { conversationId, widgetId, name, email, phone, source = 'chat_prompt' } = body;
+    const validation = validateRequest(CreateLeadSchema, body);
 
-    if (!conversationId || !widgetId) {
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'conversationId and widgetId are required' },
+        { error: validation.error, details: validation.details },
         { status: 400 }
       );
     }
 
-    if (!email && !phone) {
-      return NextResponse.json(
-        { error: 'At least email or phone is required' },
-        { status: 400 }
-      );
-    }
+    const { conversationId, widgetId, name, email, phone, source } = validation.data;
 
     // Create lead
     const { data: lead, error: leadError } = await supabase
@@ -115,9 +113,9 @@ export async function POST(request: NextRequest) {
       .insert({
         conversation_id: conversationId,
         widget_id: widgetId,
-        name: name || null,
-        email: email || null,
-        phone: phone || null,
+        name,
+        email,
+        phone,
         source,
       })
       .select()

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { UpdateWidgetByKeySchema, validateRequest } from '@/lib/validation';
 
 /**
  * GET /api/widgets/[key]
@@ -53,7 +54,17 @@ export async function PUT(
   try {
     const { key } = await params;
     const supabase = getSupabaseAdmin();
+
+    // Parse and validate request body
     const body = await request.json();
+    const validation = validateRequest(UpdateWidgetByKeySchema, body);
+
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: validation.error, details: validation.details },
+        { status: 400 }
+      );
+    }
 
     // First get the widget ID
     const { data: widget, error: fetchError } = await supabase
@@ -73,10 +84,10 @@ export async function PUT(
     const { data, error } = await supabase
       .from('widgets')
       .update({
-        name: body.name,
-        welcome_message: body.welcome_message,
-        primary_color: body.primary_color,
-        ai_instructions: body.ai_instructions || null,
+        name: validation.data.name,
+        welcome_message: validation.data.welcome_message,
+        primary_color: validation.data.primary_color,
+        ai_instructions: validation.data.ai_instructions,
         updated_at: new Date().toISOString(),
       })
       .eq('id', widget.id)

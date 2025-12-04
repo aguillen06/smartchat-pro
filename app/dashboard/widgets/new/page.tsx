@@ -38,16 +38,22 @@ export default function NewWidgetPage() {
       newErrors.name = 'Assistant name is required';
     } else if (formData.name.trim().length < 3) {
       newErrors.name = 'Assistant name must be at least 3 characters';
+    } else if (formData.name.trim().length > 100) {
+      newErrors.name = 'Assistant name must not exceed 100 characters';
     }
 
     if (!formData.welcomeMessage.trim()) {
       newErrors.welcomeMessage = 'Welcome message is required';
     } else if (formData.welcomeMessage.trim().length < 10) {
       newErrors.welcomeMessage = 'Welcome message must be at least 10 characters';
+    } else if (formData.welcomeMessage.trim().length > 500) {
+      newErrors.welcomeMessage = 'Welcome message must not exceed 500 characters';
     }
 
     if (formData.businessDescription.trim() && formData.businessDescription.trim().length < 20) {
       newErrors.businessDescription = 'Business description should be at least 20 characters if provided';
+    } else if (formData.businessDescription.trim().length > 2000) {
+      newErrors.businessDescription = 'Business description must not exceed 2000 characters';
     }
 
     setErrors(newErrors);
@@ -147,6 +153,7 @@ export default function NewWidgetPage() {
                 }`}
                 placeholder="e.g., Customer Support Bot"
                 disabled={loading}
+                maxLength={100}
               />
               {errors.name && (
                 <p className="mt-1 text-sm text-red-600">{errors.name}</p>
@@ -180,6 +187,7 @@ export default function NewWidgetPage() {
                 }`}
                 placeholder="Hi! How can we help you today?"
                 disabled={loading}
+                maxLength={500}
               />
               {errors.welcomeMessage && (
                 <p className="mt-1 text-sm text-red-600">{errors.welcomeMessage}</p>
@@ -245,12 +253,13 @@ export default function NewWidgetPage() {
               }`}
               placeholder="Tell the AI about your business, products, services, and any specific information it should know when helping visitors..."
               disabled={loading}
+              maxLength={2000}
             />
             {errors.businessDescription && (
               <p className="mt-1 text-sm text-red-600">{errors.businessDescription}</p>
             )}
             <p className="mt-1 text-xs text-gray-500">
-              This helps the AI provide more accurate and relevant responses to your visitors
+              This helps the AI provide more accurate and relevant responses to your visitors ({formData.businessDescription.length}/2000)
             </p>
           </div>
         </div>

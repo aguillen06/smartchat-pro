@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { cookies } from 'next/headers';
+import { UpdateKnowledgeDocSchema, validateRequest } from '@/lib/validation';
 
 /**
  * PUT /api/knowledge/[id]
@@ -16,15 +17,19 @@ export async function PUT(
     const supabase = getSupabaseAdmin();
     const cookieStore = await cookies();
     const { id: docId } = await params;
-    const body = await request.json();
-    const { title, content } = body;
 
-    if (!title || !content) {
+    // Parse and validate request body
+    const body = await request.json();
+    const validation = validateRequest(UpdateKnowledgeDocSchema, body);
+
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'title and content are required' },
+        { error: validation.error, details: validation.details },
         { status: 400 }
       );
     }
+
+    const { title, content } = validation.data;
 
     // Get the session token from cookies
     const sessionToken = cookieStore.get('supabase-auth-token');
@@ -79,8 +84,8 @@ export async function PUT(
     const { data: updatedDoc, error: updateError } = await supabase
       .from('knowledge_docs')
       .update({
-        title: title.trim(),
-        content: content.trim(),
+        title,
+        content,
         updated_at: new Date().toISOString(),
       })
       .eq('id', docId)

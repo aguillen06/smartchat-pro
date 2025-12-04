@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { CreateWidgetSchema, UpdateWidgetSchema, validateRequest } from '@/lib/validation';
 
 /**
  * Create a Supabase client for server-side API routes
@@ -99,23 +100,25 @@ export async function POST(request: NextRequest) {
   try {
     console.log('[POST /api/widgets] Starting request');
 
+    // Parse and validate request body
     const body = await request.json();
-    const { name, welcomeMessage, primaryColor, businessDescription } = body;
-    console.log('[POST /api/widgets] Request body:', {
+    const validation = validateRequest(CreateWidgetSchema, body);
+
+    if (!validation.success) {
+      console.log('[POST /api/widgets] Validation failed:', validation.error);
+      return NextResponse.json(
+        { error: validation.error, details: validation.details },
+        { status: 400 }
+      );
+    }
+
+    const { name, welcomeMessage, primaryColor, businessDescription } = validation.data;
+    console.log('[POST /api/widgets] Request validated:', {
       name,
       welcomeMessage,
       primaryColor,
       hasBusinessDescription: !!businessDescription
     });
-
-    // Validate required fields
-    if (!name || !welcomeMessage) {
-      console.log('[POST /api/widgets] Missing required fields');
-      return NextResponse.json(
-        { error: 'Name and welcome message are required' },
-        { status: 400 }
-      );
-    }
 
     // Create server client with cookies
     const supabase = await createClient();
@@ -144,13 +147,13 @@ export async function POST(request: NextRequest) {
 
     // Create widget settings object
     const settings = {
-      theme_color: primaryColor || '#0D9488',
-      welcome_message: welcomeMessage.trim(),
+      theme_color: primaryColor,
+      welcome_message: welcomeMessage,
       position: 'bottom-right',
       collect_email: true,
       auto_open: false,
-      business_name: name.trim(),
-      business_description: businessDescription?.trim() || '',
+      business_name: name,
+      business_description: businessDescription,
       notification_sound: true,
       working_hours: {
         enabled: false,
@@ -168,7 +171,7 @@ export async function POST(request: NextRequest) {
       .insert({
         owner_id: user.id,
         widget_key: widgetKey,
-        name: name.trim(),
+        name,
         settings: settings,
       })
       .select()
@@ -202,16 +205,19 @@ export async function PUT(request: NextRequest) {
   try {
     console.log('[PUT /api/widgets] Starting request');
 
+    // Parse and validate request body
     const body = await request.json();
-    const { widgetId, name, welcomeMessage, primaryColor, businessDescription, settings } = body;
+    const validation = validateRequest(UpdateWidgetSchema, body);
 
-    if (!widgetId) {
-      console.log('[PUT /api/widgets] Missing widget ID');
+    if (!validation.success) {
+      console.log('[PUT /api/widgets] Validation failed:', validation.error);
       return NextResponse.json(
-        { error: 'Widget ID is required' },
+        { error: validation.error, details: validation.details },
         { status: 400 }
       );
     }
+
+    const { widgetId, name, welcomeMessage, primaryColor, businessDescription, settings } = validation.data;
 
     // Create server client with cookies
     const supabase = await createClient();
@@ -259,7 +265,7 @@ export async function PUT(request: NextRequest) {
     };
 
     if (name !== undefined) {
-      updateData.name = name.trim();
+      updateData.name = name;
     }
 
     // Merge settings if provided, or build from individual fields
@@ -272,16 +278,16 @@ export async function PUT(request: NextRequest) {
       const newSettings: any = { ...existingWidget.settings };
 
       if (welcomeMessage !== undefined) {
-        newSettings.welcome_message = welcomeMessage.trim();
+        newSettings.welcome_message = welcomeMessage;
       }
       if (primaryColor !== undefined) {
         newSettings.theme_color = primaryColor;
       }
       if (businessDescription !== undefined) {
-        newSettings.business_description = businessDescription.trim();
+        newSettings.business_description = businessDescription;
       }
       if (name !== undefined) {
-        newSettings.business_name = name.trim();
+        newSettings.business_name = name;
       }
 
       updateData.settings = newSettings;
