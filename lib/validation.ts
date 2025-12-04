@@ -17,21 +17,19 @@ export function isValidEmail(email: string): boolean {
 }
 
 // Sanitization helper to prevent XSS
+// Note: This performs HTML entity encoding for dangerous characters
+// The 10000 char limit is a fallback - specific fields enforce their own limits in schemas
 export function sanitizeString(input: string): string {
   return input
     .trim()
-    // Remove HTML tags and dangerous characters
-    .replace(/[<>'"&]/g, (char) => {
-      const entities: Record<string, string> = {
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#x27;',
-        '&': '&amp;',
-      };
-      return entities[char] || char;
-    })
-    .substring(0, 10000); // Limit to reasonable length
+    // Replace ampersands first to prevent double-encoding
+    .replace(/&/g, '&amp;')
+    // Then replace other dangerous characters
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .substring(0, 10000); // Fallback limit (schemas enforce specific limits)
 }
 
 // Auth Schemas
@@ -41,7 +39,6 @@ export const SignupSchema = z.object({
     .min(1, 'Email is required')
     .max(255, 'Email must not exceed 255 characters')
     .email('Invalid email address')
-    .regex(EMAIL_REGEX, 'Invalid email format')
     .transform(sanitizeString),
   password: z
     .string()
