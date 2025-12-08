@@ -104,6 +104,7 @@ export const ChatRequestSchema = z.object({
   conversationId: z
     .string()
     .regex(UUID_REGEX, 'Invalid conversation ID format')
+    .nullable()
     .optional(),
 });
 
