@@ -236,16 +236,15 @@ export async function POST(request: NextRequest) {
       hasCustomAiInstructions: !!widget.ai_instructions
     });
 
-    // Use ai_instructions if provided, otherwise create personalized prompt
-    let systemPrompt = widget.ai_instructions ||
-      `You are a helpful AI assistant for ${businessName}.
-${businessDescription || 'Help customers with their questions.'}
+    // Build system prompt using business description as custom instructions
+    let systemPrompt = `You are a helpful AI assistant for ${businessName}.
 
+${businessDescription ? `About this business:\n${businessDescription}\n` : ''}
 Language Rules:
-- Respond in the same language the user writes in
-- If the user writes in Spanish, respond entirely in Spanish
-- If the user writes in Spanglish, respond naturally in Spanglish
-- Always match the user's language preference
+- Always respond in the same language the user writes in
+- If the user writes in English, respond in English
+- If the user writes in Spanish, respond in Spanish
+- Default to English if the language is unclear
 
 Guidelines:
 - Be friendly, professional, and helpful
@@ -255,6 +254,11 @@ Guidelines:
 - If you don't know something specific, offer to connect them with the team
 
 Welcome message for reference: ${welcomeMessage}`;
+
+    // If ai_instructions is set, append it as additional context
+    if (widget.ai_instructions) {
+      systemPrompt += `\n\nAdditional Instructions:\n${widget.ai_instructions}`;
+    }
 
     if (knowledgeContext) {
       systemPrompt += '\n\n' + knowledgeContext + '\n\nUse this to answer naturally. Ask for email only if discussing products/services.';
