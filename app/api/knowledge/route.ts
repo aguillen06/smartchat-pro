@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { cookies } from 'next/headers';
+import { getServerUser } from '@/lib/auth-server';
 import { CreateKnowledgeDocSchema, validateRequest } from '@/lib/validation';
 
 /**
@@ -12,22 +12,11 @@ import { CreateKnowledgeDocSchema, validateRequest } from '@/lib/validation';
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabaseAdmin();
-    const cookieStore = await cookies();
 
-    // Get the session token from cookies
-    const sessionToken = cookieStore.get('supabase-auth-token');
+    // Get authenticated user using proper SSR auth
+    const user = await getServerUser();
 
-    if (!sessionToken) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Verify the session and get user
-    const { data: { user }, error: userError } = await supabase.auth.getUser(sessionToken.value);
-
-    if (userError || !user) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -86,7 +75,6 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabaseAdmin();
-    const cookieStore = await cookies();
 
     // Parse and validate request body
     const body = await request.json();
@@ -101,20 +89,10 @@ export async function POST(request: NextRequest) {
 
     const { title, content } = validation.data;
 
-    // Get the session token from cookies
-    const sessionToken = cookieStore.get('supabase-auth-token');
+    // Get authenticated user using proper SSR auth
+    const user = await getServerUser();
 
-    if (!sessionToken) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Verify the session and get user
-    const { data: { user }, error: userError } = await supabase.auth.getUser(sessionToken.value);
-
-    if (userError || !user) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
