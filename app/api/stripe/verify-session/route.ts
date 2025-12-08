@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { getServerUser } from '@/lib/auth-server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { STRIPE_CONFIG } from '@/lib/stripe-config';
 
 export async function POST(request: NextRequest) {
   try {
@@ -61,14 +62,16 @@ export async function POST(request: NextRequest) {
       plan: subscription.items.data[0]?.price.id
     });
 
-    // Determine plan from price ID
+    // Determine plan from price ID using centralized config
     const priceId = subscription.items.data[0]?.price.id;
     let planId = 'free';
 
-    // Map price IDs to plans (using the actual price IDs from config)
-    if (priceId === 'price_1SYIeeL0OvBwJPE63VNTk5VC') {
+    const starterPriceId = STRIPE_CONFIG.prices.starter.monthly;
+    const proPriceId = STRIPE_CONFIG.prices.pro.monthly;
+
+    if (priceId === starterPriceId) {
       planId = 'starter'; // Starter monthly
-    } else if (priceId === 'price_1SYIe6L0OvBwJPE6rBPoqm3H') {
+    } else if (priceId === proPriceId) {
       planId = 'pro'; // Pro monthly
     } else if (priceId?.includes('starter')) {
       planId = 'starter'; // Fallback for yearly prices

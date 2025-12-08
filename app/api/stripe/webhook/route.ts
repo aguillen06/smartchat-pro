@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { WEBHOOK_EVENTS } from '@/lib/stripe-config';
+import { WEBHOOK_EVENTS, STRIPE_CONFIG } from '@/lib/stripe-config';
 import Stripe from 'stripe';
 
 // Disable body parsing for webhooks
@@ -192,10 +192,13 @@ export async function POST(request: NextRequest) {
 
           if (priceId) {
             console.log('💰 Price ID:', priceId);
-            // Map actual Stripe price IDs to plans
-            if (priceId === 'price_1SYIeeL0OvBwJPE63VNTk5VC') {
+            // Map actual Stripe price IDs to plans using centralized config
+            const starterPriceId = STRIPE_CONFIG.prices.starter.monthly;
+            const proPriceId = STRIPE_CONFIG.prices.pro.monthly;
+
+            if (priceId === starterPriceId) {
               planId = 'starter'; // Starter monthly
-            } else if (priceId === 'price_1SYIe6L0OvBwJPE6rBPoqm3H') {
+            } else if (priceId === proPriceId) {
               planId = 'pro'; // Pro monthly
             } else if (priceId.includes('starter')) {
               planId = 'starter'; // Fallback for yearly prices

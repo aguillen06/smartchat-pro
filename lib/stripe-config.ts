@@ -6,16 +6,15 @@ export const STRIPE_CONFIG = {
   // API version
   apiVersion: '2025-02-24.acacia' as const,
 
-  // Price IDs (replace with your actual Stripe price IDs)
-  // These should be created in Stripe Dashboard
+  // Price IDs from environment variables
   prices: {
     starter: {
-      monthly: process.env.STRIPE_PRICE_STARTER_MONTHLY || 'price_1SYIeeL0OvBwJPE63VNTk5VC',
-      yearly: process.env.STRIPE_PRICE_STARTER_YEARLY || 'price_starter_yearly',
+      monthly: process.env.STRIPE_STARTER_PRICE_ID || 'price_1SbvEALNymQzQ2Suj9BpACKp',
+      yearly: process.env.STRIPE_STARTER_YEARLY_PRICE_ID || 'price_starter_yearly',
     },
     pro: {
-      monthly: process.env.STRIPE_PRICE_PRO_MONTHLY || 'price_1SYIe6L0OvBwJPE6rBPoqm3H',
-      yearly: process.env.STRIPE_PRICE_PRO_YEARLY || 'price_pro_yearly',
+      monthly: process.env.STRIPE_PRO_PRICE_ID || 'price_1SbvETLNymQzQ2SupQdP8n4g',
+      yearly: process.env.STRIPE_PRO_YEARLY_PRICE_ID || 'price_pro_yearly',
     },
   },
 } as const;
