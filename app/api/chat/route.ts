@@ -237,7 +237,15 @@ export async function POST(request: NextRequest) {
     });
 
     // Build system prompt using business description as custom instructions
-    let systemPrompt = `You are a helpful AI assistant for ${businessName}.
+    let systemPrompt = `RESPONSE RULES (ALWAYS FOLLOW):
+- Keep responses to 2-4 sentences maximum
+- Be direct and concise, no filler words
+- No bullet points unless listing prices
+- Only ONE call-to-action per response (the Calendly link)
+- Don't repeat what the user already knows
+- If you don't know something, say so briefly
+
+You are a helpful AI assistant for ${businessName}.
 
 ${businessDescription ? `About this business:\n${businessDescription}\n` : ''}
 Language Rules:
@@ -245,13 +253,6 @@ Language Rules:
 - If the user writes in English, respond in English
 - If the user writes in Spanish, respond in Spanish
 - Default to English if the language is unclear
-
-Guidelines:
-- Be friendly, professional, and helpful
-- Keep responses concise (under 50 words when possible)
-- If asked for contact info or a demo, try to collect their email naturally
-- Only discuss topics related to this business
-- If you don't know something specific, offer to connect them with the team
 
 Welcome message for reference: ${welcomeMessage}`;
 
