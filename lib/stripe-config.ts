@@ -17,6 +17,25 @@ export const STRIPE_CONFIG = {
       yearly: process.env.STRIPE_PRO_YEARLY_PRICE_ID || 'price_pro_yearly',
     },
   },
+
+  // Setup Services (one-time products)
+  // TODO: Create these products in Stripe Dashboard and add price IDs
+  setupServices: {
+    setupCall: {
+      id: 'smartchat_setup_call',
+      name: 'SmartChat Setup Call',
+      description: '1-hour setup call with screen-share, knowledge base strategy, and 30-day email support',
+      price: 149,
+      priceId: process.env.STRIPE_SETUP_CALL_PRICE_ID || 'price_setup_call',
+    },
+    doneForYou: {
+      id: 'smartchat_done_for_you',
+      name: 'SmartChat Done-For-You Setup',
+      description: 'Complete widget setup, custom knowledge base (up to 10 docs), response fine-tuning, website installation, and 60-day priority support',
+      price: 499,
+      priceId: process.env.STRIPE_DONE_FOR_YOU_PRICE_ID || 'price_done_for_you',
+    },
+  },
 } as const;
 
 // Pricing Plans Configuration

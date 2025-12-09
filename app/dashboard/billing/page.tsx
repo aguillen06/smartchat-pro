@@ -12,6 +12,7 @@ import {
   isSubscriptionActive,
   getDaysUntilSubscriptionEnd
 } from '@/lib/stripe-config';
+import { BookOpen, Phone, Sparkles } from 'lucide-react';
 
 interface Subscription {
   id: string;
@@ -429,6 +430,179 @@ function BillingContent() {
             </button>
           </div>
         )}
+      </div>
+
+      {/* Setup Services Section */}
+      <div>
+        <div className="text-center mb-8">
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">Need Help Getting Started?</h3>
+          <p className="text-gray-600">Choose the setup option that works best for you</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Self-Service Card */}
+          <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                <BookOpen className="w-6 h-6 text-gray-600" />
+              </div>
+            </div>
+            <h4 className="text-xl font-bold text-gray-900 mb-1">Self-Service</h4>
+            <div className="mb-3">
+              <span className="text-2xl font-bold text-gray-900">Free</span>
+              <span className="text-gray-500 text-sm ml-1">included</span>
+            </div>
+            <p className="text-gray-600 text-sm mb-4">
+              Set up SmartChat Pro yourself with our comprehensive guide
+            </p>
+            <ul className="space-y-2 mb-6">
+              <li className="flex items-center gap-2 text-sm text-gray-700">
+                <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Step-by-step documentation
+              </li>
+              <li className="flex items-center gap-2 text-sm text-gray-700">
+                <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Video tutorials
+              </li>
+              <li className="flex items-center gap-2 text-sm text-gray-700">
+                <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Email support
+              </li>
+            </ul>
+            <a
+              href="https://symtri.ai/docs/smartchat"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full py-2 bg-gray-100 text-gray-700 rounded-lg font-medium text-center hover:bg-gray-200 transition-colors"
+            >
+              View Setup Guide
+            </a>
+          </div>
+
+          {/* Setup Call Card */}
+          <div className="bg-white rounded-lg shadow p-6 border-2 border-teal-500 relative">
+            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+              <span className="bg-teal-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                Popular
+              </span>
+            </div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
+                <Phone className="w-6 h-6 text-teal-600" />
+              </div>
+            </div>
+            <h4 className="text-xl font-bold text-gray-900 mb-1">Setup Call</h4>
+            <div className="mb-3">
+              <span className="text-2xl font-bold text-gray-900">$149</span>
+              <span className="text-gray-500 text-sm ml-1">one-time</span>
+            </div>
+            <p className="text-gray-600 text-sm mb-4">
+              1-hour call with our team to get you up and running
+            </p>
+            <ul className="space-y-2 mb-6">
+              <li className="flex items-center gap-2 text-sm text-gray-700">
+                <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Live screen-share setup
+              </li>
+              <li className="flex items-center gap-2 text-sm text-gray-700">
+                <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Knowledge base strategy
+              </li>
+              <li className="flex items-center gap-2 text-sm text-gray-700">
+                <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Best practices review
+              </li>
+              <li className="flex items-center gap-2 text-sm text-gray-700">
+                <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                30-day email support
+              </li>
+            </ul>
+            <a
+              href="https://calendly.com/andres-symtri/30min"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full py-2 bg-teal-500 text-white rounded-lg font-medium text-center hover:bg-teal-600 transition-colors"
+            >
+              Book Setup Call
+            </a>
+          </div>
+
+          {/* Done-For-You Card */}
+          <div className="bg-white rounded-lg shadow p-6 border border-gray-200 relative">
+            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+              <span className="bg-purple-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                Best Value
+              </span>
+            </div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-purple-600" />
+              </div>
+            </div>
+            <h4 className="text-xl font-bold text-gray-900 mb-1">Done-For-You</h4>
+            <div className="mb-3">
+              <span className="text-2xl font-bold text-gray-900">$499</span>
+              <span className="text-gray-500 text-sm ml-1">one-time</span>
+            </div>
+            <p className="text-gray-600 text-sm mb-4">
+              We handle everything - just send us your info
+            </p>
+            <ul className="space-y-2 mb-6">
+              <li className="flex items-center gap-2 text-sm text-gray-700">
+                <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Complete widget setup
+              </li>
+              <li className="flex items-center gap-2 text-sm text-gray-700">
+                <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Custom knowledge base (up to 10 docs)
+              </li>
+              <li className="flex items-center gap-2 text-sm text-gray-700">
+                <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Response style fine-tuning
+              </li>
+              <li className="flex items-center gap-2 text-sm text-gray-700">
+                <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Website installation
+              </li>
+              <li className="flex items-center gap-2 text-sm text-gray-700">
+                <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                60-day priority support
+              </li>
+            </ul>
+            <a
+              href="https://calendly.com/andres-symtri/30min"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full py-2 bg-purple-500 text-white rounded-lg font-medium text-center hover:bg-purple-600 transition-colors"
+            >
+              Get Started
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   );
