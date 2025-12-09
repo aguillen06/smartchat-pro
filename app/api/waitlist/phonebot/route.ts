@@ -93,7 +93,10 @@ export async function POST(request: NextRequest) {
 
     // Send email notification (don't let failure break signup)
     try {
-      await resend.emails.send({
+      console.log('Starting email send...');
+      console.log('RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY);
+
+      const emailResult = await resend.emails.send({
         from: 'notifications@symtri.ai',
         to: 'andres@symtri.ai',
         subject: 'New PhoneBot Waitlist Signup',
@@ -108,8 +111,10 @@ export async function POST(request: NextRequest) {
           <p><a href="https://supabase.com/dashboard">View in Supabase</a></p>
         `
       });
+
+      console.log('Email sent successfully:', emailResult);
     } catch (emailError) {
-      console.error('Failed to send notification email:', emailError);
+      console.error('Email error:', emailError);
     }
 
     return NextResponse.json(
