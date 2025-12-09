@@ -415,7 +415,7 @@
       `;
 
       // Create chat window
-      const welcomeMsg = this.config.welcomeMessage || '👋 Hi! How can we help you today?';
+      const welcomeMsg = this.config.welcomeMessage || 'Hi! How can we help you today?';
       const widgetName = this.config.widgetName || 'Chat Support';
 
       const chatWindow = document.createElement('div');
