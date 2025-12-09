@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { Resend } from 'resend';
 import { z } from 'zod';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
  * CORS headers for cross-origin requests from symtri.ai
@@ -87,6 +90,27 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('PhoneBot waitlist entry created:', data.id);
+
+    // Send email notification (don't let failure break signup)
+    try {
+      await resend.emails.send({
+        from: 'notifications@symtri.ai',
+        to: 'andres@symtri.ai',
+        subject: 'New PhoneBot Waitlist Signup',
+        html: `
+          <h2>New PhoneBot Waitlist Signup</h2>
+          <p><strong>Business:</strong> ${business_name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
+          <p><strong>Daily Calls:</strong> ${daily_calls || 'Not specified'}</p>
+          <p><strong>Submitted:</strong> ${new Date().toLocaleString()}</p>
+          <hr>
+          <p><a href="https://supabase.com/dashboard">View in Supabase</a></p>
+        `
+      });
+    } catch (emailError) {
+      console.error('Failed to send notification email:', emailError);
+    }
 
     return NextResponse.json(
       { success: true, message: 'Successfully joined the waitlist!' },
