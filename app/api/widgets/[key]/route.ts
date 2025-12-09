@@ -3,6 +3,23 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { UpdateWidgetByKeySchema, validateRequest } from '@/lib/validation';
 
 /**
+ * CORS headers for external widget support
+ */
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, PUT, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+/**
+ * OPTIONS /api/widgets/[key]
+ * Handle CORS preflight requests
+ */
+export async function OPTIONS() {
+  return NextResponse.json({}, { status: 200, headers: CORS_HEADERS });
+}
+
+/**
  * GET /api/widgets/[key]
  * Get widget settings by widget key
  */
@@ -28,17 +45,17 @@ export async function GET(
       console.error('❌ [Widget API GET] Widget not found. Error:', error);
       return NextResponse.json(
         { error: 'Widget not found' },
-        { status: 404 }
+        { status: 404, headers: CORS_HEADERS }
       );
     }
 
     console.log('✅ [Widget API GET] Widget found:', widget.id);
-    return NextResponse.json(widget);
+    return NextResponse.json(widget, { headers: CORS_HEADERS });
   } catch (error) {
     console.error('Error fetching widget:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: CORS_HEADERS }
     );
   }
 }

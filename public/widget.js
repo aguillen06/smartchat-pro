@@ -36,7 +36,9 @@
         widgetKey: config.widgetKey,
         primaryColor: config.primaryColor || '#3B82F6',
         position: config.position || 'bottom-right',
-        apiUrl: config.apiUrl || API_BASE_URL
+        apiUrl: config.apiUrl || API_BASE_URL,
+        welcomeMessage: config.welcomeMessage || null,
+        widgetName: config.widgetName || 'Chat Support'
       };
 
       // Debug logging
@@ -50,25 +52,55 @@
       this.conversationId = null;
       this.visitorId = null;
       this.messageQueue = [];
+      this.configLoaded = false;
 
       this.init();
     }
 
-    init() {
-      // Inject styles
-      this.injectStyles();
-
+    async init() {
       // Get or create visitor ID
       this.visitorId = this.getOrCreateVisitorId();
 
       // Get conversation ID from session
       this.conversationId = sessionStorage.getItem(STORAGE_KEYS.CONVERSATION_ID);
 
+      // Fetch widget config from server to get the latest settings
+      await this.fetchWidgetConfig();
+
+      // Inject styles (after config is loaded so we have the right color)
+      this.injectStyles();
+
       // Create widget elements
       this.createWidget();
 
       // Attach event listeners
       this.attachEventListeners();
+    }
+
+    async fetchWidgetConfig() {
+      try {
+        const response = await fetch(`${this.config.apiUrl}/api/widgets/${this.config.widgetKey}`);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('[SmartChat] Fetched widget config:', data);
+
+          // Update config with server values
+          if (data.settings?.theme_color) {
+            this.config.primaryColor = data.settings.theme_color;
+          }
+          if (data.settings?.welcome_message) {
+            this.config.welcomeMessage = data.settings.welcome_message;
+          }
+          if (data.name) {
+            this.config.widgetName = data.name;
+          }
+          this.configLoaded = true;
+        } else {
+          console.warn('[SmartChat] Could not fetch widget config, using defaults');
+        }
+      } catch (error) {
+        console.warn('[SmartChat] Error fetching widget config:', error);
+      }
     }
 
     injectStyles() {
@@ -383,11 +415,14 @@
       `;
 
       // Create chat window
+      const welcomeMsg = this.config.welcomeMessage || '👋 Hi! How can we help you today?';
+      const widgetName = this.config.widgetName || 'Chat Support';
+
       const chatWindow = document.createElement('div');
       chatWindow.className = 'smartchat-window smartchat-hidden';
       chatWindow.innerHTML = `
         <div class="smartchat-header">
-          <h3>Chat Support</h3>
+          <h3>${widgetName}</h3>
           <button class="smartchat-close" aria-label="Close chat">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -397,7 +432,7 @@
         </div>
         <div class="smartchat-messages">
           <div class="smartchat-welcome">
-            <p>👋 Hi! How can we help you today?</p>
+            <p>${welcomeMsg}</p>
           </div>
         </div>
         <div class="smartchat-input-container">
