@@ -2,15 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const { password } = await request.json();
+    const body = await request.json();
+    const password = body?.password;
 
     const dashboardPassword = process.env.DASHBOARD_PASSWORD;
 
     if (!dashboardPassword) {
-      console.error("DASHBOARD_PASSWORD environment variable not set");
       return NextResponse.json(
-        { error: "Server configuration error" },
+        { error: "Server configuration error", detail: "DASHBOARD_PASSWORD not set" },
         { status: 500 }
+      );
+    }
+
+    if (!password) {
+      return NextResponse.json(
+        { error: "Password required" },
+        { status: 400 }
       );
     }
 
@@ -23,9 +30,8 @@ export async function POST(request: NextRequest) {
       );
     }
   } catch (error) {
-    console.error("Auth error:", error);
     return NextResponse.json(
-      { error: "Authentication failed" },
+      { error: "Authentication failed", detail: String(error) },
       { status: 500 }
     );
   }
