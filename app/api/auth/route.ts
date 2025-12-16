@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
 
     if (!dashboardPassword) {
       return NextResponse.json(
-        { error: "Server configuration error", detail: "DASHBOARD_PASSWORD not set" },
+        { error: "Server configuration error" },
         { status: 500 }
       );
     }
@@ -29,9 +29,9 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
-  } catch (error) {
+  } catch {
     return NextResponse.json(
-      { error: "Authentication failed", detail: String(error) },
+      { error: "Authentication failed" },
       { status: 500 }
     );
   }
