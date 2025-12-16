@@ -93,18 +93,20 @@ Answer the user's question based on the knowledge above.`;
     const responseTime = Date.now() - startTime;
 
     // 5. Log analytics (non-blocking)
-    supabase
-      .from("chat_analytics")
-      .insert({
-        tenant_id: tenantId,
-        message: message.substring(0, 500), // Limit message length
-        response: assistantResponse.substring(0, 1000), // Limit response length
-        language: language,
-        sources_used: results.length,
-        response_time_ms: responseTime,
-      })
-      .then(() => {})
-      .catch((err) => console.error("Analytics error:", err));
+    (async () => {
+      try {
+        await supabase.from("chat_analytics").insert({
+          tenant_id: tenantId,
+          message: message.substring(0, 500),
+          response: assistantResponse.substring(0, 1000),
+          language: language,
+          sources_used: results.length,
+          response_time_ms: responseTime,
+        });
+      } catch (err) {
+        console.error("Analytics error:", err);
+      }
+    })();
 
     return NextResponse.json(
       {
