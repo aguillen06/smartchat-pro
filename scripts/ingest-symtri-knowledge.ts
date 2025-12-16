@@ -271,12 +271,8 @@ async function ingestSymtriKnowledge() {
   console.log("🚀 Starting Symtri AI knowledge base ingestion...");
   console.log(`📦 Total chunks to ingest: ${symtriKnowledge.length}`);
 
-  // Check tenant ID is set
-  if (SYMTRI_TENANT_ID === "YOUR_TENANT_ID_HERE") {
-    console.error("\n❌ ERROR: You must set your tenant ID!");
-    console.error("Update the SYMTRI_TENANT_ID constant at the top of this file.");
-    process.exit(1);
-  }
+  // Tenant ID is configured
+  console.log(`📍 Using tenant ID: ${SYMTRI_TENANT_ID}`);
 
   try {
     console.log("\n⏳ Ingesting knowledge chunks...");
