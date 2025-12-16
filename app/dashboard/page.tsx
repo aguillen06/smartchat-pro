@@ -20,10 +20,26 @@ export default function Dashboard() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [days, setDays] = useState(7);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   const tenantId = "c48decc4-98f5-4fe8-971f-5461d3e6ae1a";
 
+  // Check if already authenticated
   useEffect(() => {
+    const savedAuth = sessionStorage.getItem("dashboard_auth");
+    if (savedAuth === "true") {
+      setIsAuthenticated(true);
+    }
+    setCheckingAuth(false);
+  }, []);
+
+  // Fetch analytics when authenticated
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
     async function fetchAnalytics() {
       setLoading(true);
       try {
@@ -36,7 +52,35 @@ export default function Dashboard() {
       setLoading(false);
     }
     fetchAnalytics();
-  }, [days]);
+  }, [days, isAuthenticated]);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError("");
+
+    try {
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+
+      if (res.ok) {
+        sessionStorage.setItem("dashboard_auth", "true");
+        setIsAuthenticated(true);
+      } else {
+        setAuthError("Invalid password");
+      }
+    } catch {
+      setAuthError("Authentication failed");
+    }
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("dashboard_auth");
+    setIsAuthenticated(false);
+    setPassword("");
+  };
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleString();
@@ -46,6 +90,109 @@ export default function Dashboard() {
     return (ms / 1000).toFixed(2) + "s";
   };
 
+  // Loading check
+  if (checkingAuth) {
+    return (
+      <div style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)"
+      }}>
+        Loading...
+      </div>
+    );
+  }
+
+  // Login Screen
+  if (!isAuthenticated) {
+    return (
+      <div style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+      }}>
+        <div style={{
+          background: "white",
+          borderRadius: "16px",
+          padding: "40px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+          width: "100%",
+          maxWidth: "400px",
+          margin: "20px"
+        }}>
+          <div style={{ textAlign: "center", marginBottom: "32px" }}>
+            <div style={{
+              width: "60px",
+              height: "60px",
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, #10B981 0%, #0D9488 100%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 16px"
+            }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+            <h1 style={{ fontSize: "24px", fontWeight: "700", color: "#1f2937", margin: "0 0 8px 0" }}>
+              SmartChat Analytics
+            </h1>
+            <p style={{ color: "#6b7280", margin: 0 }}>Enter password to continue</p>
+          </div>
+
+          <form onSubmit={handleLogin}>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              style={{
+                width: "100%",
+                padding: "14px 16px",
+                fontSize: "16px",
+                border: authError ? "2px solid #EF4444" : "1px solid #d1d5db",
+                borderRadius: "8px",
+                marginBottom: "16px",
+                outline: "none",
+                boxSizing: "border-box"
+              }}
+              autoFocus
+            />
+            {authError && (
+              <div style={{ color: "#EF4444", fontSize: "14px", marginBottom: "16px" }}>
+                {authError}
+              </div>
+            )}
+            <button
+              type="submit"
+              style={{
+                width: "100%",
+                padding: "14px",
+                fontSize: "16px",
+                fontWeight: "600",
+                color: "white",
+                background: "linear-gradient(135deg, #10B981 0%, #0D9488 100%)",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer"
+              }}
+            >
+              Access Dashboard
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // Dashboard
   return (
     <div style={{
       minHeight: "100vh",
@@ -55,18 +202,34 @@ export default function Dashboard() {
     }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
         {/* Header */}
-        <div style={{ marginBottom: "32px" }}>
-          <h1 style={{
-            fontSize: "32px",
-            fontWeight: "700",
-            color: "#1f2937",
-            margin: "0 0 8px 0"
-          }}>
-            SmartChat Analytics
-          </h1>
-          <p style={{ color: "#6b7280", margin: 0 }}>
-            Chat usage metrics for Symtri AI
-          </p>
+        <div style={{ marginBottom: "32px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
+          <div>
+            <h1 style={{
+              fontSize: "32px",
+              fontWeight: "700",
+              color: "#1f2937",
+              margin: "0 0 8px 0"
+            }}>
+              SmartChat Analytics
+            </h1>
+            <p style={{ color: "#6b7280", margin: 0 }}>
+              Chat usage metrics for Symtri AI
+            </p>
+          </div>
+          <button
+            onClick={handleLogout}
+            style={{
+              padding: "10px 20px",
+              fontSize: "14px",
+              color: "#6b7280",
+              background: "white",
+              border: "1px solid #d1d5db",
+              borderRadius: "8px",
+              cursor: "pointer"
+            }}
+          >
+            Logout
+          </button>
         </div>
 
         {/* Period Selector */}
@@ -103,7 +266,6 @@ export default function Dashboard() {
               gap: "20px",
               marginBottom: "32px"
             }}>
-              {/* Total Messages */}
               <div style={{
                 background: "white",
                 borderRadius: "16px",
@@ -118,7 +280,6 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Avg Response Time */}
               <div style={{
                 background: "white",
                 borderRadius: "16px",
@@ -133,7 +294,6 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* English Messages */}
               <div style={{
                 background: "white",
                 borderRadius: "16px",
@@ -148,7 +308,6 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Spanish Messages */}
               <div style={{
                 background: "white",
                 borderRadius: "16px",
