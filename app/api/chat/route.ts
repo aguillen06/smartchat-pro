@@ -6,6 +6,18 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+// CORS headers
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+// Handle OPTIONS request (CORS preflight)
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { message, tenantId, language = "en" } = await request.json();
@@ -13,7 +25,7 @@ export async function POST(request: NextRequest) {
     if (!message || !tenantId) {
       return NextResponse.json(
         { error: "Missing message or tenantId" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -47,7 +59,7 @@ BEHAVIOR GUIDELINES:
 - Be professional and friendly
 - Match the user's language (English or Spanish)
 - If asked about scheduling, provide the Calendly link: https://calendly.com/symtri-ai/30min
-- If you don't have that specific information, say: "I don't have that specific information, but I can connect you with someone who can help."
+- If you don't know something, say: "I don't have that specific information, but I can connect you with someone who can help."
 
 KNOWLEDGE BASE:
 ${knowledgeContext}
@@ -70,15 +82,18 @@ Answer the user's question based on the knowledge above.`;
     const assistantResponse =
       response.content[0].type === "text" ? response.content[0].text : "";
 
-    return NextResponse.json({
-      response: assistantResponse,
-      sources: results.length,
-    });
+    return NextResponse.json(
+      {
+        response: assistantResponse,
+        sources: results.length,
+      },
+      { headers: corsHeaders }
+    );
   } catch (error) {
     console.error("Chat error:", error);
     return NextResponse.json(
       { error: "Chat failed: " + String(error) },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
