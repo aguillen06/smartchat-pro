@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { knowledgeService } from "@/lib/rag/knowledge-service";
+import { createClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 // CORS headers
 const corsHeaders = {
@@ -19,6 +25,8 @@ export async function OPTIONS() {
 }
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+
   try {
     const { message, tenantId, language = "en" } = await request.json();
 
@@ -81,6 +89,22 @@ Answer the user's question based on the knowledge above.`;
 
     const assistantResponse =
       response.content[0].type === "text" ? response.content[0].text : "";
+
+    const responseTime = Date.now() - startTime;
+
+    // 5. Log analytics (non-blocking)
+    supabase
+      .from("chat_analytics")
+      .insert({
+        tenant_id: tenantId,
+        message: message.substring(0, 500), // Limit message length
+        response: assistantResponse.substring(0, 1000), // Limit response length
+        language: language,
+        sources_used: results.length,
+        response_time_ms: responseTime,
+      })
+      .then(() => {})
+      .catch((err) => console.error("Analytics error:", err));
 
     return NextResponse.json(
       {
