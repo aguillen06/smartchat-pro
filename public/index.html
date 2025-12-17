@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Tracking scripts loaded via consent system in components.js -->
+
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="Symtri AI" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartChat - AI Chat That Converts | Symtri AI</title>
+    <meta name="description" content="AI-powered chat system that answers calls, schedules appointments, and qualifies leads 24/7. No hold times. No missed opportunities.">
+    <meta name="keywords" content="AI chat system, automated answering service, appointment scheduling, lead qualification, bilingual AI, business phone automation">
+    <link rel="canonical" href="https://symtri.ai/smartchat">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="SmartChat - AI Chat That Converts | Symtri AI">
+    <meta property="og:description" content="AI-powered chat system that answers calls, schedules appointments, and qualifies leads 24/7.">
+    <meta property="og:url" content="https://symtri.ai/smartchat">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://symtri.ai/og-smartchat.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --black: #000000;
+            --white: #FFFFFF;
+            --grey-50: #FAFAFA;
+            --grey-100: #F4F4F5;
+            --grey-200: #E4E4E7;
+            --grey-300: #D4D4D8;
+            --grey-400: #A1A1AA;
+            --grey-500: #71717A;
+            --grey-600: #52525B;
+            --grey-700: #3F3F46;
+            --grey-800: #27272A;
+            --grey-900: #18181B;
+            --teal: #10B981;
+            --teal-light: #34D399;
+            --teal-dark: #059669;
+            --teal-faint: rgba(16, 185, 129, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.05);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--white);
+            color: var(--grey-700);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Loading Screen */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--black);
+            animation: pulse 1.5s ease infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .animate-on-scroll.animate {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 1.5rem 2rem;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        header.scrolled {
+            padding: 1rem 2rem;
+            border-bottom-color: var(--grey-200);
+            background: rgba(255,255,255,0.95);
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            text-decoration: none;
+        }
+
+        .logo-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--grey-900);
+            letter-spacing: -0.02em;
+        }
+
+        .logo-tagline {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--grey-500);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--grey-600);
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.2s;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--grey-900);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--teal);
+            transition: width 0.2s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-login {
+            padding: 0.5rem 1.25rem;
+            background: var(--grey-900);
+            color: var(--white) !important;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .nav-login:hover {
+            background: var(--teal);
+        }
+
+        .nav-login::after {
+            display: none !important;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10rem 2rem 6rem;
+            background: var(--white);
+            overflow: hidden;
+        }
+
+        .hero-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        #grid-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 1;
+        }
+
+        .geometric-canvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .hero-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-text {
+            opacity: 0;
+            animation: fadeInUp 0.8s ease 0.3s forwards;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--teal-faint);
+            color: var(--teal);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(3rem, 7vw, 5rem);
+            font-weight: 700;
+            line-height: 1.1;
+            color: var(--grey-900);
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.03em;
+        }
+
+        .hero h1 .accent {
+            color: var(--teal);
+        }
+
+        .hero p {
+            font-size: clamp(1.1rem, 2vw, 1.35rem);
+            color: var(--grey-600);
+            margin-bottom: 2.5rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 2px solid transparent;
+        }
+
+        .btn-primary {
+            background: var(--teal);
+            color: var(--white);
+            border-color: var(--teal);
+        }
+
+        .btn-primary:hover {
+            background: var(--teal-dark);
+            border-color: var(--teal-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-outline {
+            background: var(--white);
+            color: var(--grey-900);
+            border: 2px solid var(--grey-300);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--grey-900);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .trust-indicators {
+            font-size: 0.875rem;
+            color: var(--grey-500);
+        }
+
+        .trust-indicators span {
+            margin: 0 0.75rem;
+        }
+
+        /* Problem Section */
+        .problem {
+            padding: 6rem 2rem;
+            background: var(--grey-900);
+            color: var(--white);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .problem::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,%3Csvg width="60" height="60" xmlns="http://www.w3.org/2000/svg"%3E%3Cdefs%3E%3Cpattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse"%3E%3Ccircle cx="30" cy="30" r="1" fill="rgba(255,255,255,0.03)"/%3E%3C/pattern%3E%3C/defs%3E%3Crect width="100%25" height="100%25" fill="url(%23grid)"/%3E%3C/svg%3E');
+        }
+
+        .problem-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .problem h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin-bottom: 3rem;
+            text-align: center;
+            color: var(--white);
+        }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .problem-stat {
+            text-align: center;
+        }
+
+        .problem-stat .number {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 700;
+            color: var(--teal);
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+
+        .problem-stat p {
+            color: var(--grey-400);
+            font-size: 1rem;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 6rem 2rem;
+            background: var(--grey-50);
+        }
+
+        .features-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-header h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            color: var(--grey-900);
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .section-header p {
+            font-size: 1.125rem;
+            color: var(--grey-600);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            padding: 2rem;
+            background: var(--white);
+            border-radius: 12px;
+            border: 1px solid var(--grey-200);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: var(--teal);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: transparent;
+            border: 1px solid var(--grey-200);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            color: var(--teal);
+            transition: all 0.2s ease;
+        }
+
+        .feature-card:hover .feature-icon {
+            border-color: var(--teal);
+            background: var(--teal-faint);
+        }
+
+        .feature-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.5;
+        }
+
+        .feature-card h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.25rem;
+            color: var(--grey-900);
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.02em;
+        }
+
+        .feature-card p {
+            color: var(--grey-600);
+            line-height: 1.6;
+        }
+
+        /* How It Works Section */
+        .how-it-works {
+            padding: 6rem 2rem;
+            background: var(--white);
+        }
+
+        .how-it-works-content {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .process-timeline {
+            position: relative;
+            margin-top: 4rem;
+        }
+
+        .timeline-line {
+            position: absolute;
+            top: 40px;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: var(--grey-200);
+            z-index: 0;
+        }
+
+        .timeline-line::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0;
+            background: var(--teal);
+            transition: width 2s ease;
+        }
+
+        .timeline-line.animate::after {
+            width: 100%;
+        }
+
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step {
+            text-align: center;
+            flex: 1;
+        }
+
+        .step-number {
+            width: 80px;
+            height: 80px;
+            background: var(--teal);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 auto 1.5rem;
+            transition: transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        .step-number:hover {
+            transform: scale(1.1);
+        }
+
+        .step h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.25rem;
+            color: var(--grey-900);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .step p {
+            color: var(--grey-600);
+            font-size: 0.95rem;
+        }
+
+        /* Pricing Section */
+        .pricing {
+            padding: 6rem 2rem;
+            background: var(--grey-50);
+        }
+
+        .pricing-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .pricing-card {
+            background: var(--white);
+            border: 2px solid var(--grey-200);
+            border-radius: 16px;
+            padding: 2.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .pricing-card:hover {
+            border-color: var(--teal);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .pricing-card.popular {
+            border-color: var(--teal);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--teal);
+            color: var(--white);
+            padding: 0.375rem 1rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .pricing-card h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            color: var(--grey-900);
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-card .price {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--grey-900);
+            margin: 1rem 0;
+        }
+
+        .pricing-card .price span {
+            font-size: 1.25rem;
+            color: var(--grey-500);
+            font-weight: 400;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin: 2rem 0;
+        }
+
+        .pricing-features li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--grey-100);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--grey-700);
+        }
+
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+
+        .check-icon {
+            width: 20px;
+            height: 20px;
+            background: var(--teal);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .check-icon svg {
+            width: 12px;
+            height: 12px;
+            stroke: var(--white);
+            stroke-width: 3;
+        }
+
+        /* FAQ Section */
+        .faq {
+            padding: 6rem 2rem;
+            background: var(--white);
+        }
+
+        .faq-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-list {
+            margin-top: 3rem;
+        }
+
+        .faq-item {
+            background: var(--grey-50);
+            border: 1px solid var(--grey-200);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .faq-item:hover {
+            border-color: var(--teal);
+        }
+
+        .faq-question {
+            padding: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--grey-900);
+            user-select: none;
+        }
+
+        .faq-question:hover {
+            color: var(--teal);
+        }
+
+        .faq-icon {
+            transition: transform 0.3s;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+        }
+
+        .faq-answer-content {
+            padding: 0 1.5rem 1.5rem;
+            color: var(--grey-600);
+            line-height: 1.7;
+        }
+
+        /* CTA Section */
+        .cta {
+            padding: 6rem 2rem;
+            background: linear-gradient(135deg, var(--grey-900), var(--black));
+            color: var(--white);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,%3Csvg width="60" height="60" xmlns="http://www.w3.org/2000/svg"%3E%3Cdefs%3E%3Cpattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse"%3E%3Ccircle cx="30" cy="30" r="1" fill="rgba(255,255,255,0.05)"/%3E%3C/pattern%3E%3C/defs%3E%3Crect width="100%25" height="100%25" fill="url(%23grid)"/%3E%3C/svg%3E');
+        }
+
+        .cta-content {
+            max-width: 700px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .cta p {
+            font-size: 1.25rem;
+            color: var(--grey-300);
+            margin-bottom: 2.5rem;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta .btn-primary {
+            background: var(--teal);
+            border-color: var(--teal);
+        }
+
+        .cta .btn-primary:hover {
+            background: var(--teal-dark);
+            border-color: var(--teal-dark);
+        }
+
+        .cta .btn-outline {
+            background: transparent;
+            color: var(--white);
+            border-color: var(--white);
+        }
+
+        .cta .btn-outline:hover {
+            background: var(--white);
+            color: var(--grey-900);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--black);
+            color: var(--grey-400);
+            padding: 4rem 2rem 2rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-section h4 {
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--white);
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a {
+            color: var(--grey-400);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-section a:hover {
+            color: var(--teal);
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-top: 2rem;
+            border-top: 1px solid var(--grey-700);
+            text-align: center;
+            font-size: 0.875rem;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding: 8rem 1.5rem 4rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .features-grid,
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .problem-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .steps {
+                flex-direction: column;
+                gap: 3rem;
+            }
+
+            .timeline-line {
+                display: none;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loader" id="loader">
+        <div class="loader-text">SMARTCHAT</div>
+    </div>
+
+    <!-- Header -->
+    <header id="header">
+        <nav>
+            <a href="/" class="logo">
+                <span class="logo-text">SYMTRI AI</span>
+                <span class="logo-tagline">Intelligent Systems</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="/#solutions">Solutions</a></li>
+                <li><a href="/#why">Why Symtri</a></li>
+                <li><a href="/blog">Blog</a></li>
+                <li><a href="/#contact">Contact</a></li>
+                <li><a href="https://smartchat.symtri.ai/login" class="nav-login">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-background">
+            <canvas id="grid-canvas"></canvas>
+            <canvas id="geometric-canvas" class="geometric-canvas"></canvas>
+        </div>
+        <div class="hero-content">
+            <div class="hero-text">
+                <div class="badge">SMARTCHAT</div>
+                <h1>AI Chat That <span class="accent">Convert</span></h1>
+                <p>AI-powered chat system that answers calls, schedules appointments, and qualifies leads 24/7. No hold times. No missed opportunities.</p>
+
+                <div class="hero-buttons">
+                    <a href="https://smartchat.symtri.ai/login" class="btn btn-primary">Start Free Trial</a>
+                    <a href="https://calendly.com/symtri-ai" class="btn btn-outline">See Demo</a>
+                </div>
+
+                <div class="trust-indicators">
+                    <span>✓ 14-day free trial</span>
+                    <span>✓ No credit card required</span>
+                    <span>✓ 5-minute setup</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="problem">
+        <div class="problem-content">
+            <h2 class="animate-on-scroll">The Problem with Business Phones</h2>
+
+            <div class="problem-grid">
+                <div class="problem-stat animate-on-scroll">
+                    <div class="number">85%</div>
+                    <p>of callers won't leave voicemail</p>
+                </div>
+                <div class="problem-stat animate-on-scroll">
+                    <div class="number">128</div>
+                    <p>hours per week your business is closed</p>
+                </div>
+                <div class="problem-stat animate-on-scroll">
+                    <div class="number">$500-2K</div>
+                    <p>lost revenue per missed call</p>
+                </div>
+                <div class="problem-stat animate-on-scroll">
+                    <div class="number">$35-45K</div>
+                    <p>annual cost to hire a receptionist</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="features-content">
+            <div class="section-header">
+                <h2 class="animate-on-scroll">Everything You Need</h2>
+                <p class="animate-on-scroll">Professional AI chat system built for small businesses</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </div>
+                    <h3>AI-Powered Conversations</h3>
+                    <p>Natural bilingual responses in English and Spanish. Handles Spanglish seamlessly.</p>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="8.5" cy="7" r="4"></circle>
+                            <polyline points="17 11 19 13 23 9"></polyline>
+                        </svg>
+                    </div>
+                    <h3>Automatic Lead Capture</h3>
+                    <p>Collects contact info and qualifies leads based on your criteria. No lead left behind.</p>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                            <line x1="9" y1="21" x2="9" y2="9"></line>
+                        </svg>
+                    </div>
+                    <h3>Real-time Dashboard</h3>
+                    <p>Track calls, leads, and analytics. Export data to your CRM with one click.</p>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </div>
+                    <h3>5-Minute Setup</h3>
+                    <p>We handle everything. You just customize greetings and go live.</p>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2v20M2 12h20"></path>
+                        </svg>
+                    </div>
+                    <h3>24/7 Availability</h3>
+                    <p>Never miss a call, even after hours. Your AI never sleeps, takes breaks, or calls in sick.</p>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <h3>Secure & Reliable</h3>
+                    <p>Healthcare-grade security with 99.9% uptime guarantee. HIPAA-ready for medical practices.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works">
+        <div class="how-it-works-content">
+            <div class="section-header">
+                <h2 class="animate-on-scroll">Get Started in 3 Steps</h2>
+                <p class="animate-on-scroll">Launch your AI chat system in minutes, not months</p>
+            </div>
+
+            <div class="process-timeline">
+                <div class="timeline-line"></div>
+                <div class="steps">
+                    <div class="step animate-on-scroll">
+                        <div class="step-number">1</div>
+                        <h3>Sign Up</h3>
+                        <p>Create your account in 30 seconds. No credit card required for trial.</p>
+                    </div>
+
+                    <div class="step animate-on-scroll">
+                        <div class="step-number">2</div>
+                        <h3>Customize</h3>
+                        <p>Add your business info and AI instructions. We help you optimize the script.</p>
+                    </div>
+
+                    <div class="step animate-on-scroll">
+                        <div class="step-number">3</div>
+                        <h3>Go Live</h3>
+                        <p>Get your phone number and start taking calls. We handle all the technical setup.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <div class="pricing-content">
+            <div class="section-header">
+                <h2 class="animate-on-scroll">Simple, Transparent Pricing</h2>
+                <p class="animate-on-scroll">Choose the plan that fits your call volume</p>
+            </div>
+
+            <div class="pricing-grid">
+                <div class="pricing-card animate-on-scroll">
+                    <h3>Starter</h3>
+                    <div class="price">$297<span>/mo</span></div>
+                    <ul class="pricing-features">
+                        <li>
+                            <div class="check-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            200 minutes/month
+                        </li>
+                        <li>
+                            <div class="check-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            1 phone number
+                        </li>
+                        <li>
+                            <div class="check-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            Dashboard access
+                        </li>
+                        <li>
+                            <div class="check-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            Email support
+                        </li>
+                    </ul>
+                    <a href="https://smartchat.symtri.ai/login" class="btn btn-outline" style="width: 100%; justify-content: center;">Start Trial</a>
+                </div>
+
+                <div class="pricing-card popular animate-on-scroll">
+                    <div class="popular-badge">MOST POPULAR</div>
+                    <h3>Professional</h3>
+                    <div class="price">$397<span>/mo</span></div>
+                    <ul class="pricing-features">
+                        <li>
+                            <div class="check-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            500 minutes/month
+                        </li>
+                        <li>
+                            <div class="check-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            Priority support
+                        </li>
+                        <li>
+                            <div class="check-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            Call analytics
+                        </li>
+                        <li>
+                            <div class="check-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            CRM integration
+                        </li>
+                    </ul>
+                    <a href="https://smartchat.symtri.ai/login" class="btn btn-primary" style="width: 100%; justify-content: center;">Start Trial</a>
+                </div>
+
+                <div class="pricing-card animate-on-scroll">
+                    <h3>Healthcare</h3>
+                    <div class="price">$597<span>/mo</span></div>
+                    <ul class="pricing-features">
+                        <li>
+                            <div class="check-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            1,000 minutes/month
+                        </li>
+                        <li>
+                            <div class="check-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            Multiple numbers
+                        </li>
+                        <li>
+                            <div class="check-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            Dedicated support
+                        </li>
+                        <li>
+                            <div class="check-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            Custom integration
+                        </li>
+                    </ul>
+                    <a href="https://smartchat.symtri.ai/login" class="btn btn-outline" style="width: 100%; justify-content: center;">Start Trial</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq">
+        <div class="faq-content">
+            <div class="section-header">
+                <h2 class="animate-on-scroll">Frequently Asked Questions</h2>
+            </div>
+
+            <div class="faq-list">
+                <div class="faq-item animate-on-scroll">
+                    <div class="faq-question">
+                        <span>How long does setup take?</span>
+                        <span class="faq-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            Setup takes about 5 minutes. You create your account, add your business information, and customize your AI's greeting. We provision your phone number instantly and you're live. Most businesses are taking calls within 10 minutes of signing up.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item animate-on-scroll">
+                    <div class="faq-question">
+                        <span>Does it work with my existing phone number?</span>
+                        <span class="faq-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            Yes! You can forward your existing number to SmartChat, or we can provide you with a new local number. Call forwarding is the easiest option and works with any phone provider.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item animate-on-scroll">
+                    <div class="faq-question">
+                        <span>Can it handle Spanish callers?</span>
+                        <span class="faq-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            Absolutely! SmartChat is bilingual by default and automatically detects when a caller speaks Spanish. It can also handle Spanglish (code-switching between English and Spanish), which is a huge advantage for businesses serving Hispanic markets.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item animate-on-scroll">
+                    <div class="faq-question">
+                        <span>What happens after my free trial?</span>
+                        <span class="faq-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            After 14 days, you'll be prompted to choose a paid plan. If you don't upgrade, your SmartChat will be paused (not deleted). You can upgrade anytime to resume service. No surprise charges.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item animate-on-scroll">
+                    <div class="faq-question">
+                        <span>Can I cancel anytime?</span>
+                        <span class="faq-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            Yes, cancel anytime from your dashboard. No contracts, no cancellation fees. You own all your call data and can export it before canceling.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="cta-content">
+            <h2 class="animate-on-scroll">Ready to Never Miss a Call Again?</h2>
+            <p class="animate-on-scroll">Join businesses using SmartChat to capture every opportunity</p>
+
+            <div class="cta-buttons animate-on-scroll">
+                <a href="https://smartchat.symtri.ai/login" class="btn btn-primary">Start Your Free Trial</a>
+                <a href="#pricing" class="btn btn-outline">View Pricing</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Products</h4>
+                <ul>
+                    <li><a href="https://smartchat.symtri.ai">SmartChat</a></li>
+                    <li><a href="/smartchat">SmartChat</a></li>
+                    <li><a href="/leadflow">LeadFlow</a></li>
+                    <li><a href="/processpilot">ProcessPilot</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="/about">About</a></li>
+                    <li><a href="/blog">Blog</a></li>
+                    <li><a href="/careers">Careers</a></li>
+                    <li><a href="/#contact">Contact</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="/docs">Documentation</a></li>
+                    <li><a href="/case-studies">Case Studies</a></li>
+                    <li><a href="/webinars">Webinars</a></li>
+                    <li><a href="/support">Support</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="/privacy">Privacy Policy</a></li>
+                    <li><a href="/terms">Terms of Service</a></li>
+                    <li><a href="/security">Security</a></li>
+                    <li><a href="/compliance">Compliance</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>© 2025 Symtri AI. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Animated Grid/Mesh Background
+        class GridAnimation {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.points = [];
+                this.mouse = { x: 0, y: 0 };
+                this.animationId = null;
+
+                this.resize();
+                this.init();
+
+                window.addEventListener('resize', () => this.resize());
+                window.addEventListener('mousemove', (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    this.mouse.x = e.clientX - rect.left;
+                    this.mouse.y = e.clientY - rect.top;
+                });
+            }
+
+            resize() {
+                this.canvas.width = this.canvas.parentElement.clientWidth;
+                this.canvas.height = this.canvas.parentElement.clientHeight;
+                this.points = [];
+                this.init();
+            }
+
+            init() {
+                const spacing = 50;
+                const margin = 100;
+
+                for (let x = -margin; x < this.canvas.width + margin; x += spacing) {
+                    for (let y = -margin; y < this.canvas.height + margin; y += spacing) {
+                        this.points.push({
+                            x: x,
+                            y: y,
+                            baseX: x,
+                            baseY: y,
+                            offsetX: 0,
+                            offsetY: 0
+                        });
+                    }
+                }
+            }
+
+            draw() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                this.points.forEach(point => {
+                    const distToMouse = Math.sqrt(
+                        Math.pow(this.mouse.x - point.x, 2) +
+                        Math.pow(this.mouse.y - point.y, 2)
+                    );
+
+                    const maxDist = 150;
+
+                    if (distToMouse < maxDist) {
+                        const force = (1 - distToMouse / maxDist) * 0.5;
+                        const angle = Math.atan2(point.y - this.mouse.y, point.x - this.mouse.x);
+                        point.offsetX = Math.cos(angle) * force * 20;
+                        point.offsetY = Math.sin(angle) * force * 20;
+                    } else {
+                        point.offsetX *= 0.95;
+                        point.offsetY *= 0.95;
+                    }
+
+                    point.x = point.baseX + point.offsetX;
+                    point.y = point.baseY + point.offsetY;
+
+                    this.ctx.beginPath();
+                    this.ctx.arc(point.x, point.y, 1.5, 0, Math.PI * 2);
+                    this.ctx.fillStyle = distToMouse < maxDist
+                        ? `rgba(16, 185, 129, ${(1 - distToMouse / maxDist) * 0.8})`
+                        : 'rgba(148, 163, 184, 0.3)';
+                    this.ctx.fill();
+                });
+
+                this.points.forEach((point, i) => {
+                    this.points.slice(i + 1).forEach(otherPoint => {
+                        const dist = Math.sqrt(
+                            Math.pow(point.x - otherPoint.x, 2) +
+                            Math.pow(point.y - otherPoint.y, 2)
+                        );
+
+                        if (dist < 70) {
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(point.x, point.y);
+                            this.ctx.lineTo(otherPoint.x, otherPoint.y);
+                            this.ctx.strokeStyle = `rgba(16, 185, 129, ${(1 - dist / 70) * 0.2})`;
+                            this.ctx.lineWidth = 0.5;
+                            this.ctx.stroke();
+                        }
+                    });
+                });
+            }
+
+            animate() {
+                this.draw();
+                this.animationId = requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        // Geometric Shape Animation (Icosahedron)
+        class GeometricShape {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext("2d");
+                this.mouseX = 0;
+                this.mouseY = 0;
+                this.time = 0;
+                this.phi = (1 + Math.sqrt(5)) / 2;
+                this.edges = [
+                    [0, 1], [0, 4], [0, 5], [0, 8], [0, 9],
+                    [1, 6], [1, 7], [1, 8], [1, 9],
+                    [2, 3], [2, 4], [2, 5], [2, 10], [2, 11],
+                    [3, 6], [3, 7], [3, 10], [3, 11],
+                    [4, 5], [4, 8], [4, 10],
+                    [5, 9], [5, 11],
+                    [6, 7], [6, 8], [6, 10],
+                    [7, 9], [7, 11],
+                    [8, 10], [9, 11]
+                ];
+                this.resize();
+                window.addEventListener("resize", () => this.resize());
+                window.addEventListener("mousemove", (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    this.mouseX = (e.clientX - rect.left - rect.width / 2) / rect.width;
+                    this.mouseY = (e.clientY - rect.top - rect.height / 2) / rect.height;
+                });
+            }
+            resize() {
+                this.canvas.width = this.canvas.offsetWidth * 2;
+                this.canvas.height = this.canvas.offsetHeight * 2;
+                this.ctx.scale(2, 2);
+            }
+            createIcosahedron(scale) {
+                const p = this.phi;
+                return [
+                    {x: 0, y: 1, z: p}, {x: 0, y: -1, z: p},
+                    {x: 0, y: 1, z: -p}, {x: 0, y: -1, z: -p},
+                    {x: 1, y: p, z: 0}, {x: -1, y: p, z: 0},
+                    {x: 1, y: -p, z: 0}, {x: -1, y: -p, z: 0},
+                    {x: p, y: 0, z: 1}, {x: -p, y: 0, z: 1},
+                    {x: p, y: 0, z: -1}, {x: -p, y: 0, z: -1}
+                ].map(pt => ({x: pt.x * scale, y: pt.y * scale, z: pt.z * scale}));
+            }
+            rotateX(point, angle) {
+                return {
+                    x: point.x,
+                    y: point.y * Math.cos(angle) - point.z * Math.sin(angle),
+                    z: point.y * Math.sin(angle) + point.z * Math.cos(angle)
+                };
+            }
+            rotateY(point, angle) {
+                return {
+                    x: point.x * Math.cos(angle) + point.z * Math.sin(angle),
+                    y: point.y,
+                    z: -point.x * Math.sin(angle) + point.z * Math.cos(angle)
+                };
+            }
+            project(point, width, height) {
+                const fov = 400;
+                const z = point.z + 6;
+                const scale = fov / z;
+                return {
+                    x: point.x * scale + width / 2,
+                    y: point.y * scale + height / 2
+                };
+            }
+            draw() {
+                const width = this.canvas.offsetWidth;
+                const height = this.canvas.offsetHeight;
+                this.ctx.clearRect(0, 0, width, height);
+                this.time += 0.005;
+                const morphFactor = Math.sin(this.time * 0.4) * 0.2 + 1;
+                const baseHealthcare = Math.min(width, height) * 0.22;
+                let vertices = this.createIcosahedron(baseHealthcare * morphFactor);
+                const rotX = this.time * 0.2 + this.mouseY * 0.3;
+                const rotY = this.time * 0.25 + this.mouseX * 0.3;
+                vertices = vertices.map(v => {
+                    let p = this.rotateX(v, rotX);
+                    p = this.rotateY(p, rotY);
+                    p.y += Math.sin(this.time * 1.5 + p.x * 0.03) * 3;
+                    return p;
+                });
+                const projected = vertices.map(v => this.project(v, width, height));
+                this.edges.forEach(([i, j]) => {
+                    const p1 = projected[i];
+                    const p2 = projected[j];
+                    const avgZ = (vertices[i].z + vertices[j].z) / 2;
+                    const opacity = Math.max(0.08, Math.min(0.4, (avgZ + baseHealthcare * 2) / (baseHealthcare * 5)));
+                    const gradient = this.ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+                    gradient.addColorStop(0, "rgba(16, 185, 129, " + opacity + ")");
+                    gradient.addColorStop(0.5, "rgba(20, 184, 166, " + (opacity * 1.1) + ")");
+                    gradient.addColorStop(1, "rgba(16, 185, 129, " + opacity + ")");
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(p1.x, p1.y);
+                    this.ctx.lineTo(p2.x, p2.y);
+                    this.ctx.strokeStyle = gradient;
+                    this.ctx.lineWidth = 0.8;
+                    this.ctx.stroke();
+                });
+                projected.forEach((p, i) => {
+                    const z = vertices[i].z;
+                    const opacity = Math.max(0.15, Math.min(0.6, (z + baseHealthcare * 2) / (baseHealthcare * 3)));
+                    const size = 1.5 + opacity * 2;
+                    const glow = this.ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size * 3);
+                    glow.addColorStop(0, "rgba(16, 185, 129, " + (opacity * 0.4) + ")");
+                    glow.addColorStop(1, "rgba(16, 185, 129, 0)");
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, size * 3, 0, Math.PI * 2);
+                    this.ctx.fillStyle = glow;
+                    this.ctx.fill();
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, size * 0.6, 0, Math.PI * 2);
+                    this.ctx.fillStyle = "rgba(16, 185, 129, " + opacity + ")";
+                    this.ctx.fill();
+                });
+                for (let i = 0; i < 12; i++) {
+                    const angle = (this.time * 0.3 + i * 0.5) % (Math.PI * 2);
+                    const radius = baseHealthcare * 1.8 + Math.sin(this.time + i) * 15;
+                    const px = width / 2 + Math.cos(angle) * radius;
+                    const py = height / 2 + Math.sin(angle) * radius * 0.5;
+                    this.ctx.beginPath();
+                    this.ctx.arc(px, py, 1, 0, Math.PI * 2);
+                    this.ctx.fillStyle = "rgba(16, 185, 129, " + (0.2 + Math.sin(this.time + i) * 0.1) + ")";
+                    this.ctx.fill();
+                }
+            }
+            animate() {
+                this.draw();
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        // Initialize geometric shape
+        const geoCanvas = document.getElementById("geometric-canvas");
+        if (geoCanvas) {
+            const geoShape = new GeometricShape(geoCanvas);
+            geoShape.animate();
+        }
+
+        // Initialize grid animation
+        const gridCanvas = document.getElementById('grid-canvas');
+        if (gridCanvas) {
+            const gridAnimation = new GridAnimation(gridCanvas);
+            gridAnimation.animate();
+        }
+
+        // Remove loader
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hidden');
+            }, 500);
+        });
+
+        // Header scroll effect
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    // Add staggered delay based on element index within its parent
+                    const siblings = entry.target.parentElement.querySelectorAll('.animate-on-scroll');
+                    const siblingIndex = Array.from(siblings).indexOf(entry.target);
+                    entry.target.style.animationDelay = `${siblingIndex * 0.1}s`;
+                    entry.target.classList.add('animate');
+                }
+            });
+        }, observerOptions);
+
+        // Observe elements
+        document.querySelectorAll('.animate-on-scroll, .timeline-line').forEach(el => {
+            observer.observe(el);
+        });
+
+        // FAQ Accordion
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const faqItem = question.parentElement;
+                const isActive = faqItem.classList.contains('active');
+
+                document.querySelectorAll('.faq-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+
+                if (!isActive) {
+                    faqItem.classList.add('active');
+                }
+            });
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+
+    <!-- Shared Components (Footer, Cookie Banner, Consent System) -->
+    <link rel="stylesheet" href="/css/components.css">
+    <script src="/js/components.js"></script>
+</body>
+</html>
