@@ -1465,8 +1465,8 @@
                     this.ctx.beginPath();
                     this.ctx.arc(point.x, point.y, 1.5, 0, Math.PI * 2);
                     this.ctx.fillStyle = distToMouse < maxDist
-                        ? `rgba(16, 185, 129, ${(1 - distToMouse / maxDist) * 0.8})`
-                        : 'rgba(148, 163, 184, 0.3)';
+                        ? `rgba(16, 185, 129, ${(1 - distToMouse / maxDist) * 0.4})`
+                        : 'rgba(148, 163, 184, 0.15)';
                     this.ctx.fill();
                 });
 
@@ -1481,8 +1481,8 @@
                             this.ctx.beginPath();
                             this.ctx.moveTo(point.x, point.y);
                             this.ctx.lineTo(otherPoint.x, otherPoint.y);
-                            this.ctx.strokeStyle = `rgba(16, 185, 129, ${(1 - dist / 70) * 0.2})`;
-                            this.ctx.lineWidth = 0.5;
+                            this.ctx.strokeStyle = `rgba(16, 185, 129, ${(1 - dist / 70) * 0.1})`;
+                            this.ctx.lineWidth = 0.3;
                             this.ctx.stroke();
                         }
                     });
@@ -1567,8 +1567,8 @@
                 const height = this.canvas.offsetHeight;
                 this.ctx.clearRect(0, 0, width, height);
                 this.time += 0.005;
-                const morphFactor = Math.sin(this.time * 0.4) * 0.2 + 1;
-                const baseHealthcare = Math.min(width, height) * 0.22;
+                const morphFactor = Math.sin(this.time * 0.4) * 0.1 + 1;
+                const baseHealthcare = Math.min(width, height) * 0.12;
                 let vertices = this.createIcosahedron(baseHealthcare * morphFactor);
                 const rotX = this.time * 0.2 + this.mouseY * 0.3;
                 const rotY = this.time * 0.25 + this.mouseX * 0.3;
