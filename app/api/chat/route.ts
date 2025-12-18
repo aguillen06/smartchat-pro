@@ -60,6 +60,11 @@ function buildContextualSearchQuery(message: string, conversationHistory: Conver
   return message;
 }
 
+// Map tenant slugs to UUIDs
+const TENANT_MAP: Record<string, string> = {
+  "symtri": "c48decc4-98f5-4fe8-971f-5461d3e6ae1a",
+};
+
 export async function POST(request: NextRequest) {
   try {
     const { message, tenantId, language = "en", sessionId } = await request.json();
@@ -71,13 +76,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Resolve tenant slug to UUID if needed
+    const resolvedTenantId = TENANT_MAP[tenantId] || tenantId;
+
     let session = sessionId ? sessionManager.getSession(sessionId) : undefined;
     const finalSessionId = sessionId || `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     if (!session && sessionId) {
-      session = sessionManager.createSession(finalSessionId, tenantId);
+      session = sessionManager.createSession(finalSessionId, resolvedTenantId);
     } else if (!session) {
-      session = sessionManager.createSession(finalSessionId, tenantId);
+      session = sessionManager.createSession(finalSessionId, resolvedTenantId);
     }
 
     const conversationHistory = sessionManager.getMessages(finalSessionId);
@@ -92,7 +100,7 @@ export async function POST(request: NextRequest) {
     const results = await knowledgeService.search(
       searchQuery,
       {
-        tenantId: tenantId,
+        tenantId: resolvedTenantId,
         product: ["smartchat", "phonebot", "shared"],
         language: language === "es" ? ["es", "en"] : ["en", "es"],
       },

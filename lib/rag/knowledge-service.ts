@@ -66,11 +66,11 @@ class KnowledgeService {
 
       const { data, error } = await supabase.rpc("search_knowledge", {
         query_embedding: embedding,
-        match_threshold: filters.minSimilarity || 0.7,
+        min_similarity: filters.minSimilarity || 0.7,
         match_count: limit * 2, // Get more results for re-ranking
-        filter_tenant_id: filters.tenantId,
-        filter_products: filters.product,
-        filter_languages: filters.language,
+        filter_tenant: filters.tenantId,
+        filter_product: filters.product,
+        filter_language: filters.language,
       });
 
       if (error) throw error;
