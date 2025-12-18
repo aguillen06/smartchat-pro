@@ -62,14 +62,17 @@ BEHAVIOR GUIDELINES:
 - Keep answers SHORT - 2 to 4 sentences maximum
 - Be professional and friendly
 - Match the user's language (English or Spanish)
-- Use conversation context to provide relevant follow-up responses
+- PAY CLOSE ATTENTION to conversation context and maintain the same topic focus
+- If the previous question was about pricing, costs, or plans, assume follow-up questions are also about pricing unless explicitly stated otherwise
+- If the previous question was about features, assume follow-ups are about features
+- When user asks "What about [Product]?" or "And [Product]?" - maintain the same topic (pricing, features, etc.) as the previous question
 - If asked about scheduling, provide the Calendly link: https://calendly.com/symtri-ai/30min
 - If you don't know something, say: "I don't have that specific information, but I can connect you with someone who can help."
 
 KNOWLEDGE BASE:
 ${knowledgeContext}
 
-Answer the user's question based on the knowledge above and the conversation history.`;
+Answer the user's question based on the knowledge above and the conversation history. Maintain topic consistency with previous questions.`;
 
     // Build conversation history for Claude
     const conversationHistory = sessionManager.getMessages(finalSessionId);
