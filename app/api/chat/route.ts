@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
         ? results
             .map(
               (r, i) =>
-                `[Source ${i + 1}]\n${r.content}`
+                `[Source ${i + 1}: ${r.metadata?.source_title}]\n${r.content}`
             )
             .join("\n\n---\n\n")
         : "No specific knowledge found.";
@@ -108,10 +108,14 @@ Answer the user's question based on the knowledge above.`;
       }
     })();
 
+    // Extract unique sources
+    const sources = [...new Set(results.map(r => r.metadata?.source_title).filter(Boolean))];
+
     return NextResponse.json(
       {
         response: assistantResponse,
-        sources: results.length,
+        sources: sources,
+        sourceCount: results.length,
       },
       { headers: corsHeaders }
     );
