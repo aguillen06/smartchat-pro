@@ -98,7 +98,7 @@ class KnowledgeService {
       });
 
       // Re-sort by boosted similarity
-      results.sort((a, b) => b.similarity - a.similarity);
+      results.sort((a: KnowledgeSearchResult, b: KnowledgeSearchResult) => b.similarity - a.similarity);
 
       // Return top results
       return results.slice(0, limit);
