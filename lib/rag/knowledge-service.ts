@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/supabase/client";
-import { EmbeddingProvider } from "./embedding-provider";
+import { getEmbeddingProvider } from "./embedding-provider";
 
-const embeddingProvider = new EmbeddingProvider();
+const embeddingProvider = getEmbeddingProvider();
 
 export interface KnowledgeSearchResult {
   id: string;
@@ -64,7 +64,7 @@ class KnowledgeService {
     limit: number = 5
   ): Promise<KnowledgeSearchResult[]> {
     try {
-      const embedding = await embeddingProvider.createEmbedding(query);
+      const embedding = await embeddingProvider.embed(query);
       
       const { data, error } = await supabase.rpc("search_knowledge", {
         query_embedding: embedding,
@@ -104,7 +104,7 @@ class KnowledgeService {
     content: string
   ): Promise<void> {
     try {
-      const embedding = await embeddingProvider.createEmbedding(content);
+      const embedding = await embeddingProvider.embed(content);
 
       const { error } = await supabase.rpc("upsert_knowledge_chunk", {
         p_tenant_id: tenantId,
