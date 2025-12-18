@@ -17,32 +17,43 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-function buildContextualSearchQuery(message: string, conversationHistory: any[]): string {
-  // Get last 2 user messages to understand context
+interface ConversationMessage {
+  role: string;
+  content: string;
+}
+
+function detectPricingContext(message: string, conversationHistory: ConversationMessage[]): boolean {
+  // Check if current message is about pricing
+  const pricingKeywords = /cost|price|pricing|plans|pay|expensive|afford|fee|subscription|monthly|charges/i;
+  if (pricingKeywords.test(message)) return true;
+
+  // Check if recent conversation was about pricing
+  const recentMessages = conversationHistory.slice(-4); // Last 2 exchanges
+  return recentMessages.some(m => pricingKeywords.test(m.content));
+}
+
+function buildContextualSearchQuery(message: string, conversationHistory: ConversationMessage[]): string {
   const recentUserMessages = conversationHistory
     .filter(m => m.role === 'user')
     .slice(-2)
     .map(m => m.content);
 
-  // If user is asking vague follow-up questions, enhance with context
   const vaguePatterns = /^(what about|how about|and|also|what's|tell me about)\s+(\w+)/i;
 
   if (vaguePatterns.test(message) && recentUserMessages.length > 0) {
     const lastMessage = recentUserMessages[recentUserMessages.length - 1];
 
-    // Detect topic from previous message
     let topic = '';
     if (/cost|price|pricing|plans|pay|expensive/.test(lastMessage.toLowerCase())) {
-      topic = 'pricing cost';
+      topic = 'pricing cost plans';
     } else if (/feature|capability|function|work|does/.test(lastMessage.toLowerCase())) {
-      topic = 'features';
+      topic = 'features capabilities';
     } else if (/setup|install|implement|integrate/.test(lastMessage.toLowerCase())) {
       topic = 'setup implementation';
     } else if (/support|help|service/.test(lastMessage.toLowerCase())) {
-      topic = 'support';
+      topic = 'support service';
     }
 
-    // Enhance search query with topic context
     return topic ? `${message} ${topic}` : message;
   }
 
@@ -60,7 +71,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get or create session
     let session = sessionId ? sessionManager.getSession(sessionId) : undefined;
     const finalSessionId = sessionId || `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -70,13 +80,15 @@ export async function POST(request: NextRequest) {
       session = sessionManager.createSession(finalSessionId, tenantId);
     }
 
-    // Get conversation history
     const conversationHistory = sessionManager.getMessages(finalSessionId);
+
+    // Detect if user wants pricing info
+    const isPricingContext = detectPricingContext(message, conversationHistory);
 
     // Build context-aware search query
     const searchQuery = buildContextualSearchQuery(message, conversationHistory);
 
-    // Search knowledge base with enhanced query
+    // Search with pricing boost if context suggests it
     const results = await knowledgeService.search(
       searchQuery,
       {
@@ -84,7 +96,8 @@ export async function POST(request: NextRequest) {
         product: ["smartchat", "phonebot", "shared"],
         language: language === "es" ? ["es", "en"] : ["en", "es"],
       },
-      5
+      5,
+      isPricingContext // Boost pricing chunks
     );
 
     const knowledgeContext =
@@ -100,31 +113,27 @@ BEHAVIOR GUIDELINES:
 - Keep answers SHORT - 2 to 4 sentences maximum
 - Be professional and friendly
 - Match the user's language (English or Spanish)
-- CRITICAL: When user asks "What about X?" or "And X?" maintain the SAME TOPIC as their previous question
-  * If they asked about pricing before → give pricing for X
-  * If they asked about features before → give features for X
-  * If they asked about setup before → give setup info for X
-- If asked about scheduling, provide the Calendly link: https://calendly.com/symtri-ai/30min
+- CRITICAL: When user asks "What about X?" maintain the SAME TOPIC as previous question
+  * If previous was about PRICING → give PRICING for X
+  * If previous was about features → give features for X
+- If asked about scheduling, provide: https://calendly.com/symtri-ai/30min
 - If you don't know something, say: "I don't have that specific information, but I can connect you with someone who can help."
 
 KNOWLEDGE BASE:
 ${knowledgeContext}
 
-Answer the user's question based on the knowledge above and conversation history. Maintain topic consistency.`;
+Answer based on knowledge above and conversation history. Maintain topic consistency.`;
 
-    // Build conversation messages for Claude
     const messages: Anthropic.MessageParam[] = conversationHistory.map(msg => ({
-      role: msg.role,
+      role: msg.role as "user" | "assistant",
       content: msg.content,
     }));
 
-    // Add current user message
     messages.push({
       role: "user",
       content: message,
     });
 
-    // Call Claude with full conversation context
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 500,
@@ -135,11 +144,9 @@ Answer the user's question based on the knowledge above and conversation history
     const assistantResponse =
       response.content[0].type === "text" ? response.content[0].text : "";
 
-    // Save messages to session
     sessionManager.addMessage(finalSessionId, "user", message);
     sessionManager.addMessage(finalSessionId, "assistant", assistantResponse);
 
-    // Extract unique sources
     const sources = [...new Set(results.map(r => r.metadata?.source_title).filter(Boolean))];
 
     return NextResponse.json(
