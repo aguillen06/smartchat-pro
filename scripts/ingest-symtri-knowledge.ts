@@ -95,7 +95,7 @@ const symtriKnowledge = [
 
   // PHONEBOT PRICING
   {
-    content: `PhoneBot pricing: Setup fee $2,500 one-time (includes phone number, AI training, calendar integration). Starter: $497/month (0-500 calls). Professional: $797/month (501-1,500 calls + priority support + analytics). Enterprise: $997/month (1,500+ calls + multiple numbers + dedicated support). Healthcare Add-on: +$200/month. Special offer: First 5 customers get 50% off setup ($1,250) and locked pricing for 12 months.`,
+    content: `PhoneBot pricing: Setup fee $1,500 one-time (includes phone number, AI training, calendar integration). Starter: $297/month (0-500 calls). Professional: $397/month (501-1,500 calls + CRM integration + priority support). Healthcare: $597/month (HIPAA compliant + unlimited calls). Special offer: First 5 customers get 50% off setup ($750) and locked pricing for 12 months.`,
     options: {
       tenantId: SYMTRI_TENANT_ID,
       docType: "pricing",
