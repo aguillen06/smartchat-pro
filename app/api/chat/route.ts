@@ -17,6 +17,38 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
+function buildContextualSearchQuery(message: string, conversationHistory: any[]): string {
+  // Get last 2 user messages to understand context
+  const recentUserMessages = conversationHistory
+    .filter(m => m.role === 'user')
+    .slice(-2)
+    .map(m => m.content);
+
+  // If user is asking vague follow-up questions, enhance with context
+  const vaguePatterns = /^(what about|how about|and|also|what's|tell me about)\s+(\w+)/i;
+
+  if (vaguePatterns.test(message) && recentUserMessages.length > 0) {
+    const lastMessage = recentUserMessages[recentUserMessages.length - 1];
+
+    // Detect topic from previous message
+    let topic = '';
+    if (/cost|price|pricing|plans|pay|expensive/.test(lastMessage.toLowerCase())) {
+      topic = 'pricing cost';
+    } else if (/feature|capability|function|work|does/.test(lastMessage.toLowerCase())) {
+      topic = 'features';
+    } else if (/setup|install|implement|integrate/.test(lastMessage.toLowerCase())) {
+      topic = 'setup implementation';
+    } else if (/support|help|service/.test(lastMessage.toLowerCase())) {
+      topic = 'support';
+    }
+
+    // Enhance search query with topic context
+    return topic ? `${message} ${topic}` : message;
+  }
+
+  return message;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { message, tenantId, language = "en", sessionId } = await request.json();
@@ -31,16 +63,22 @@ export async function POST(request: NextRequest) {
     // Get or create session
     let session = sessionId ? sessionManager.getSession(sessionId) : undefined;
     const finalSessionId = sessionId || `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     if (!session && sessionId) {
       session = sessionManager.createSession(finalSessionId, tenantId);
     } else if (!session) {
       session = sessionManager.createSession(finalSessionId, tenantId);
     }
 
-    // Search knowledge base
+    // Get conversation history
+    const conversationHistory = sessionManager.getMessages(finalSessionId);
+
+    // Build context-aware search query
+    const searchQuery = buildContextualSearchQuery(message, conversationHistory);
+
+    // Search knowledge base with enhanced query
     const results = await knowledgeService.search(
-      message,
+      searchQuery,
       {
         tenantId: tenantId,
         product: ["smartchat", "phonebot", "shared"],
@@ -62,20 +100,19 @@ BEHAVIOR GUIDELINES:
 - Keep answers SHORT - 2 to 4 sentences maximum
 - Be professional and friendly
 - Match the user's language (English or Spanish)
-- PAY CLOSE ATTENTION to conversation context and maintain the same topic focus
-- If the previous question was about pricing, costs, or plans, assume follow-up questions are also about pricing unless explicitly stated otherwise
-- If the previous question was about features, assume follow-ups are about features
-- When user asks "What about [Product]?" or "And [Product]?" - maintain the same topic (pricing, features, etc.) as the previous question
+- CRITICAL: When user asks "What about X?" or "And X?" maintain the SAME TOPIC as their previous question
+  * If they asked about pricing before → give pricing for X
+  * If they asked about features before → give features for X
+  * If they asked about setup before → give setup info for X
 - If asked about scheduling, provide the Calendly link: https://calendly.com/symtri-ai/30min
 - If you don't know something, say: "I don't have that specific information, but I can connect you with someone who can help."
 
 KNOWLEDGE BASE:
 ${knowledgeContext}
 
-Answer the user's question based on the knowledge above and the conversation history. Maintain topic consistency with previous questions.`;
+Answer the user's question based on the knowledge above and conversation history. Maintain topic consistency.`;
 
-    // Build conversation history for Claude
-    const conversationHistory = sessionManager.getMessages(finalSessionId);
+    // Build conversation messages for Claude
     const messages: Anthropic.MessageParam[] = conversationHistory.map(msg => ({
       role: msg.role,
       content: msg.content,
