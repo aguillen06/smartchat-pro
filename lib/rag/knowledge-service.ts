@@ -22,11 +22,9 @@ export interface SearchFilters {
   minSimilarity?: number;
 }
 
-// Determine source info based on content
 function getSourceInfo(content: string, product: string): { title: string; url: string } {
   const lowerContent = content.toLowerCase();
-  
-  // Determine source title
+
   let title = 'General Info';
   if (lowerContent.includes('pricing') || lowerContent.includes('setup fee')) {
     title = 'Pricing';
@@ -45,15 +43,14 @@ function getSourceInfo(content: string, product: string): { title: string; url: 
   } else if (lowerContent.includes('24/7') || lowerContent.includes('ai-powered')) {
     title = 'Product Overview';
   }
-  
-  // Determine source URL
+
   let url = 'https://symtri.ai';
   if (product === 'smartchat') {
     url = 'https://smartchat.symtri.ai';
   } else if (product === 'phonebot') {
     url = 'https://symtri.ai/phonebot';
   }
-  
+
   return { title, url };
 }
 
@@ -61,15 +58,16 @@ class KnowledgeService {
   async search(
     query: string,
     filters: SearchFilters = {},
-    limit: number = 5
+    limit: number = 5,
+    boostPricing: boolean = false
   ): Promise<KnowledgeSearchResult[]> {
     try {
       const embedding = await embeddingProvider.embed(query);
-      
+
       const { data, error } = await supabase.rpc("search_knowledge", {
         query_embedding: embedding,
         match_threshold: filters.minSimilarity || 0.7,
-        match_count: limit,
+        match_count: limit * 2, // Get more results for re-ranking
         filter_tenant_id: filters.tenantId,
         filter_products: filters.product,
         filter_languages: filters.language,
@@ -77,12 +75,19 @@ class KnowledgeService {
 
       if (error) throw error;
 
-      return (data || []).map((item: any) => {
+      let results = (data || []).map((item: any) => {
         const sourceInfo = getSourceInfo(item.content, item.product);
+        let similarity = item.similarity;
+
+        // Boost pricing chunks if context suggests user wants pricing
+        if (boostPricing && sourceInfo.title === 'Pricing') {
+          similarity = Math.min(similarity * 1.5, 1.0); // 50% boost, max 1.0
+        }
+
         return {
           id: item.id,
           content: item.content,
-          similarity: item.similarity,
+          similarity: similarity,
           metadata: {
             product: item.product,
             language: item.language,
@@ -91,6 +96,12 @@ class KnowledgeService {
           },
         };
       });
+
+      // Re-sort by boosted similarity
+      results.sort((a, b) => b.similarity - a.similarity);
+
+      // Return top results
+      return results.slice(0, limit);
     } catch (error) {
       console.error("Knowledge search error:", error);
       return [];
