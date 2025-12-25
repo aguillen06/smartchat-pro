@@ -1,5 +1,7 @@
 // Simple in-memory session storage
-// For production, use Redis or database
+// NOTE: For production, use Redis or database with TTL support
+// WARNING: In serverless environments (Vercel), setInterval may not work reliably
+// as function instances are ephemeral. Consider using external session storage.
 
 interface Message {
   role: 'user' | 'assistant';
@@ -19,13 +21,28 @@ class SessionManager {
   private sessions: Map<string, Session> = new Map();
   private readonly SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
   private readonly MAX_MESSAGES = 20; // Keep last 20 messages
+  private lastCleanup = Date.now();
+  private readonly CLEANUP_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
   constructor() {
-    // Clean up old sessions every 5 minutes
-    setInterval(() => this.cleanup(), 5 * 60 * 1000);
+    // Note: setInterval is unreliable in serverless environments
+    // We use lazy cleanup on access as a fallback
+    if (typeof setInterval !== 'undefined') {
+      setInterval(() => this.cleanup(), this.CLEANUP_INTERVAL);
+    }
+  }
+
+  // OPTIMIZED: Lazy cleanup on access for serverless environments
+  private maybeCleanup(): void {
+    const now = Date.now();
+    if (now - this.lastCleanup > this.CLEANUP_INTERVAL) {
+      this.cleanup();
+      this.lastCleanup = now;
+    }
   }
 
   createSession(sessionId: string, tenantId: string): Session {
+    this.maybeCleanup();
     const session: Session = {
       id: sessionId,
       tenantId,
@@ -38,6 +55,7 @@ class SessionManager {
   }
 
   getSession(sessionId: string): Session | undefined {
+    this.maybeCleanup();
     const session = this.sessions.get(sessionId);
     if (session) {
       session.lastActivity = Date.now();
@@ -45,7 +63,7 @@ class SessionManager {
     return session;
   }
 
-  addMessage(sessionId: string, role: 'user' | 'assistant', content: string) {
+  addMessage(sessionId: string, role: 'user' | 'assistant', content: string): void {
     const session = this.sessions.get(sessionId);
     if (!session) return;
 
@@ -55,9 +73,9 @@ class SessionManager {
       timestamp: Date.now(),
     });
 
-    // Keep only last MAX_MESSAGES
-    if (session.messages.length > this.MAX_MESSAGES) {
-      session.messages = session.messages.slice(-this.MAX_MESSAGES);
+    // OPTIMIZED: Use shift() for in-place removal instead of slice() which creates new array
+    while (session.messages.length > this.MAX_MESSAGES) {
+      session.messages.shift();
     }
 
     session.lastActivity = Date.now();
@@ -68,16 +86,21 @@ class SessionManager {
     return session?.messages || [];
   }
 
-  deleteSession(sessionId: string) {
+  deleteSession(sessionId: string): void {
     this.sessions.delete(sessionId);
   }
 
-  private cleanup() {
+  private cleanup(): void {
     const now = Date.now();
+    // OPTIMIZED: Collect keys to delete first, then delete (safer iteration)
+    const expiredKeys: string[] = [];
     for (const [sessionId, session] of this.sessions.entries()) {
       if (now - session.lastActivity > this.SESSION_TIMEOUT) {
-        this.sessions.delete(sessionId);
+        expiredKeys.push(sessionId);
       }
+    }
+    for (const key of expiredKeys) {
+      this.sessions.delete(key);
     }
   }
 

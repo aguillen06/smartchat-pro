@@ -32,21 +32,29 @@ class OpenAIEmbeddingProvider implements EmbeddingProvider {
   }
 
   async embedBatch(texts: string[]): Promise<number[][]> {
+    if (texts.length === 0) return [];
+
     // OpenAI allows up to 2048 inputs per request
     const batchSize = 100;
-    const results: number[][] = [];
 
+    // OPTIMIZED: Split into batches first
+    const batches: string[][] = [];
     for (let i = 0; i < texts.length; i += batchSize) {
-      const batch = texts.slice(i, i + batchSize);
-      const response = await getOpenAI().embeddings.create({
-        model: this.model,
-        input: batch,
-      });
-
-      results.push(...response.data.map((d) => d.embedding));
+      batches.push(texts.slice(i, i + batchSize));
     }
 
-    return results;
+    // OPTIMIZED: Process all batches in parallel instead of sequentially
+    const responses = await Promise.all(
+      batches.map(batch =>
+        getOpenAI().embeddings.create({
+          model: this.model,
+          input: batch,
+        })
+      )
+    );
+
+    // Flatten results in order
+    return responses.flatMap(response => response.data.map(d => d.embedding));
   }
 }
 

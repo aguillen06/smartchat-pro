@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { supabase } from "@/lib/supabase/client";
 
 // CORS headers
 const corsHeaders = {
@@ -32,69 +27,67 @@ export async function GET(request: NextRequest) {
   try {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
+    const startDateISO = startDate.toISOString();
 
-    // Get total messages
-    const { count: totalMessages } = await supabase
-      .from("chat_analytics")
-      .select("*", { count: "exact", head: true })
-      .eq("tenant_id", tenantId)
-      .gte("created_at", startDate.toISOString());
+    // OPTIMIZED: Single query for all date-filtered analytics data
+    // Previously: 5 separate queries, now: 2 queries (parallel)
+    const [analyticsResult, recentResult] = await Promise.all([
+      // Query 1: Get all data for aggregations in one query
+      supabase
+        .from("chat_analytics")
+        .select("language, response_time_ms, created_at")
+        .eq("tenant_id", tenantId)
+        .gte("created_at", startDateISO),
 
-    // Get messages by language
-    const { data: byLanguage } = await supabase
-      .from("chat_analytics")
-      .select("language")
-      .eq("tenant_id", tenantId)
-      .gte("created_at", startDate.toISOString());
+      // Query 2: Get recent messages (different filter - no date range)
+      supabase
+        .from("chat_analytics")
+        .select("message, language, created_at, response_time_ms")
+        .eq("tenant_id", tenantId)
+        .order("created_at", { ascending: false })
+        .limit(10)
+    ]);
 
-    const languageStats = byLanguage?.reduce((acc: Record<string, number>, row) => {
-      acc[row.language] = (acc[row.language] || 0) + 1;
-      return acc;
-    }, {}) || {};
+    const analyticsData = analyticsResult.data || [];
+    const recentMessages = recentResult.data || [];
 
-    // Get average response time
-    const { data: responseTimes } = await supabase
-      .from("chat_analytics")
-      .select("response_time_ms")
-      .eq("tenant_id", tenantId)
-      .gte("created_at", startDate.toISOString());
+    // Compute all aggregations from single dataset
+    const totalMessages = analyticsData.length;
 
-    const avgResponseTime = responseTimes?.length
-      ? Math.round(
-          responseTimes.reduce((sum, r) => sum + (r.response_time_ms || 0), 0) /
-            responseTimes.length
-        )
-      : 0;
+    // Language stats
+    const languageStats: Record<string, number> = {};
+    let totalResponseTime = 0;
+    let responseTimeCount = 0;
+    const dailyCounts: Record<string, number> = {};
 
-    // Get recent messages
-    const { data: recentMessages } = await supabase
-      .from("chat_analytics")
-      .select("message, language, created_at, response_time_ms")
-      .eq("tenant_id", tenantId)
-      .order("created_at", { ascending: false })
-      .limit(10);
+    // Single pass through data for all aggregations
+    for (const row of analyticsData) {
+      // Language stats
+      languageStats[row.language] = (languageStats[row.language] || 0) + 1;
 
-    // Get daily counts
-    const { data: dailyData } = await supabase
-      .from("chat_analytics")
-      .select("created_at")
-      .eq("tenant_id", tenantId)
-      .gte("created_at", startDate.toISOString());
+      // Response time accumulation
+      if (row.response_time_ms) {
+        totalResponseTime += row.response_time_ms;
+        responseTimeCount++;
+      }
 
-    const dailyCounts = dailyData?.reduce((acc: Record<string, number>, row) => {
+      // Daily counts
       const date = new Date(row.created_at).toISOString().split("T")[0];
-      acc[date] = (acc[date] || 0) + 1;
-      return acc;
-    }, {}) || {};
+      dailyCounts[date] = (dailyCounts[date] || 0) + 1;
+    }
+
+    const avgResponseTime = responseTimeCount > 0
+      ? Math.round(totalResponseTime / responseTimeCount)
+      : 0;
 
     return NextResponse.json(
       {
         period: `${days} days`,
-        totalMessages: totalMessages || 0,
+        totalMessages,
         languageStats,
         avgResponseTimeMs: avgResponseTime,
         dailyCounts,
-        recentMessages: recentMessages || [],
+        recentMessages,
       },
       { headers: corsHeaders }
     );
