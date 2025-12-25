@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 
 interface Analytics {
   period: string;
@@ -15,6 +15,15 @@ interface Analytics {
     response_time_ms: number;
   }>;
 }
+
+// OPTIMIZED: Move utility functions outside component to prevent recreation on each render
+const formatDate = (dateStr: string): string => {
+  return new Date(dateStr).toLocaleString();
+};
+
+const formatMs = (ms: number): string => {
+  return `${(ms / 1000).toFixed(2)}s`;
+};
 
 export default function Dashboard() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
@@ -54,7 +63,20 @@ export default function Dashboard() {
     fetchAnalytics();
   }, [days, isAuthenticated]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  // OPTIMIZED: Memoize sorted daily counts to avoid recalculation on each render
+  const sortedDailyCounts = useMemo(() => {
+    if (!analytics?.dailyCounts) return [];
+    return Object.entries(analytics.dailyCounts).sort(([a], [b]) => a.localeCompare(b));
+  }, [analytics?.dailyCounts]);
+
+  // OPTIMIZED: Calculate maxCount once instead of inside map loop
+  const maxDailyCount = useMemo((): number => {
+    if (!analytics?.dailyCounts) return 0;
+    const values: number[] = Object.values(analytics.dailyCounts);
+    return values.length > 0 ? Math.max(...values) : 0;
+  }, [analytics?.dailyCounts]);
+
+  const handleLogin = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError("");
 
@@ -74,21 +96,13 @@ export default function Dashboard() {
     } catch {
       setAuthError("Authentication failed");
     }
-  };
+  }, [password]);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     sessionStorage.removeItem("dashboard_auth");
     setIsAuthenticated(false);
     setPassword("");
-  };
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleString();
-  };
-
-  const formatMs = (ms: number) => {
-    return (ms / 1000).toFixed(2) + "s";
-  };
+  }, []);
 
   // Loading check
   if (checkingAuth) {
@@ -335,29 +349,27 @@ export default function Dashboard() {
                 Daily Messages
               </h2>
               <div style={{ display: "flex", alignItems: "flex-end", gap: "8px", height: "150px" }}>
-                {Object.entries(analytics.dailyCounts).length > 0 ? (
-                  Object.entries(analytics.dailyCounts)
-                    .sort(([a], [b]) => a.localeCompare(b))
-                    .map(([date, count]) => {
-                      const maxCount = Math.max(...Object.values(analytics.dailyCounts));
-                      const height = maxCount > 0 ? (count / maxCount) * 120 : 0;
-                      return (
-                        <div key={date} style={{ flex: 1, textAlign: "center" }}>
-                          <div style={{
-                            height: `${height}px`,
-                            background: "linear-gradient(135deg, #10B981 0%, #0D9488 100%)",
-                            borderRadius: "4px 4px 0 0",
-                            minHeight: count > 0 ? "20px" : "0"
-                          }} />
-                          <div style={{ fontSize: "10px", color: "#6b7280", marginTop: "8px" }}>
-                            {date.slice(5)}
-                          </div>
-                          <div style={{ fontSize: "12px", fontWeight: "600", color: "#1f2937" }}>
-                            {count}
-                          </div>
+                {/* OPTIMIZED: Use pre-computed sortedDailyCounts and maxDailyCount */}
+                {sortedDailyCounts.length > 0 ? (
+                  sortedDailyCounts.map(([date, count]) => {
+                    const height = maxDailyCount > 0 ? (count / maxDailyCount) * 120 : 0;
+                    return (
+                      <div key={date} style={{ flex: 1, textAlign: "center" }}>
+                        <div style={{
+                          height: `${height}px`,
+                          background: "linear-gradient(135deg, #10B981 0%, #0D9488 100%)",
+                          borderRadius: "4px 4px 0 0",
+                          minHeight: count > 0 ? "20px" : "0"
+                        }} />
+                        <div style={{ fontSize: "10px", color: "#6b7280", marginTop: "8px" }}>
+                          {date.slice(5)}
                         </div>
-                      );
-                    })
+                        <div style={{ fontSize: "12px", fontWeight: "600", color: "#1f2937" }}>
+                          {count}
+                        </div>
+                      </div>
+                    );
+                  })
                 ) : (
                   <div style={{ color: "#9ca3af", textAlign: "center", width: "100%", padding: "40px" }}>
                     No data for this period

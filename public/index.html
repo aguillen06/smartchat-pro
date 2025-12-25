@@ -1365,23 +1365,39 @@
 
 
     <script>
-        // Animated Grid/Mesh Background
+        // OPTIMIZED: Animated Grid/Mesh Background
+        // Uses spatial indexing to reduce O(n²) to O(n) for connection drawing
         class GridAnimation {
             constructor(canvas) {
                 this.canvas = canvas;
                 this.ctx = canvas.getContext('2d');
                 this.points = [];
+                this.neighbors = []; // Pre-computed neighbor pairs
                 this.mouse = { x: 0, y: 0 };
                 this.animationId = null;
+                this.spacing = 50;
+                this.connectionDist = 70;
 
                 this.resize();
                 this.init();
 
-                window.addEventListener('resize', () => this.resize());
+                // Throttled resize handler
+                let resizeTimeout;
+                window.addEventListener('resize', () => {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(() => this.resize(), 100);
+                });
+
+                // OPTIMIZED: Throttle mousemove to animation frame rate
+                let mouseRAF = null;
                 window.addEventListener('mousemove', (e) => {
-                    const rect = canvas.getBoundingClientRect();
-                    this.mouse.x = e.clientX - rect.left;
-                    this.mouse.y = e.clientY - rect.top;
+                    if (mouseRAF) return;
+                    mouseRAF = requestAnimationFrame(() => {
+                        const rect = canvas.getBoundingClientRect();
+                        this.mouse.x = e.clientX - rect.left;
+                        this.mouse.y = e.clientY - rect.top;
+                        mouseRAF = null;
+                    });
                 });
             }
 
@@ -1389,40 +1405,75 @@
                 this.canvas.width = this.canvas.parentElement.clientWidth;
                 this.canvas.height = this.canvas.parentElement.clientHeight;
                 this.points = [];
+                this.neighbors = [];
                 this.init();
             }
 
             init() {
-                const spacing = 50;
+                const spacing = this.spacing;
                 const margin = 100;
+                const gridMap = new Map(); // For O(1) neighbor lookup
 
+                let index = 0;
                 for (let x = -margin; x < this.canvas.width + margin; x += spacing) {
                     for (let y = -margin; y < this.canvas.height + margin; y += spacing) {
-                        this.points.push({
+                        const gridX = Math.floor(x / spacing);
+                        const gridY = Math.floor(y / spacing);
+                        const point = {
                             x: x,
                             y: y,
                             baseX: x,
                             baseY: y,
                             offsetX: 0,
-                            offsetY: 0
-                        });
+                            offsetY: 0,
+                            index: index,
+                            gridX: gridX,
+                            gridY: gridY
+                        };
+                        this.points.push(point);
+                        gridMap.set(`${gridX},${gridY}`, point);
+                        index++;
+                    }
+                }
+
+                // OPTIMIZED: Pre-compute neighbor pairs (only adjacent grid cells)
+                // This reduces connection checking from O(n²) to O(n)
+                const checked = new Set();
+                for (const point of this.points) {
+                    // Check only adjacent cells (including diagonals)
+                    for (let dx = 0; dx <= 1; dx++) {
+                        for (let dy = -1; dy <= 1; dy++) {
+                            if (dx === 0 && dy <= 0) continue; // Avoid duplicates
+                            const neighborKey = `${point.gridX + dx},${point.gridY + dy}`;
+                            const neighbor = gridMap.get(neighborKey);
+                            if (neighbor) {
+                                const pairKey = point.index < neighbor.index
+                                    ? `${point.index}-${neighbor.index}`
+                                    : `${neighbor.index}-${point.index}`;
+                                if (!checked.has(pairKey)) {
+                                    checked.add(pairKey);
+                                    this.neighbors.push([point, neighbor]);
+                                }
+                            }
+                        }
                     }
                 }
             }
 
             draw() {
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                const maxDist = 150;
+                const maxDistSq = maxDist * maxDist; // Avoid sqrt for comparison
 
-                this.points.forEach(point => {
-                    const distToMouse = Math.sqrt(
-                        Math.pow(this.mouse.x - point.x, 2) +
-                        Math.pow(this.mouse.y - point.y, 2)
-                    );
+                // Draw points
+                for (const point of this.points) {
+                    const dx = this.mouse.x - point.x;
+                    const dy = this.mouse.y - point.y;
+                    const distSq = dx * dx + dy * dy;
 
-                    const maxDist = 150;
-
-                    if (distToMouse < maxDist) {
-                        const force = (1 - distToMouse / maxDist) * 0.5;
+                    if (distSq < maxDistSq) {
+                        const dist = Math.sqrt(distSq);
+                        const force = (1 - dist / maxDist) * 0.5;
                         const angle = Math.atan2(point.y - this.mouse.y, point.x - this.mouse.x);
                         point.offsetX = Math.cos(angle) * force * 20;
                         point.offsetY = Math.sin(angle) * force * 20;
@@ -1436,29 +1487,30 @@
 
                     this.ctx.beginPath();
                     this.ctx.arc(point.x, point.y, 1.5, 0, Math.PI * 2);
-                    this.ctx.fillStyle = distToMouse < maxDist
+                    const distToMouse = distSq < maxDistSq ? Math.sqrt(distSq) : maxDist;
+                    this.ctx.fillStyle = distSq < maxDistSq
                         ? `rgba(16, 185, 129, ${(1 - distToMouse / maxDist) * 0.4})`
                         : 'rgba(148, 163, 184, 0.15)';
                     this.ctx.fill();
-                });
+                }
 
-                this.points.forEach((point, i) => {
-                    this.points.slice(i + 1).forEach(otherPoint => {
-                        const dist = Math.sqrt(
-                            Math.pow(point.x - otherPoint.x, 2) +
-                            Math.pow(point.y - otherPoint.y, 2)
-                        );
+                // OPTIMIZED: Draw connections using pre-computed neighbors O(n)
+                const connDistSq = this.connectionDist * this.connectionDist;
+                for (const [point, neighbor] of this.neighbors) {
+                    const dx = point.x - neighbor.x;
+                    const dy = point.y - neighbor.y;
+                    const distSq = dx * dx + dy * dy;
 
-                        if (dist < 70) {
-                            this.ctx.beginPath();
-                            this.ctx.moveTo(point.x, point.y);
-                            this.ctx.lineTo(otherPoint.x, otherPoint.y);
-                            this.ctx.strokeStyle = `rgba(16, 185, 129, ${(1 - dist / 70) * 0.1})`;
-                            this.ctx.lineWidth = 0.3;
-                            this.ctx.stroke();
-                        }
-                    });
-                });
+                    if (distSq < connDistSq) {
+                        const dist = Math.sqrt(distSq);
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(point.x, point.y);
+                        this.ctx.lineTo(neighbor.x, neighbor.y);
+                        this.ctx.strokeStyle = `rgba(16, 185, 129, ${(1 - dist / this.connectionDist) * 0.1})`;
+                        this.ctx.lineWidth = 0.3;
+                        this.ctx.stroke();
+                    }
+                }
             }
 
             animate() {
@@ -1488,11 +1540,24 @@
                     [8, 10], [9, 11]
                 ];
                 this.resize();
-                window.addEventListener("resize", () => this.resize());
+
+                // Throttled resize
+                let resizeTimeout;
+                window.addEventListener("resize", () => {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(() => this.resize(), 100);
+                });
+
+                // OPTIMIZED: Throttle mousemove to animation frame rate
+                let mouseRAF = null;
                 window.addEventListener("mousemove", (e) => {
-                    const rect = this.canvas.getBoundingClientRect();
-                    this.mouseX = (e.clientX - rect.left - rect.width / 2) / rect.width;
-                    this.mouseY = (e.clientY - rect.top - rect.height / 2) / rect.height;
+                    if (mouseRAF) return;
+                    mouseRAF = requestAnimationFrame(() => {
+                        const rect = this.canvas.getBoundingClientRect();
+                        this.mouseX = (e.clientX - rect.left - rect.width / 2) / rect.width;
+                        this.mouseY = (e.clientY - rect.top - rect.height / 2) / rect.height;
+                        mouseRAF = null;
+                    });
                 });
             }
             resize() {
@@ -1621,13 +1686,20 @@
             }, 500);
         });
 
-        // Header scroll effect
+        // OPTIMIZED: Throttled header scroll effect
+        let scrollTicking = false;
         window.addEventListener('scroll', () => {
-            const header = document.getElementById('header');
-            if (window.scrollY > 50) {
-                header.classList.add('scrolled');
-            } else {
-                header.classList.remove('scrolled');
+            if (!scrollTicking) {
+                requestAnimationFrame(() => {
+                    const header = document.getElementById('header');
+                    if (window.scrollY > 50) {
+                        header.classList.add('scrolled');
+                    } else {
+                        header.classList.remove('scrolled');
+                    }
+                    scrollTicking = false;
+                });
+                scrollTicking = true;
             }
         });
 

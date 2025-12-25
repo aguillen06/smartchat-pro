@@ -22,34 +22,36 @@ export interface SearchFilters {
   minSimilarity?: number;
 }
 
+// OPTIMIZED: Pre-compiled regex patterns for single-pass matching
+// Each pattern uses alternation (|) to check multiple keywords in one regex test
+const SOURCE_PATTERNS: Array<{ pattern: RegExp; title: string }> = [
+  { pattern: /pricing|setup fee/i, title: 'Pricing' },
+  { pattern: /industries|healthcare/i, title: 'FAQ - Industries' },
+  { pattern: /spanish|bilingual/i, title: 'FAQ - Languages' },
+  { pattern: /integration|crm/i, title: 'FAQ - Integrations' },
+  { pattern: /security|hipaa/i, title: 'FAQ - Security' },
+  { pattern: /\broi\b|return/i, title: 'FAQ - ROI' },
+  { pattern: /contact|calendly/i, title: 'Contact Info' },
+  { pattern: /24\/7|ai-powered/i, title: 'Product Overview' },
+];
+
+// OPTIMIZED: URL map for O(1) lookup instead of if-else chain
+const PRODUCT_URLS: Record<string, string> = {
+  smartchat: 'https://smartchat.symtri.ai',
+  phonebot: 'https://symtri.ai/phonebot',
+};
+
 function getSourceInfo(content: string, product: string): { title: string; url: string } {
-  const lowerContent = content.toLowerCase();
-
+  // OPTIMIZED: Single regex test per pattern instead of multiple includes()
   let title = 'General Info';
-  if (lowerContent.includes('pricing') || lowerContent.includes('setup fee')) {
-    title = 'Pricing';
-  } else if (lowerContent.includes('industries') || lowerContent.includes('healthcare')) {
-    title = 'FAQ - Industries';
-  } else if (lowerContent.includes('spanish') || lowerContent.includes('bilingual')) {
-    title = 'FAQ - Languages';
-  } else if (lowerContent.includes('integration') || lowerContent.includes('crm')) {
-    title = 'FAQ - Integrations';
-  } else if (lowerContent.includes('security') || lowerContent.includes('hipaa')) {
-    title = 'FAQ - Security';
-  } else if (lowerContent.includes('roi') || lowerContent.includes('return')) {
-    title = 'FAQ - ROI';
-  } else if (lowerContent.includes('contact') || lowerContent.includes('calendly')) {
-    title = 'Contact Info';
-  } else if (lowerContent.includes('24/7') || lowerContent.includes('ai-powered')) {
-    title = 'Product Overview';
+  for (const { pattern, title: patternTitle } of SOURCE_PATTERNS) {
+    if (pattern.test(content)) {
+      title = patternTitle;
+      break;
+    }
   }
 
-  let url = 'https://symtri.ai';
-  if (product === 'smartchat') {
-    url = 'https://smartchat.symtri.ai';
-  } else if (product === 'phonebot') {
-    url = 'https://symtri.ai/phonebot';
-  }
+  const url = PRODUCT_URLS[product] || 'https://symtri.ai';
 
   return { title, url };
 }

@@ -79,13 +79,11 @@ export async function POST(request: NextRequest) {
     // Resolve tenant slug to UUID if needed
     const resolvedTenantId = TENANT_MAP[tenantId] || tenantId;
 
-    let session = sessionId ? sessionManager.getSession(sessionId) : undefined;
+    // OPTIMIZED: Simplified session creation logic
     const finalSessionId = sessionId || `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-    if (!session && sessionId) {
-      session = sessionManager.createSession(finalSessionId, resolvedTenantId);
-    } else if (!session) {
-      session = sessionManager.createSession(finalSessionId, resolvedTenantId);
+    const existingSession = sessionManager.getSession(finalSessionId);
+    if (!existingSession) {
+      sessionManager.createSession(finalSessionId, resolvedTenantId);
     }
 
     const conversationHistory = sessionManager.getMessages(finalSessionId);
@@ -155,7 +153,16 @@ Answer based on knowledge above and conversation history. Maintain topic consist
     sessionManager.addMessage(finalSessionId, "user", message);
     sessionManager.addMessage(finalSessionId, "assistant", assistantResponse);
 
-    const sources = [...new Set(results.map(r => r.metadata?.source_title).filter(Boolean))];
+    // OPTIMIZED: Deduplicate sources efficiently
+    const sourceSet = new Set<string>();
+    const sources: string[] = [];
+    for (const r of results) {
+      const title = r.metadata?.source_title;
+      if (title && !sourceSet.has(title)) {
+        sourceSet.add(title);
+        sources.push(title);
+      }
+    }
 
     return NextResponse.json(
       {
