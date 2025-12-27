@@ -13,7 +13,7 @@ const PLANS = {
   professional: {
     name: 'Professional',
     price: 397,
-    priceId: 'price_1ScFbuLNymQzQ2SuEIhhj9pH',
+    priceId: 'price_1SbvETLNymQzQ2SupQdP8n4g',
     features: ['5,000 conversations/mo', '3 websites', 'Priority support', 'Chat analytics'],
   },
 }

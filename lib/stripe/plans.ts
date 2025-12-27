@@ -21,7 +21,7 @@ export const PLANS: Record<string, PlanConfig> = {
   },
   professional: {
     name: 'Professional',
-    priceId: process.env.STRIPE_PRICE_PROFESSIONAL || 'price_1ScFbuLNymQzQ2SuEIhhj9pH',
+    priceId: process.env.STRIPE_PRICE_PROFESSIONAL || 'price_1SbvETLNymQzQ2SupQdP8n4g',
     price: 397,
     features: ['5,000 conversations/mo', '3 websites', 'Priority support', 'Chat analytics'],
     conversations: '5,000',
