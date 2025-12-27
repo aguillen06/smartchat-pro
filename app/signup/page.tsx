@@ -7,13 +7,13 @@ const PLANS = {
   starter: {
     name: 'Starter',
     price: 297,
-    priceId: 'price_1SbvEALNymQzQ2Suj9BpACKp',
+    priceId: 'price_1Sj0bgLNymQzQ2SuoMYldDKh',
     features: ['1,000 conversations/mo', '1 website', 'Dashboard access', 'Email support'],
   },
   professional: {
     name: 'Professional',
     price: 397,
-    priceId: 'price_1SbvETLNymQzQ2SupQdP8n4g',
+    priceId: 'price_1Sj0c7LNymQzQ2SuiTVptwPL',
     features: ['5,000 conversations/mo', '3 websites', 'Priority support', 'Chat analytics'],
   },
 }

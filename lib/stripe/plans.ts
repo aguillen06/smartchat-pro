@@ -13,7 +13,7 @@ export interface PlanConfig {
 export const PLANS: Record<string, PlanConfig> = {
   starter: {
     name: 'Starter',
-    priceId: process.env.STRIPE_PRICE_STARTER || 'price_1SbvEALNymQzQ2Suj9BpACKp',
+    priceId: process.env.STRIPE_PRICE_STARTER || 'price_1Sj0bgLNymQzQ2SuoMYldDKh',
     price: 297,
     features: ['1,000 conversations/mo', '1 website', 'Dashboard access', 'Email support'],
     conversations: '1,000',
@@ -21,7 +21,7 @@ export const PLANS: Record<string, PlanConfig> = {
   },
   professional: {
     name: 'Professional',
-    priceId: process.env.STRIPE_PRICE_PROFESSIONAL || 'price_1SbvETLNymQzQ2SupQdP8n4g',
+    priceId: process.env.STRIPE_PRICE_PROFESSIONAL || 'price_1Sj0c7LNymQzQ2SuiTVptwPL',
     price: 397,
     features: ['5,000 conversations/mo', '3 websites', 'Priority support', 'Chat analytics'],
     conversations: '5,000',
