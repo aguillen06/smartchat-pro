@@ -16,6 +16,13 @@ interface Analytics {
   }>;
 }
 
+interface Subscription {
+  plan: string;
+  status: string;
+  current_period_end: string;
+  cancel_at_period_end: boolean;
+}
+
 // OPTIMIZED: Move utility functions outside component to prevent recreation on each render
 const formatDate = (dateStr: string): string => {
   return new Date(dateStr).toLocaleString();
@@ -33,6 +40,8 @@ export default function Dashboard() {
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState("");
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [loadingPortal, setLoadingPortal] = useState(false);
 
   const tenantId = "c48decc4-98f5-4fe8-971f-5461d3e6ae1a";
 
@@ -62,6 +71,38 @@ export default function Dashboard() {
     }
     fetchAnalytics();
   }, [days, isAuthenticated]);
+
+  // Fetch subscription status when authenticated
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    async function fetchSubscription() {
+      try {
+        const res = await fetch("/api/stripe/subscription");
+        const data = await res.json();
+        if (data.hasSubscription && data.subscription) {
+          setSubscription(data.subscription);
+        }
+      } catch (error) {
+        console.error("Failed to fetch subscription:", error);
+      }
+    }
+    fetchSubscription();
+  }, [isAuthenticated]);
+
+  const handleManageBilling = useCallback(async () => {
+    setLoadingPortal(true);
+    try {
+      const res = await fetch("/api/stripe/portal", { method: "POST" });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error("Failed to open billing portal:", error);
+    }
+    setLoadingPortal(false);
+  }, []);
 
   // OPTIMIZED: Memoize sorted daily counts to avoid recalculation on each render
   const sortedDailyCounts = useMemo(() => {
@@ -245,6 +286,90 @@ export default function Dashboard() {
             Logout
           </button>
         </div>
+
+        {/* Subscription Status */}
+        {subscription && (
+          <div style={{
+            background: "white",
+            borderRadius: "16px",
+            padding: "20px 24px",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+            marginBottom: "24px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "16px"
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "24px", flexWrap: "wrap" }}>
+              <div>
+                <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>Plan</div>
+                <div style={{ fontSize: "18px", fontWeight: "600", color: "#1f2937", textTransform: "capitalize" }}>
+                  {subscription.plan}
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>Status</div>
+                <div style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "4px 12px",
+                  borderRadius: "20px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  background: subscription.status === "active" ? "#D1FAE5" : subscription.status === "trialing" ? "#DBEAFE" : "#FEF3C7",
+                  color: subscription.status === "active" ? "#065F46" : subscription.status === "trialing" ? "#1E40AF" : "#92400E"
+                }}>
+                  <span style={{
+                    width: "8px",
+                    height: "8px",
+                    borderRadius: "50%",
+                    background: subscription.status === "active" ? "#10B981" : subscription.status === "trialing" ? "#3B82F6" : "#F59E0B"
+                  }} />
+                  {subscription.status === "trialing" ? "Trial" : subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>
+                  {subscription.cancel_at_period_end ? "Access Until" : "Next Billing"}
+                </div>
+                <div style={{ fontSize: "14px", fontWeight: "500", color: "#1f2937" }}>
+                  {new Date(subscription.current_period_end).toLocaleDateString()}
+                </div>
+              </div>
+              {subscription.cancel_at_period_end && (
+                <div style={{
+                  padding: "4px 12px",
+                  borderRadius: "20px",
+                  fontSize: "12px",
+                  fontWeight: "500",
+                  background: "#FEE2E2",
+                  color: "#991B1B"
+                }}>
+                  Cancels at period end
+                </div>
+              )}
+            </div>
+            <button
+              onClick={handleManageBilling}
+              disabled={loadingPortal}
+              style={{
+                padding: "10px 20px",
+                fontSize: "14px",
+                fontWeight: "500",
+                color: "#10B981",
+                background: "white",
+                border: "1px solid #10B981",
+                borderRadius: "8px",
+                cursor: loadingPortal ? "not-allowed" : "pointer",
+                opacity: loadingPortal ? 0.6 : 1
+              }}
+            >
+              {loadingPortal ? "Loading..." : "Manage Billing"}
+            </button>
+          </div>
+        )}
 
         {/* Period Selector */}
         <div style={{ marginBottom: "24px" }}>

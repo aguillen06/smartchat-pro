@@ -1,9 +1,10 @@
 -- SmartChat Stripe Integration Database Schema
 -- Run this in Supabase SQL Editor
 
--- Users table (links Supabase Auth to Stripe)
+-- Users table (links to Stripe customers)
+-- Note: Not linked to auth.users since we create users from Stripe webhooks
 CREATE TABLE IF NOT EXISTS public.users (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT NOT NULL UNIQUE,
   full_name TEXT,
   stripe_customer_id TEXT UNIQUE,

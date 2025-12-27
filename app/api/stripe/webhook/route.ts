@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe/client'
-import { PRICE_TO_PLAN } from '@/lib/stripe/plans'
+import { PRICE_TO_PLAN, PLANS } from '@/lib/stripe/plans'
 import { createClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
+import { sendWelcomeEmail } from '@/lib/email/send'
 
 // Use service role for webhook operations
 const supabase = createClient(
@@ -147,6 +148,14 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   })
 
   console.log(`Created subscription for user ${user.id}, plan: ${plan}`)
+
+  // Send welcome email
+  const planConfig = PLANS[plan]
+  await sendWelcomeEmail({
+    email: customerEmail,
+    planName: planConfig?.name || 'SmartChat',
+    dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://smartchat.symtri.ai'}/dashboard`,
+  })
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
