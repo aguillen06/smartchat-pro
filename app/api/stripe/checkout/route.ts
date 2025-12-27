@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe/client'
-import { isValidPriceId } from '@/lib/stripe/plans'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://smartchat.symtri.ai'
 
@@ -9,7 +8,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { priceId, email, userId, successUrl, cancelUrl } = body
 
-    // Validate price ID
+    // Validate price ID exists
     if (!priceId) {
       return NextResponse.json(
         { error: 'Price ID is required' },
@@ -17,14 +16,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!isValidPriceId(priceId)) {
-      return NextResponse.json(
-        { error: 'Invalid price ID' },
-        { status: 400 }
-      )
-    }
-
-    // Create Stripe Checkout session
+    // Create Stripe Checkout session (Stripe validates the price ID)
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card'],
@@ -50,8 +42,9 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Checkout session error:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Failed to create checkout session' },
+      { error: `Failed to create checkout session: ${message}` },
       { status: 500 }
     )
   }
