@@ -252,22 +252,28 @@ export default function Dashboard() {
     <div style={{
       minHeight: "100vh",
       background: "linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)",
-      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-      padding: "40px 20px"
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      padding: "24px 16px"
     }}>
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+      <style>{`
+        @media (min-width: 640px) {
+          .dashboard-container { padding: 40px 20px !important; }
+          .dashboard-title { font-size: 32px !important; }
+        }
+      `}</style>
+      <div className="dashboard-container" style={{ maxWidth: "1200px", margin: "0 auto" }}>
         {/* Header */}
-        <div style={{ marginBottom: "32px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
+        <div style={{ marginBottom: "24px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
           <div>
-            <h1 style={{
-              fontSize: "32px",
+            <h1 className="dashboard-title" style={{
+              fontSize: "24px",
               fontWeight: "700",
               color: "#1f2937",
               margin: "0 0 8px 0"
             }}>
               SmartChat Analytics
             </h1>
-            <p style={{ color: "#6b7280", margin: 0 }}>
+            <p style={{ color: "#6b7280", margin: 0, fontSize: "14px" }}>
               Chat usage metrics for Symtri AI
             </p>
           </div>
@@ -393,9 +399,126 @@ export default function Dashboard() {
         </div>
 
         {loading ? (
-          <div style={{ textAlign: "center", padding: "60px", color: "#6b7280" }}>
-            Loading...
-          </div>
+          <>
+            {/* Skeleton Stats Cards */}
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: "20px",
+              marginBottom: "32px"
+            }}>
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} style={{
+                  background: "white",
+                  borderRadius: "16px",
+                  padding: "24px",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+                }}>
+                  <div style={{
+                    width: "100px",
+                    height: "14px",
+                    background: "#e5e7eb",
+                    borderRadius: "4px",
+                    marginBottom: "12px",
+                    animation: "pulse 1.5s ease-in-out infinite"
+                  }} />
+                  <div style={{
+                    width: "60px",
+                    height: "36px",
+                    background: "#e5e7eb",
+                    borderRadius: "6px",
+                    animation: "pulse 1.5s ease-in-out infinite"
+                  }} />
+                </div>
+              ))}
+            </div>
+            {/* Skeleton Chart */}
+            <div style={{
+              background: "white",
+              borderRadius: "16px",
+              padding: "24px",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+              marginBottom: "32px"
+            }}>
+              <div style={{
+                width: "120px",
+                height: "18px",
+                background: "#e5e7eb",
+                borderRadius: "4px",
+                marginBottom: "20px",
+                animation: "pulse 1.5s ease-in-out infinite"
+              }} />
+              <div style={{ display: "flex", alignItems: "flex-end", gap: "8px", height: "150px" }}>
+                {[60, 80, 45, 90, 70, 55, 85].map((h, i) => (
+                  <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end", alignItems: "center" }}>
+                    <div style={{
+                      width: "100%",
+                      maxWidth: "40px",
+                      height: `${h}px`,
+                      background: "#e5e7eb",
+                      borderRadius: "4px 4px 0 0",
+                      animation: "pulse 1.5s ease-in-out infinite"
+                    }} />
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Skeleton Messages */}
+            <div style={{
+              background: "white",
+              borderRadius: "16px",
+              padding: "24px",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+            }}>
+              <div style={{
+                width: "140px",
+                height: "18px",
+                background: "#e5e7eb",
+                borderRadius: "4px",
+                marginBottom: "20px",
+                animation: "pulse 1.5s ease-in-out infinite"
+              }} />
+              {[1, 2, 3].map((i) => (
+                <div key={i} style={{
+                  padding: "16px",
+                  background: "#f9fafb",
+                  borderRadius: "12px",
+                  marginBottom: "12px",
+                  borderLeft: "4px solid #e5e7eb"
+                }}>
+                  <div style={{
+                    width: "40px",
+                    height: "20px",
+                    background: "#e5e7eb",
+                    borderRadius: "4px",
+                    marginBottom: "12px",
+                    animation: "pulse 1.5s ease-in-out infinite"
+                  }} />
+                  <div style={{
+                    width: "100%",
+                    height: "16px",
+                    background: "#e5e7eb",
+                    borderRadius: "4px",
+                    marginBottom: "8px",
+                    animation: "pulse 1.5s ease-in-out infinite"
+                  }} />
+                  <div style={{
+                    width: "60%",
+                    height: "12px",
+                    background: "#e5e7eb",
+                    borderRadius: "4px",
+                    animation: "pulse 1.5s ease-in-out infinite"
+                  }} />
+                </div>
+              ))}
+            </div>
+            <style>{`
+              @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+              }
+            `}</style>
+          </>
         ) : analytics ? (
           <>
             {/* Stats Cards */}

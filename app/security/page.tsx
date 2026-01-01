@@ -154,6 +154,17 @@ export default function SecurityPage() {
         @media (max-width: 768px) {
           .nav-links { display: none; }
           .cards-grid { grid-template-columns: 1fr; }
+          .hero { padding: 6rem 1.5rem 3rem; }
+          .hero h1 { font-size: 1.75rem; }
+          .hero p { font-size: 1rem; }
+          .content { padding: 2rem 1.5rem; }
+          .section { margin-bottom: 2.5rem; }
+          .section h2 { font-size: 1.4rem; }
+          .cta-section { padding: 3rem 1.5rem; }
+          .cta-section h2 { font-size: 1.5rem; }
+          .trust-badges { gap: 0.75rem; }
+          .trust-badge { font-size: 0.75rem; padding: 0.5rem 1rem; }
+          .header { padding: 0.75rem 1rem; }
         }
       `}</style>
 
