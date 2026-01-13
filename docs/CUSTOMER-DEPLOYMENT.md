@@ -72,6 +72,23 @@ npx ts-node scripts/ingest-customer-knowledge.ts --tenant=customer-tenant-id
 </script>
 ```
 
+### Step 5: Create Customer Login
+
+Create a user in Supabase for dashboard access:
+
+1. Go to Supabase Dashboard → Authentication → Users
+2. Click "Add user" → "Create new user"
+3. Enter customer email and password
+4. Customer can log in at: `https://smartchat.symtri.ai/login`
+
+**Auth URLs:**
+- Login: `/login`
+- Forgot Password: `/forgot-password`
+- Reset Password: `/reset-password`
+- Dashboard: `/dashboard`
+
+---
+
 ## Symtri AI Configuration
 
 **Tenant ID:** `c48decc4-98f5-4fe8-971f-5461d3e6ae1a`
