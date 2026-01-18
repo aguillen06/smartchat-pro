@@ -52,8 +52,8 @@ export default function SecurityPage() {
         .badge {
           display: inline-block;
           padding: 0.5rem 1rem;
-          background: rgba(16, 185, 129, 0.1);
-          color: #10B981;
+          background: rgba(24, 24, 27, 0.1);
+          color: #18181B;
           border-radius: 20px;
           font-size: 0.875rem;
           font-weight: 600;
@@ -76,7 +76,7 @@ export default function SecurityPage() {
           color: #18181B;
           margin-bottom: 1.5rem;
           padding-bottom: 0.5rem;
-          border-bottom: 2px solid #10B981;
+          border-bottom: 2px solid #18181B;
           display: inline-block;
         }
         .section p { margin-bottom: 1rem; color: #3F3F46; }
@@ -106,7 +106,7 @@ export default function SecurityPage() {
         th, td { text-align: left; padding: 1rem; border-bottom: 1px solid #E4E4E7; }
         th { background: #FAFAFA; font-weight: 600; color: #18181B; }
         td { color: #3F3F46; }
-        .check { color: #10B981; font-weight: 600; }
+        .check { color: #18181B; font-weight: 600; }
 
         .trust-badges { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2rem; justify-content: center; }
         .trust-badge {
@@ -133,13 +133,13 @@ export default function SecurityPage() {
         .cta-section a {
           display: inline-block;
           padding: 1rem 2rem;
-          background: #10B981;
+          background: #18181B;
           color: #FFFFFF;
           text-decoration: none;
           border-radius: 8px;
           font-weight: 600;
         }
-        .cta-section a:hover { background: #059669; }
+        .cta-section a:hover { background: #09090B; }
 
         footer {
           background: #000000;
@@ -149,7 +149,7 @@ export default function SecurityPage() {
           font-size: 0.875rem;
         }
         footer a { color: #A1A1AA; text-decoration: none; }
-        footer a:hover { color: #10B981; }
+        footer a:hover { color: #18181B; }
 
         @media (max-width: 768px) {
           .nav-links { display: none; }

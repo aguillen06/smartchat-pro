@@ -3,7 +3,6 @@
 export interface WelcomeEmailData {
   customerName?: string
   email: string
-  planName: string
   dashboardUrl: string
 }
 
@@ -12,7 +11,7 @@ export function getWelcomeEmailSubject(): string {
 }
 
 export function getWelcomeEmailHtml(data: WelcomeEmailData): string {
-  const { customerName, planName, dashboardUrl } = data
+  const { customerName, dashboardUrl } = data
   const greeting = customerName ? `Hi ${customerName}` : 'Hi there'
 
   return `
@@ -46,14 +45,14 @@ export function getWelcomeEmailHtml(data: WelcomeEmailData): string {
               </p>
 
               <p style="margin: 0 0 24px 0; color: #52525B; font-size: 16px;">
-                Thank you for subscribing to SmartChat <strong>${planName}</strong>! Your AI-powered chatbot is ready to help you capture leads, answer questions, and book appointments 24/7.
+                Thank you for subscribing to SmartChat! Your AI-powered chatbot is ready to help you capture leads, answer questions, and book appointments 24/7.
               </p>
 
               <!-- CTA Button -->
               <table width="100%" cellpadding="0" cellspacing="0" style="margin: 32px 0;">
                 <tr>
                   <td align="center">
-                    <a href="${dashboardUrl}" style="display: inline-block; background-color: #10B981; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 16px; padding: 14px 32px; border-radius: 8px;">
+                    <a href="${dashboardUrl}" style="display: inline-block; background-color: #18181B; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 16px; padding: 14px 32px; border-radius: 8px;">
                       Go to Your Dashboard
                     </a>
                   </td>
@@ -89,9 +88,9 @@ export function getWelcomeEmailHtml(data: WelcomeEmailData): string {
                 <strong>Symtri AI</strong> | Brownsville, Texas
               </p>
               <p style="margin: 0; color: #71717A; font-size: 14px;">
-                <a href="https://smartchat.symtri.ai" style="color: #10B981; text-decoration: none;">smartchat.symtri.ai</a>
+                <a href="https://smartchat.symtri.ai" style="color: #18181B; text-decoration: none;">smartchat.symtri.ai</a>
                 &nbsp;|&nbsp;
-                <a href="mailto:hello@symtri.ai" style="color: #10B981; text-decoration: none;">hello@symtri.ai</a>
+                <a href="mailto:hello@symtri.ai" style="color: #18181B; text-decoration: none;">hello@symtri.ai</a>
               </p>
             </td>
           </tr>
@@ -105,7 +104,7 @@ export function getWelcomeEmailHtml(data: WelcomeEmailData): string {
 }
 
 export function getWelcomeEmailText(data: WelcomeEmailData): string {
-  const { customerName, planName, dashboardUrl } = data
+  const { customerName, dashboardUrl } = data
   const greeting = customerName ? `Hi ${customerName}` : 'Hi there'
 
   return `
@@ -116,7 +115,7 @@ Welcome to SmartChat!
 
 ${greeting},
 
-Thank you for subscribing to SmartChat ${planName}! Your AI-powered chatbot is ready to help you capture leads, answer questions, and book appointments 24/7.
+Thank you for subscribing to SmartChat! Your AI-powered chatbot is ready to help you capture leads, answer questions, and book appointments 24/7.
 
 Go to your dashboard: ${dashboardUrl}
 

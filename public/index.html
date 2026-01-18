@@ -44,10 +44,10 @@
             --grey-700: #3F3F46;
             --grey-800: #27272A;
             --grey-900: #18181B;
-            --teal: #10B981;
-            --teal-light: #34D399;
-            --teal-dark: #059669;
-            --teal-faint: rgba(16, 185, 129, 0.1);
+            --teal: #18181B;
+            --teal-light: #52525B;
+            --teal-dark: #09090B;
+            --teal-faint: rgba(24, 24, 27, 0.1);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05);
             --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.05);
         }
@@ -339,7 +339,7 @@
             background: var(--teal-dark);
             border-color: var(--teal-dark);
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.12);
+            box-shadow: 0 10px 30px rgba(24, 24, 27, 0.12);
         }
 
         .btn-outline {
@@ -635,7 +635,7 @@
 
         .pricing-card.popular {
             border-color: var(--teal);
-            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.08);
+            box-shadow: 0 10px 30px rgba(24, 24, 27, 0.08);
         }
 
         .popular-badge {
@@ -1687,7 +1687,7 @@
                     this.ctx.arc(point.x, point.y, 1.5, 0, Math.PI * 2);
                     const distToMouse = distSq < maxDistSq ? Math.sqrt(distSq) : maxDist;
                     this.ctx.fillStyle = distSq < maxDistSq
-                        ? `rgba(16, 185, 129, ${(1 - distToMouse / maxDist) * 0.4})`
+                        ? `rgba(24, 24, 27, ${(1 - distToMouse / maxDist) * 0.4})`
                         : 'rgba(148, 163, 184, 0.15)';
                     this.ctx.fill();
                 }
@@ -1704,7 +1704,7 @@
                         this.ctx.beginPath();
                         this.ctx.moveTo(point.x, point.y);
                         this.ctx.lineTo(neighbor.x, neighbor.y);
-                        this.ctx.strokeStyle = `rgba(16, 185, 129, ${(1 - dist / this.connectionDist) * 0.1})`;
+                        this.ctx.strokeStyle = `rgba(24, 24, 27, ${(1 - dist / this.connectionDist) * 0.1})`;
                         this.ctx.lineWidth = 0.3;
                         this.ctx.stroke();
                     }
@@ -1820,9 +1820,9 @@
                     const avgZ = (vertices[i].z + vertices[j].z) / 2;
                     const opacity = Math.max(0.08, Math.min(0.4, (avgZ + baseHealthcare * 2) / (baseHealthcare * 5)));
                     const gradient = this.ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
-                    gradient.addColorStop(0, "rgba(16, 185, 129, " + opacity + ")");
-                    gradient.addColorStop(0.5, "rgba(20, 184, 166, " + (opacity * 1.1) + ")");
-                    gradient.addColorStop(1, "rgba(16, 185, 129, " + opacity + ")");
+                    gradient.addColorStop(0, "rgba(24, 24, 27, " + opacity + ")");
+                    gradient.addColorStop(0.5, "rgba(24, 24, 27, " + (opacity * 1.1) + ")");
+                    gradient.addColorStop(1, "rgba(24, 24, 27, " + opacity + ")");
                     this.ctx.beginPath();
                     this.ctx.moveTo(p1.x, p1.y);
                     this.ctx.lineTo(p2.x, p2.y);
@@ -1835,15 +1835,15 @@
                     const opacity = Math.max(0.15, Math.min(0.6, (z + baseHealthcare * 2) / (baseHealthcare * 3)));
                     const size = 1.5 + opacity * 2;
                     const glow = this.ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size * 3);
-                    glow.addColorStop(0, "rgba(16, 185, 129, " + (opacity * 0.4) + ")");
-                    glow.addColorStop(1, "rgba(16, 185, 129, 0)");
+                    glow.addColorStop(0, "rgba(24, 24, 27, " + (opacity * 0.4) + ")");
+                    glow.addColorStop(1, "rgba(24, 24, 27, 0)");
                     this.ctx.beginPath();
                     this.ctx.arc(p.x, p.y, size * 3, 0, Math.PI * 2);
                     this.ctx.fillStyle = glow;
                     this.ctx.fill();
                     this.ctx.beginPath();
                     this.ctx.arc(p.x, p.y, size * 0.6, 0, Math.PI * 2);
-                    this.ctx.fillStyle = "rgba(16, 185, 129, " + opacity + ")";
+                    this.ctx.fillStyle = "rgba(24, 24, 27, " + opacity + ")";
                     this.ctx.fill();
                 });
                 for (let i = 0; i < 12; i++) {
@@ -1853,7 +1853,7 @@
                     const py = height / 2 + Math.sin(angle) * radius * 0.5;
                     this.ctx.beginPath();
                     this.ctx.arc(px, py, 1, 0, Math.PI * 2);
-                    this.ctx.fillStyle = "rgba(16, 185, 129, " + (0.2 + Math.sin(this.time + i) * 0.1) + ")";
+                    this.ctx.fillStyle = "rgba(24, 24, 27, " + (0.2 + Math.sin(this.time + i) * 0.1) + ")";
                     this.ctx.fill();
                 }
             }

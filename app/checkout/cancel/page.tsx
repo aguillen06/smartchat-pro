@@ -91,7 +91,7 @@ export default function CheckoutCancelPage() {
         .btn-primary {
           display: inline-block;
           padding: 1rem 2rem;
-          background: #10B981;
+          background: #18181B;
           color: white;
           text-decoration: none;
           border-radius: 8px;
@@ -99,7 +99,7 @@ export default function CheckoutCancelPage() {
           transition: background 0.2s;
         }
         .btn-primary:hover {
-          background: #059669;
+          background: #09090B;
         }
 
         .btn-secondary {
@@ -124,7 +124,7 @@ export default function CheckoutCancelPage() {
           color: #71717A;
         }
         .help-text a {
-          color: #10B981;
+          color: #18181B;
           text-decoration: none;
         }
         .help-text a:hover {

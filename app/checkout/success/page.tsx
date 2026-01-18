@@ -61,7 +61,7 @@ function SuccessContent() {
         .icon-success {
           width: 80px;
           height: 80px;
-          background: rgba(16, 185, 129, 0.1);
+          background: rgba(24, 24, 27, 0.1);
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -71,7 +71,7 @@ function SuccessContent() {
         .icon-success svg {
           width: 40px;
           height: 40px;
-          stroke: #10B981;
+          stroke: #18181B;
           stroke-width: 2;
           fill: none;
         }
@@ -94,7 +94,7 @@ function SuccessContent() {
         .btn-primary {
           display: inline-block;
           padding: 1rem 2rem;
-          background: #10B981;
+          background: #18181B;
           color: white;
           text-decoration: none;
           border-radius: 8px;
@@ -102,7 +102,7 @@ function SuccessContent() {
           transition: background 0.2s;
         }
         .btn-primary:hover {
-          background: #059669;
+          background: #09090B;
         }
 
         .next-steps {
@@ -131,7 +131,7 @@ function SuccessContent() {
         .step-number {
           width: 24px;
           height: 24px;
-          background: #10B981;
+          background: #18181B;
           color: white;
           border-radius: 50%;
           display: flex;
@@ -152,7 +152,7 @@ function SuccessContent() {
           width: 40px;
           height: 40px;
           border: 3px solid #E4E4E7;
-          border-top-color: #10B981;
+          border-top-color: #18181B;
           border-radius: 50%;
           animation: spin 1s linear infinite;
         }

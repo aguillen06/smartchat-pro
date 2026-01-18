@@ -251,7 +251,7 @@ export default function Dashboard() {
                     width: "8px",
                     height: "8px",
                     borderRadius: "50%",
-                    background: subscription.status === "active" ? "#10B981" : subscription.status === "trialing" ? "#3B82F6" : "#F59E0B"
+                    background: subscription.status === "active" ? "#18181B" : subscription.status === "trialing" ? "#3B82F6" : "#F59E0B"
                   }} />
                   {subscription.status === "trialing" ? "Trial" : subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
                 </div>
@@ -284,9 +284,9 @@ export default function Dashboard() {
                 padding: "10px 20px",
                 fontSize: "14px",
                 fontWeight: "500",
-                color: "#10B981",
+                color: "#18181B",
                 background: "white",
-                border: "1px solid #10B981",
+                border: "1px solid #18181B",
                 borderRadius: "8px",
                 cursor: loadingPortal ? "not-allowed" : "pointer",
                 opacity: loadingPortal ? 0.6 : 1
@@ -457,7 +457,7 @@ export default function Dashboard() {
                 <div style={{ color: "#6b7280", fontSize: "14px", marginBottom: "8px" }}>
                   Total Messages
                 </div>
-                <div style={{ fontSize: "36px", fontWeight: "700", color: "#10B981" }}>
+                <div style={{ fontSize: "36px", fontWeight: "700", color: "#18181B" }}>
                   {analytics.totalMessages}
                 </div>
               </div>
@@ -525,7 +525,7 @@ export default function Dashboard() {
                       <div key={date} style={{ flex: 1, textAlign: "center" }}>
                         <div style={{
                           height: `${height}px`,
-                          background: "linear-gradient(135deg, #10B981 0%, #0D9488 100%)",
+                          background: "#18181B",
                           borderRadius: "4px 4px 0 0",
                           minHeight: count > 0 ? "20px" : "0"
                         }} />

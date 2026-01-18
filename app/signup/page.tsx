@@ -141,11 +141,11 @@ function SignupForm() {
           transition: all 0.2s;
         }
         .plan-card:hover {
-          border-color: #10B981;
+          border-color: #18181B;
         }
         .plan-card.selected {
-          border-color: #10B981;
-          background: rgba(16, 185, 129, 0.05);
+          border-color: #18181B;
+          background: rgba(24, 24, 27, 0.05);
         }
         .plan-card-header {
           display: flex;
@@ -163,7 +163,7 @@ function SignupForm() {
           font-family: 'Space Grotesk', sans-serif;
           font-weight: 700;
           font-size: 1.5rem;
-          color: #10B981;
+          color: #18181B;
         }
         .plan-price span {
           font-size: 0.875rem;
@@ -185,11 +185,11 @@ function SignupForm() {
         }
         .plan-features li::before {
           content: '✓';
-          color: #10B981;
+          color: #18181B;
           font-weight: 600;
         }
         .popular-tag {
-          background: #10B981;
+          background: #18181B;
           color: white;
           font-size: 0.7rem;
           padding: 0.25rem 0.5rem;
@@ -230,13 +230,13 @@ function SignupForm() {
         }
         .form-group input:focus {
           outline: none;
-          border-color: #10B981;
+          border-color: #18181B;
         }
 
         .btn-primary {
           width: 100%;
           padding: 1rem;
-          background: #10B981;
+          background: #18181B;
           color: white;
           border: none;
           border-radius: 8px;
@@ -246,7 +246,7 @@ function SignupForm() {
           transition: background 0.2s;
         }
         .btn-primary:hover:not(:disabled) {
-          background: #059669;
+          background: #09090B;
         }
         .btn-primary:disabled {
           opacity: 0.6;
