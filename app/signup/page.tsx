@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { createBrowserSupabaseClient } from '@/lib/supabase/browser'
 
 const PLANS = {
   starter: {
@@ -23,8 +24,13 @@ function SignupForm() {
   const router = useRouter()
   const [selectedPlan, setSelectedPlan] = useState<'starter' | 'professional'>('professional')
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [businessName, setBusinessName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [step, setStep] = useState<'account' | 'payment'>('account')
+
+  const supabase = createBrowserSupabaseClient()
 
   useEffect(() => {
     const plan = searchParams.get('plan')
@@ -33,18 +39,106 @@ function SignupForm() {
     }
   }, [searchParams])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Generate slug from business name
+  const generateSlug = (name: string): string => {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .substring(0, 50) + '-' + Date.now().toString(36)
+  }
+
+  const handleAccountSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    // Validate password
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters')
+      setLoading(false)
+      return
+    }
+
+    try {
+      // 1. Create Supabase Auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            business_name: businessName,
+          },
+        },
+      })
+
+      if (authError) {
+        setError(authError.message)
+        setLoading(false)
+        return
+      }
+
+      if (!authData.user) {
+        setError('Failed to create account')
+        setLoading(false)
+        return
+      }
+
+      // 2. Create tenant and user records via API (uses service role)
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          authUserId: authData.user.id,
+          email,
+          businessName,
+          slug: generateSlug(businessName),
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        setError(result.error || 'Failed to create account')
+        setLoading(false)
+        return
+      }
+
+      // Store tenant ID for checkout
+      sessionStorage.setItem('signup_tenant_id', result.tenantId)
+
+      // Move to payment step
+      setStep('payment')
+      setLoading(false)
+    } catch (err) {
+      setError('Something went wrong. Please try again.')
+      setLoading(false)
+    }
+  }
+
+  const handlePaymentSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
 
     try {
+      const tenantId = sessionStorage.getItem('signup_tenant_id')
+
+      if (!tenantId) {
+        setError('Session expired. Please start over.')
+        setStep('account')
+        setLoading(false)
+        return
+      }
+
       const response = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           priceId: PLANS[selectedPlan].priceId,
           email,
+          tenantId,
         }),
       })
 
@@ -111,6 +205,45 @@ function SignupForm() {
         .page-title p {
           color: #52525B;
           font-size: 1.1rem;
+        }
+
+        .steps-indicator {
+          display: flex;
+          justify-content: center;
+          gap: 2rem;
+          margin-bottom: 2rem;
+        }
+        .step-item {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          color: #71717A;
+        }
+        .step-item.active {
+          color: #18181B;
+        }
+        .step-item.completed {
+          color: #18181B;
+        }
+        .step-number {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.875rem;
+          font-weight: 600;
+          background: #E4E4E7;
+          color: #71717A;
+        }
+        .step-item.active .step-number {
+          background: #18181B;
+          color: white;
+        }
+        .step-item.completed .step-number {
+          background: #18181B;
+          color: white;
         }
 
         .signup-grid {
@@ -212,7 +345,7 @@ function SignupForm() {
         }
 
         .form-group {
-          margin-bottom: 1.5rem;
+          margin-bottom: 1.25rem;
         }
         .form-group label {
           display: block;
@@ -231,6 +364,12 @@ function SignupForm() {
         .form-group input:focus {
           outline: none;
           border-color: #18181B;
+        }
+        .form-group small {
+          display: block;
+          margin-top: 0.25rem;
+          color: #71717A;
+          font-size: 0.8rem;
         }
 
         .btn-primary {
@@ -292,6 +431,20 @@ function SignupForm() {
           margin-right: 4px;
         }
 
+        .login-link {
+          text-align: center;
+          margin-top: 1.5rem;
+          color: #52525B;
+          font-size: 0.9rem;
+        }
+        .login-link a {
+          color: #18181B;
+          text-decoration: none;
+        }
+        .login-link a:hover {
+          text-decoration: underline;
+        }
+
         @media (max-width: 768px) {
           .signup-grid {
             grid-template-columns: 1fr;
@@ -315,6 +468,17 @@ function SignupForm() {
         <div className="page-title">
           <h1>Get Started with SmartChat</h1>
           <p>Start your 14-day free trial. No credit card required.</p>
+        </div>
+
+        <div className="steps-indicator">
+          <div className={`step-item ${step === 'account' ? 'active' : 'completed'}`}>
+            <span className="step-number">{step === 'payment' ? '✓' : '1'}</span>
+            <span>Create Account</span>
+          </div>
+          <div className={`step-item ${step === 'payment' ? 'active' : ''}`}>
+            <span className="step-number">2</span>
+            <span>Start Trial</span>
+          </div>
         </div>
 
         <div className="signup-grid">
@@ -345,50 +509,92 @@ function SignupForm() {
           </div>
 
           <div className="signup-form-container">
-            <h2>Your Information</h2>
+            <h2>{step === 'account' ? 'Create Your Account' : 'Start Your Trial'}</h2>
 
             {error && <div className="error-message">{error}</div>}
 
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label htmlFor="email">Email Address</label>
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@company.com"
-                  required
-                />
-              </div>
-
-              <div className="summary">
-                <div className="summary-row">
-                  <span>Plan</span>
-                  <span>{PLANS[selectedPlan].name}</span>
+            {step === 'account' ? (
+              <form onSubmit={handleAccountSubmit}>
+                <div className="form-group">
+                  <label htmlFor="businessName">Business Name</label>
+                  <input
+                    type="text"
+                    id="businessName"
+                    value={businessName}
+                    onChange={(e) => setBusinessName(e.target.value)}
+                    placeholder="Your Company Name"
+                    required
+                  />
                 </div>
-                <div className="summary-row">
-                  <span>Trial Period</span>
-                  <span>14 days free</span>
-                </div>
-                <div className="summary-row summary-total">
-                  <span>Then</span>
-                  <span>${PLANS[selectedPlan].price}/mo</span>
-                </div>
-              </div>
 
-              <button type="submit" className="btn-primary" disabled={loading}>
-                {loading ? 'Starting checkout...' : 'Start Free Trial'}
-              </button>
+                <div className="form-group">
+                  <label htmlFor="email">Email Address</label>
+                  <input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@company.com"
+                    required
+                  />
+                </div>
 
-              <p className="secure-note">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-                Secure checkout powered by Stripe
-              </p>
-            </form>
+                <div className="form-group">
+                  <label htmlFor="password">Password</label>
+                  <input
+                    type="password"
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Create a password"
+                    required
+                    minLength={8}
+                  />
+                  <small>Must be at least 8 characters</small>
+                </div>
+
+                <button type="submit" className="btn-primary" disabled={loading}>
+                  {loading ? 'Creating account...' : 'Continue'}
+                </button>
+
+                <div className="login-link">
+                  Already have an account? <a href="/login">Sign in</a>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handlePaymentSubmit}>
+                <div className="summary">
+                  <div className="summary-row">
+                    <span>Business</span>
+                    <span>{businessName}</span>
+                  </div>
+                  <div className="summary-row">
+                    <span>Plan</span>
+                    <span>{PLANS[selectedPlan].name}</span>
+                  </div>
+                  <div className="summary-row">
+                    <span>Trial Period</span>
+                    <span>14 days free</span>
+                  </div>
+                  <div className="summary-row summary-total">
+                    <span>Then</span>
+                    <span>${PLANS[selectedPlan].price}/mo</span>
+                  </div>
+                </div>
+
+                <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: '1.5rem' }}>
+                  {loading ? 'Starting checkout...' : 'Start Free Trial'}
+                </button>
+
+                <p className="secure-note">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                  Secure checkout powered by Stripe
+                </p>
+              </form>
+            )}
           </div>
         </div>
       </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { supabaseBrowser } from "@/lib/supabase/browser";
+import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 
 interface Analytics {
   period: string;
@@ -25,7 +25,17 @@ interface Subscription {
   cancel_at_period_end: boolean;
 }
 
-// OPTIMIZED: Move utility functions outside component to prevent recreation on each render
+interface UserData {
+  email: string;
+  firstName?: string;
+  tenant: {
+    id: string;
+    name: string;
+    businessName?: string;
+    status: string;
+  };
+}
+
 const formatDate = (dateStr: string): string => {
   return new Date(dateStr).toLocaleString();
 };
@@ -36,54 +46,82 @@ const formatMs = (ms: number): string => {
 
 export default function Dashboard() {
   const router = useRouter();
+  const supabase = createBrowserSupabaseClient();
+
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [days, setDays] = useState(7);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loadingPortal, setLoadingPortal] = useState(false);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
-  const tenantId = "c48decc4-98f5-4fe8-971f-5461d3e6ae1a";
-
-  // Check Supabase Auth session
+  // Check authentication on mount
   useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabaseBrowser.auth.getSession();
-      if (session) {
-        setIsAuthenticated(true);
-        setUserEmail(session.user.email || null);
-      } else {
-        // Redirect to login if not authenticated
+    async function checkAuth() {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
         router.push("/login");
+        return;
       }
+
+      // Fetch user data with tenant
+      const { data: userRecord, error } = await supabase
+        .from("users")
+        .select(`
+          email,
+          first_name,
+          tenant:tenants (
+            id,
+            name,
+            business_name,
+            status,
+            onboarding_completed_at
+          )
+        `)
+        .eq("auth_user_id", user.id)
+        .single();
+
+      if (error || !userRecord) {
+        console.error("Failed to fetch user data:", error);
+        router.push("/login");
+        return;
+      }
+
+      const tenant = Array.isArray(userRecord.tenant) ? userRecord.tenant[0] : userRecord.tenant;
+
+      // Check if onboarding is completed
+      if (tenant && !tenant.onboarding_completed_at) {
+        router.push("/onboarding/business");
+        return;
+      }
+
+      setUserData({
+        email: userRecord.email,
+        firstName: userRecord.first_name || undefined,
+        tenant: {
+          id: tenant?.id || "",
+          name: tenant?.name || "",
+          businessName: tenant?.business_name || undefined,
+          status: tenant?.status || "pending",
+        },
+      });
+
       setCheckingAuth(false);
-    };
-    checkSession();
+    }
 
-    // Listen for auth state changes
-    const { data: { subscription: authSubscription } } = supabaseBrowser.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        setIsAuthenticated(true);
-        setUserEmail(session.user.email || null);
-      } else {
-        setIsAuthenticated(false);
-        router.push("/login");
-      }
-    });
-
-    return () => authSubscription.unsubscribe();
-  }, [router]);
+    checkAuth();
+  }, [supabase, router]);
 
   // Fetch analytics when authenticated
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!userData?.tenant?.id) return;
 
     async function fetchAnalytics() {
       setLoading(true);
       try {
-        const res = await fetch(`/api/analytics?tenantId=${tenantId}&days=${days}`);
+        const res = await fetch(`/api/analytics?tenantId=${userData?.tenant.id}&days=${days}`);
         const data = await res.json();
         setAnalytics(data);
       } catch (error) {
@@ -92,11 +130,11 @@ export default function Dashboard() {
       setLoading(false);
     }
     fetchAnalytics();
-  }, [days, isAuthenticated]);
+  }, [days, userData?.tenant?.id]);
 
-  // Fetch subscription status when authenticated
+  // Fetch subscription status
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!userData?.tenant?.id) return;
 
     async function fetchSubscription() {
       try {
@@ -110,7 +148,7 @@ export default function Dashboard() {
       }
     }
     fetchSubscription();
-  }, [isAuthenticated]);
+  }, [userData?.tenant?.id]);
 
   const handleManageBilling = useCallback(async () => {
     setLoadingPortal(true);
@@ -126,13 +164,11 @@ export default function Dashboard() {
     setLoadingPortal(false);
   }, []);
 
-  // OPTIMIZED: Memoize sorted daily counts to avoid recalculation on each render
   const sortedDailyCounts = useMemo(() => {
     if (!analytics?.dailyCounts) return [];
     return Object.entries(analytics.dailyCounts).sort(([a], [b]) => a.localeCompare(b));
   }, [analytics?.dailyCounts]);
 
-  // OPTIMIZED: Calculate maxCount once instead of inside map loop
   const maxDailyCount = useMemo((): number => {
     if (!analytics?.dailyCounts) return 0;
     const values: number[] = Object.values(analytics.dailyCounts);
@@ -140,22 +176,21 @@ export default function Dashboard() {
   }, [analytics?.dailyCounts]);
 
   const handleLogout = useCallback(async () => {
-    await supabaseBrowser.auth.signOut();
+    await supabase.auth.signOut();
     router.push("/login");
-  }, [router]);
+  }, [supabase, router]);
 
-  // Loading check - show while checking auth
-  if (checkingAuth || !isAuthenticated) {
+  // Loading check
+  if (checkingAuth) {
     return (
       <div style={{
         minHeight: "100vh",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)",
-        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
+        background: "linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)"
       }}>
-        <div style={{ color: "#52525B" }}>Loading...</div>
+        Loading...
       </div>
     );
   }
@@ -187,15 +222,25 @@ export default function Dashboard() {
               SmartChat Analytics
             </h1>
             <p style={{ color: "#6b7280", margin: 0, fontSize: "14px" }}>
-              Chat usage metrics for Symtri AI
+              {userData?.tenant?.businessName || userData?.tenant?.name || "Your Business"}
             </p>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            {userEmail && (
-              <span style={{ fontSize: "14px", color: "#6b7280" }}>
-                {userEmail}
-              </span>
-            )}
+          <div style={{ display: "flex", gap: "8px" }}>
+            <a
+              href="/settings"
+              style={{
+                padding: "10px 20px",
+                fontSize: "14px",
+                color: "#6b7280",
+                background: "white",
+                border: "1px solid #d1d5db",
+                borderRadius: "8px",
+                cursor: "pointer",
+                textDecoration: "none",
+              }}
+            >
+              Settings
+            </a>
             <button
               onClick={handleLogout}
               style={{
@@ -212,6 +257,49 @@ export default function Dashboard() {
             </button>
           </div>
         </div>
+
+        {/* Status Banner */}
+        {userData?.tenant?.status === "trial" && (
+          <div style={{
+            background: "#DBEAFE",
+            border: "1px solid #93C5FD",
+            borderRadius: "12px",
+            padding: "16px 20px",
+            marginBottom: "24px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "12px"
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <span style={{
+                width: "10px",
+                height: "10px",
+                borderRadius: "50%",
+                background: "#3B82F6"
+              }} />
+              <span style={{ color: "#1E40AF", fontWeight: "500" }}>
+                You're on a 14-day free trial
+              </span>
+            </div>
+            <button
+              onClick={handleManageBilling}
+              style={{
+                padding: "8px 16px",
+                fontSize: "14px",
+                fontWeight: "500",
+                color: "#1E40AF",
+                background: "white",
+                border: "1px solid #93C5FD",
+                borderRadius: "6px",
+                cursor: "pointer"
+              }}
+            >
+              Upgrade Now
+            </button>
+          </div>
+        )}
 
         {/* Subscription Status */}
         {subscription && (
@@ -352,86 +440,6 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-            {/* Skeleton Chart */}
-            <div style={{
-              background: "white",
-              borderRadius: "16px",
-              padding: "24px",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-              marginBottom: "32px"
-            }}>
-              <div style={{
-                width: "120px",
-                height: "18px",
-                background: "#e5e7eb",
-                borderRadius: "4px",
-                marginBottom: "20px",
-                animation: "pulse 1.5s ease-in-out infinite"
-              }} />
-              <div style={{ display: "flex", alignItems: "flex-end", gap: "8px", height: "150px" }}>
-                {[60, 80, 45, 90, 70, 55, 85].map((h, i) => (
-                  <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end", alignItems: "center" }}>
-                    <div style={{
-                      width: "100%",
-                      maxWidth: "40px",
-                      height: `${h}px`,
-                      background: "#e5e7eb",
-                      borderRadius: "4px 4px 0 0",
-                      animation: "pulse 1.5s ease-in-out infinite"
-                    }} />
-                  </div>
-                ))}
-              </div>
-            </div>
-            {/* Skeleton Messages */}
-            <div style={{
-              background: "white",
-              borderRadius: "16px",
-              padding: "24px",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-            }}>
-              <div style={{
-                width: "140px",
-                height: "18px",
-                background: "#e5e7eb",
-                borderRadius: "4px",
-                marginBottom: "20px",
-                animation: "pulse 1.5s ease-in-out infinite"
-              }} />
-              {[1, 2, 3].map((i) => (
-                <div key={i} style={{
-                  padding: "16px",
-                  background: "#f9fafb",
-                  borderRadius: "12px",
-                  marginBottom: "12px",
-                  borderLeft: "4px solid #e5e7eb"
-                }}>
-                  <div style={{
-                    width: "40px",
-                    height: "20px",
-                    background: "#e5e7eb",
-                    borderRadius: "4px",
-                    marginBottom: "12px",
-                    animation: "pulse 1.5s ease-in-out infinite"
-                  }} />
-                  <div style={{
-                    width: "100%",
-                    height: "16px",
-                    background: "#e5e7eb",
-                    borderRadius: "4px",
-                    marginBottom: "8px",
-                    animation: "pulse 1.5s ease-in-out infinite"
-                  }} />
-                  <div style={{
-                    width: "60%",
-                    height: "12px",
-                    background: "#e5e7eb",
-                    borderRadius: "4px",
-                    animation: "pulse 1.5s ease-in-out infinite"
-                  }} />
-                </div>
-              ))}
-            </div>
             <style>{`
               @keyframes pulse {
                 0%, 100% { opacity: 1; }
@@ -517,7 +525,6 @@ export default function Dashboard() {
                 Daily Messages
               </h2>
               <div style={{ display: "flex", alignItems: "flex-end", gap: "8px", height: "150px" }}>
-                {/* OPTIMIZED: Use pre-computed sortedDailyCounts and maxDailyCount */}
                 {sortedDailyCounts.length > 0 ? (
                   sortedDailyCounts.map(([date, count]) => {
                     const height = maxDailyCount > 0 ? (count / maxDailyCount) * 120 : 0;

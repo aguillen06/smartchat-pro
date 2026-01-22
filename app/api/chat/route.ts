@@ -1,7 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { knowledgeService } from "@/lib/rag/knowledge-service";
 import { sessionManager } from "@/lib/session-manager";
+import { notifyNewLead } from "@/lib/webhooks/automation";
+import { resolveTenantId } from "@/lib/tenant-resolver";
 import Anthropic from "@anthropic-ai/sdk";
+
+// Lead detection patterns
+const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+const PHONE_REGEX = /(\+?1?[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}/;
+const NAME_PATTERNS = /(?:my name is|i'm|i am|this is)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i;
+
+interface DetectedLead {
+  email?: string;
+  phone?: string;
+  name?: string;
+}
+
+function detectLeadInfo(message: string): DetectedLead {
+  const lead: DetectedLead = {};
+
+  const emailMatch = message.match(EMAIL_REGEX);
+  if (emailMatch) lead.email = emailMatch[0];
+
+  const phoneMatch = message.match(PHONE_REGEX);
+  if (phoneMatch) lead.phone = phoneMatch[0].replace(/[-.\s]/g, '');
+
+  const nameMatch = message.match(NAME_PATTERNS);
+  if (nameMatch) lead.name = nameMatch[1];
+
+  return lead;
+}
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -60,11 +88,6 @@ function buildContextualSearchQuery(message: string, conversationHistory: Conver
   return message;
 }
 
-// Map tenant slugs to UUIDs
-const TENANT_MAP: Record<string, string> = {
-  "symtri": "c48decc4-98f5-4fe8-971f-5461d3e6ae1a",
-};
-
 export async function POST(request: NextRequest) {
   try {
     const { message, tenantId, language = "en", sessionId } = await request.json();
@@ -76,8 +99,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Resolve tenant slug to UUID if needed
-    const resolvedTenantId = TENANT_MAP[tenantId] || tenantId;
+    // Resolve tenant slug to UUID using dynamic resolver
+    const resolvedTenantId = await resolveTenantId(tenantId);
+
+    if (!resolvedTenantId) {
+      return NextResponse.json(
+        { error: "Invalid tenant" },
+        { status: 404, headers: corsHeaders }
+      );
+    }
 
     // OPTIMIZED: Simplified session creation logic
     const finalSessionId = sessionId || `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -152,6 +182,18 @@ Answer based on knowledge above and conversation history. Maintain topic consist
 
     sessionManager.addMessage(finalSessionId, "user", message);
     sessionManager.addMessage(finalSessionId, "assistant", assistantResponse);
+
+    // Detect lead info and send to automation hub
+    const leadInfo = detectLeadInfo(message);
+    if (leadInfo.email || leadInfo.phone) {
+      // Non-blocking webhook call
+      notifyNewLead({
+        ...leadInfo,
+        source: 'smartchat',
+        sessionId: finalSessionId,
+        messages: conversationHistory.map(m => m.content)
+      }).catch(err => console.error('Lead webhook error:', err));
+    }
 
     // OPTIMIZED: Deduplicate sources efficiently
     const sourceSet = new Set<string>();

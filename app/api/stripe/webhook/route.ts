@@ -85,6 +85,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const customerId = session.customer as string
   const subscriptionId = session.subscription as string
   const customerEmail = session.customer_email || session.customer_details?.email
+  const tenantId = session.metadata?.tenant_id
   const userId = session.metadata?.userId
 
   if (!customerEmail) {
@@ -92,19 +93,79 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     return
   }
 
-  // Check if user exists
+  // If we have a tenant_id from the new signup flow
+  if (tenantId) {
+    // Update tenant with Stripe customer ID and activate
+    const { error: tenantError } = await supabase
+      .from('tenants')
+      .update({
+        stripe_customer_id: customerId,
+        status: 'trial',
+        trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+        products: { smartchat: true, phonebot: false },
+      })
+      .eq('id', tenantId)
+
+    if (tenantError) {
+      console.error('Failed to update tenant:', tenantError)
+    }
+
+    // Update user with Stripe customer ID
+    await supabase
+      .from('users')
+      .update({ stripe_customer_id: customerId })
+      .eq('tenant_id', tenantId)
+
+    // Get user for subscription record
+    const { data: user } = await supabase
+      .from('users')
+      .select('id')
+      .eq('tenant_id', tenantId)
+      .single()
+
+    // Fetch full subscription details from Stripe
+    const subscriptionData = await stripe.subscriptions.retrieve(subscriptionId) as Stripe.Subscription
+    const subscriptionItem = subscriptionData.items.data[0]
+    const priceId = subscriptionItem.price.id
+    const plan = PRICE_TO_PLAN[priceId] || 'starter'
+
+    // Create subscription record linked to tenant
+    await supabase.from('subscriptions').insert({
+      user_id: user?.id,
+      tenant_id: tenantId,
+      product: 'smartchat',
+      stripe_subscription_id: subscriptionId,
+      stripe_customer_id: customerId,
+      stripe_price_id: priceId,
+      plan,
+      status: subscriptionData.status,
+      current_period_start: new Date(subscriptionItem.current_period_start * 1000).toISOString(),
+      current_period_end: new Date(subscriptionItem.current_period_end * 1000).toISOString(),
+      cancel_at_period_end: subscriptionData.cancel_at_period_end,
+    })
+
+    console.log(`Created subscription for tenant ${tenantId}, plan: ${plan}`)
+
+    // Send welcome email
+    const planConfig = PLANS[plan]
+    await sendWelcomeEmail({
+      email: customerEmail,
+      planName: planConfig?.name || 'SmartChat',
+      dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://smartchat.symtri.ai'}/onboarding/business`,
+    })
+
+    return
+  }
+
+  // Legacy flow: Check if user exists by email
   let { data: user } = await supabase
     .from('users')
-    .select('id')
+    .select('id, tenant_id')
     .eq('email', customerEmail)
     .single()
 
-  // If no user exists, create one
+  // If no user exists, create one (legacy support)
   if (!user) {
-    // Create auth user first (if using Supabase Auth)
-    // For now, we'll create a users table entry linked by email
-    // The user will need to set their password via email
-
     const { data: newUser, error: userError } = await supabase
       .from('users')
       .insert({
@@ -112,7 +173,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         email: customerEmail,
         stripe_customer_id: customerId,
       })
-      .select('id')
+      .select('id, tenant_id')
       .single()
 
     if (userError) {
@@ -137,6 +198,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   // Create subscription record
   await supabase.from('subscriptions').insert({
     user_id: user.id,
+    tenant_id: user.tenant_id || null,
+    product: 'smartchat',
     stripe_subscription_id: subscriptionId,
     stripe_customer_id: customerId,
     stripe_price_id: priceId,
