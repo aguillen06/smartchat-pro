@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { supabaseBrowser } from '@/lib/supabase/browser'
+import { createBrowserSupabaseClient } from '@/lib/supabase/browser'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -9,13 +9,15 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
+  const supabase = createBrowserSupabaseClient()
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
 
     try {
-      const { error: resetError } = await supabaseBrowser.auth.resetPasswordForEmail(email, {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       })
 

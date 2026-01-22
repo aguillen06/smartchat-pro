@@ -147,10 +147,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     console.log(`Created subscription for tenant ${tenantId}, plan: ${plan}`)
 
     // Send welcome email
-    const planConfig = PLANS[plan]
     await sendWelcomeEmail({
       email: customerEmail,
-      planName: planConfig?.name || 'SmartChat',
       dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://smartchat.symtri.ai'}/onboarding/business`,
     })
 
@@ -213,10 +211,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   console.log(`Created subscription for user ${user.id}, plan: ${plan}`)
 
   // Send welcome email
-  const planConfig = PLANS[plan]
   await sendWelcomeEmail({
     email: customerEmail,
-    planName: planConfig?.name || 'SmartChat',
     dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://smartchat.symtri.ai'}/dashboard`,
   })
 }

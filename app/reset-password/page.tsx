@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabaseBrowser } from '@/lib/supabase/browser'
+import { createBrowserSupabaseClient } from '@/lib/supabase/browser'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
@@ -14,17 +14,19 @@ export default function ResetPasswordPage() {
   const [sessionChecked, setSessionChecked] = useState(false)
   const [hasSession, setHasSession] = useState(false)
 
+  const supabase = createBrowserSupabaseClient()
+
   // Check if user has a valid session from the reset link
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabaseBrowser.auth.getSession()
+      const { data: { session } } = await supabase.auth.getSession()
       setHasSession(!!session)
       setSessionChecked(true)
     }
     checkSession()
 
     // Listen for auth state changes (when user clicks reset link)
-    const { data: { subscription } } = supabaseBrowser.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
         setHasSession(true)
       } else if (session) {
@@ -52,7 +54,7 @@ export default function ResetPasswordPage() {
     setLoading(true)
 
     try {
-      const { error: updateError } = await supabaseBrowser.auth.updateUser({
+      const { error: updateError } = await supabase.auth.updateUser({
         password: password
       })
 
