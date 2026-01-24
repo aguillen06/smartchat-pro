@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/server";
+import { sendWaitlistEmail } from "@/lib/email/send-waitlist";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -99,12 +100,22 @@ export async function POST(
       );
     }
 
+    const downloadUrl = "https://symtri.ai/downloads/ai-readiness-checklist.pdf";
+
+    // Send welcome email (non-blocking)
+    sendWaitlistEmail({
+      businessName: business_name.trim(),
+      email: email.toLowerCase().trim(),
+      product,
+      downloadUrl,
+    }).catch((err) => console.error("Failed to send waitlist email:", err));
+
     return NextResponse.json(
       {
         success: true,
         message: "Successfully joined the waitlist",
         id: data.id,
-        downloadUrl: "https://symtri.ai/downloads/ai-readiness-checklist.pdf",
+        downloadUrl,
         downloadTitle: "AI Readiness Checklist",
       },
       { headers: corsHeaders }
