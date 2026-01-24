@@ -8,4 +8,4 @@ export const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
   : null
 
-export const FROM_EMAIL = 'SmartChat <hello@symtri.ai>'
+export const FROM_EMAIL = 'Symtri AI <hello@symtri.ai>'
