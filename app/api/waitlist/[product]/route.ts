@@ -10,13 +10,11 @@ const corsHeaders = {
 
 // Valid product slugs
 const VALID_PRODUCTS = [
-  "leadflow",
-  "processpilot",
-  "contentcraft",
-  "phonebot",
-  "smartchat",
-  "academy",
-  "secure-workspace",
+  "academy",           // Symtri Academy - educational service
+  "lead-response",     // Lead Response - SMB service
+  "secure-workspace",  // Secure Workspace - Private LLM
+  "phonebot",          // Internal
+  "smartchat",         // Internal
 ];
 
 export async function OPTIONS() {

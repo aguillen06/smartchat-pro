@@ -8,13 +8,11 @@ export interface WaitlistEmailData {
 }
 
 const PRODUCT_NAMES: Record<string, string> = {
-  leadflow: 'LeadFlow',
-  processpilot: 'ProcessPilot',
-  contentcraft: 'ContentCraft',
+  academy: 'Symtri Academy',
+  'lead-response': 'Lead Response',
+  'secure-workspace': 'Secure Workspace',
   phonebot: 'PhoneBot',
   smartchat: 'SmartChat',
-  academy: 'Symtri Academy',
-  'secure-workspace': 'Secure Workspace',
 }
 
 export function getWaitlistEmailSubject(product: string): string {
