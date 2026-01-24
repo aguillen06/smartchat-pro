@@ -104,6 +104,8 @@ export async function POST(
         success: true,
         message: "Successfully joined the waitlist",
         id: data.id,
+        downloadUrl: "https://symtri.ai/downloads/ai-readiness-checklist.pdf",
+        downloadTitle: "AI Readiness Checklist",
       },
       { headers: corsHeaders }
     );
