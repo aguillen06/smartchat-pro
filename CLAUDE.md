@@ -2,19 +2,28 @@
 
 > Copy this file to any Symtri AI project root as `CLAUDE.md` for automatic context loading.
 
-**Last Updated:** December 26, 2025
+**Last Updated:** January 23, 2026
 
 ---
 
 ## Company Overview
 
-**Symtri AI** builds AI automation tools for small and mid-size businesses (SMBs).
+**Symtri AI** builds AI automation tools for small and mid-size businesses.
 
 - **Website:** https://symtri.ai
 - **Tagline:** "Learn AI. Automate Growth."
+- **Security Philosophy:** "Enterprise Security. For Every Business."
 - **Location:** Brownsville, Texas
-- **Phone:** (956) 692-1385
-- **Email:** hello@symtri.ai
+- **Phone:** (956) 692-1385 (secondary contact)
+
+### Contact Emails (Product-Specific)
+| Purpose | Email |
+|---------|-------|
+| General/Footer | hello@symtri.ai |
+| Academy | education@symtri.ai |
+| Lead Response Sales | sales@symtri.ai |
+| Customer Support | support@symtri.ai |
+| Secure Workspace/B2B | partners@symtri.ai |
 
 **Target Market:** SMBs, professional services, trade services, healthcare practices
 
@@ -120,7 +129,7 @@
 
 ## Security Approach
 
-**Philosophy:** "Enterprise Security. Built for SMBs."
+**Philosophy:** "Enterprise Security. For Every Business."
 
 ### Key Points
 - **Encryption:** AES-256 at rest, TLS 1.3 in transit
@@ -193,6 +202,11 @@
 
 ## Recent Updates (December 2025)
 
+### January 23, 2026
+- Updated security philosophy to "Enterprise Security. For Every Business."
+- Added product-specific contact emails (education@, sales@, partners@)
+- Updated CLAUDE.md with new product structure
+
 ### December 26, 2025
 - Added security sections to PhoneBot and SmartChat landing pages
 - Created security detail pages (/phonebot/security, /security)
@@ -249,8 +263,10 @@ vercel --prod --yes
 | Purpose | Email |
 |---------|-------|
 | General | hello@symtri.ai |
-| Security | security@symtri.ai |
+| Academy | education@symtri.ai |
+| Lead Response Sales | sales@symtri.ai |
 | Support | support@symtri.ai |
+| Secure Workspace/B2B | partners@symtri.ai |
 
 ---
 

@@ -15,6 +15,19 @@ const PRODUCT_NAMES: Record<string, string> = {
   smartchat: 'SmartChat',
 }
 
+// Product-specific FROM emails
+const PRODUCT_EMAILS: Record<string, string> = {
+  academy: 'Symtri Academy <education@symtri.ai>',
+  'lead-response': 'Symtri AI <sales@symtri.ai>',
+  'secure-workspace': 'Symtri AI <partners@symtri.ai>',
+  phonebot: 'Symtri AI <sales@symtri.ai>',
+  smartchat: 'Symtri AI <sales@symtri.ai>',
+}
+
+export function getWaitlistFromEmail(product: string): string {
+  return PRODUCT_EMAILS[product] || 'Symtri AI <hello@symtri.ai>'
+}
+
 export function getWaitlistEmailSubject(product: string): string {
   const productName = PRODUCT_NAMES[product] || product
   return `You're on the ${productName} waitlist - Here's your free AI Readiness Checklist`

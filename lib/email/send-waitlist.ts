@@ -1,8 +1,9 @@
-import { resend, FROM_EMAIL } from './client'
+import { resend } from './client'
 import {
   getWaitlistEmailSubject,
   getWaitlistEmailHtml,
   getWaitlistEmailText,
+  getWaitlistFromEmail,
   WaitlistEmailData,
 } from './waitlist-templates'
 
@@ -14,7 +15,7 @@ export async function sendWaitlistEmail(data: WaitlistEmailData): Promise<{ succ
 
   try {
     const { error } = await resend.emails.send({
-      from: FROM_EMAIL,
+      from: getWaitlistFromEmail(data.product),
       to: data.email,
       subject: getWaitlistEmailSubject(data.product),
       html: getWaitlistEmailHtml(data),

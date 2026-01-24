@@ -185,7 +185,7 @@ export default function SecurityPage() {
       <section className="hero">
         <div className="hero-content">
           <div className="badge">SECURITY</div>
-          <h1>Enterprise Security. Built for SMBs.</h1>
+          <h1>Enterprise Security. For Every Business.</h1>
           <p>Your customer conversations deserve the same protection as Fortune 500 companies. Here&apos;s how we keep your data safe.</p>
         </div>
       </section>
